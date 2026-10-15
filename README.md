@@ -5,6 +5,8 @@ This repository contains deployable proof projects for Siddhant Seal's resume:
 - Full-Stack E-Commerce Web Application
 - Real-Time Collaborative Task Manager
 
+Live site: https://siddhant-portfolio-iota.vercel.app
+
 The live app is built with Next.js, React, TypeScript, and API routes. A Socket.io backend implementation is included under `backend/socket-server` for the collaborative task manager.
 
 ## Run Locally
