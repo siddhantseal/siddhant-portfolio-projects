@@ -68,6 +68,13 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
   }
 
   async function checkout() {
+    const orderItems = cartLines.map((line) => ({
+      id: line.product.id,
+      name: line.product.name,
+      image: line.product.image,
+      price: line.product.price,
+      quantity: line.quantity
+    }));
     const response = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -77,7 +84,23 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
     });
     const data = await response.json();
     setOrderMessage(response.ok ? `Order placed. ${data.orderId} total: Rs ${data.total}.` : data.message);
-    if (response.ok) setCart({});
+    if (response.ok) {
+      try {
+        const savedOrders = JSON.parse(window.localStorage.getItem("sealcart-orders") ?? "[]");
+        const nextOrder = {
+          id: data.orderId,
+          placedAt: new Date().toISOString(),
+          status: "Preparing",
+          eta: "Arriving in 2-4 days",
+          total: data.total,
+          items: orderItems
+        };
+        window.localStorage.setItem("sealcart-orders", JSON.stringify([nextOrder, ...savedOrders].slice(0, 12)));
+      } catch {
+        // Order persistence is best-effort for the demo storefront.
+      }
+      setCart({});
+    }
   }
 
   function submitSearch() {
@@ -99,6 +122,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           <Link href="/commerce">Shop</Link>
           <Link href="/about">About</Link>
           <Link href="/blog">Blog</Link>
+          <Link href="/orders">Orders</Link>
           <Link href="/contact">Contact</Link>
         </nav>
         <HeaderSearch />
@@ -254,7 +278,11 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           <button className="button primary full" disabled={!cartLines.length} onClick={checkout} type="button">
             Place order
           </button>
-          {orderMessage ? <p className="orderMessage">{orderMessage}</p> : null}
+          {orderMessage ? (
+            <p className="orderMessage">
+              {orderMessage} {orderMessage.startsWith("Order placed") ? <Link href="/orders">View orders</Link> : null}
+            </p>
+          ) : null}
 
           <div className="suggestionBox">
             <h3>Frequently bought together</h3>

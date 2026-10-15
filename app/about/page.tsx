@@ -12,6 +12,7 @@ export default function AboutPage() {
           <Link href="/commerce">Shop</Link>
           <Link href="/about">About</Link>
           <Link href="/blog">Blog</Link>
+          <Link href="/orders">Orders</Link>
           <Link href="/contact">Contact</Link>
         </nav>
         <HeaderSearch />

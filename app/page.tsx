@@ -42,6 +42,7 @@ export default function Home() {
           <Link href="/commerce">Shop</Link>
           <Link href="/about">About</Link>
           <Link href="/blog">Blog</Link>
+          <Link href="/orders">Orders</Link>
           <Link href="/contact">Contact</Link>
         </nav>
         <HeaderSearch />
@@ -203,6 +204,7 @@ export default function Home() {
         </div>
         <div className="footerLinks">
           <Link href="/commerce">Shop</Link>
+          <Link href="/orders">Orders</Link>
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>
         </div>

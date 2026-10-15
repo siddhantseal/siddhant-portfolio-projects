@@ -744,6 +744,8 @@ html.themeDark .serviceNote,
 html.themeDark .resultCount,
 html.themeDark .mapBox,
 html.themeDark .deliveryBox,
+html.themeDark .ordersSummary article,
+html.themeDark .orderCard,
 body:has(.themeSwitch input:checked) .dealShowcase,
 body.themeDark .dealShowcase,
 body:has(.themeSwitch input:checked) .categoryTile,
@@ -761,7 +763,11 @@ body.themeDark .resultCount,
 body:has(.themeSwitch input:checked) .mapBox,
 body.themeDark .mapBox,
 body:has(.themeSwitch input:checked) .deliveryBox,
-body.themeDark .deliveryBox {
+body.themeDark .deliveryBox,
+body:has(.themeSwitch input:checked) .ordersSummary article,
+body.themeDark .ordersSummary article,
+body:has(.themeSwitch input:checked) .orderCard,
+body.themeDark .orderCard {
   background: #101b20;
 }
 
@@ -775,6 +781,7 @@ body.themeDark .deliveryBox {
 .infoGrid,
 .contactLayout,
 .articleList,
+.ordersLayout,
 .storeFooter {
   width: min(1180px, calc(100% - 32px));
   margin-right: auto;
@@ -1889,6 +1896,133 @@ body.themeDark .deliveryBox {
   font-weight: 900;
 }
 
+.ordersLayout {
+  display: grid;
+  gap: 28px;
+  padding-bottom: 48px;
+}
+
+.ordersSummary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ordersSummary article,
+.orderCard {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.ordersSummary article {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.ordersSummary span,
+.orderTopline span,
+.orderFooter span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ordersSummary strong {
+  font-size: 24px;
+}
+
+.ordersColumn {
+  display: grid;
+  gap: 14px;
+}
+
+.orderCard {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+}
+
+.orderTopline,
+.orderFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.orderTopline > div {
+  display: grid;
+  gap: 4px;
+}
+
+.orderStatus {
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.1);
+  color: var(--green) !important;
+  padding: 7px 10px;
+  text-transform: uppercase;
+}
+
+.orderProgress {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.orderProgress span {
+  position: relative;
+  border-radius: 8px;
+  background: rgba(104, 114, 125, 0.12);
+  color: var(--muted);
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.orderProgress span.done {
+  background: rgba(15, 118, 110, 0.13);
+  color: var(--green);
+}
+
+.orderItems {
+  display: grid;
+  gap: 10px;
+}
+
+.orderItem {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.orderItem:hover {
+  border-color: rgba(15, 118, 110, 0.34);
+  transform: translateY(-1px);
+}
+
+.orderItem img {
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.orderItem span {
+  font-weight: 900;
+}
+
+.orderItem small {
+  color: var(--muted);
+}
+
 @media (max-width: 1050px) {
   .storeHero,
   .storeBand,
@@ -1907,7 +2041,8 @@ body.themeDark .deliveryBox {
   .mediaGallery,
   .reviewGrid,
   .infoGrid,
-  .contactLayout {
+  .contactLayout,
+  .ordersSummary {
     grid-template-columns: 1fr;
   }
 
@@ -1973,6 +2108,10 @@ body.themeDark .deliveryBox {
 
   .storeFooter {
     grid-template-columns: 1fr;
+  }
+
+  .orderProgress {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -2147,5 +2286,19 @@ body.themeDark .deliveryBox {
 
   .footerLinks {
     gap: 12px;
+  }
+
+  .orderTopline,
+  .orderFooter {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .orderItem {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .orderItem small {
+    grid-column: 2;
   }
 }
