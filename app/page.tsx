@@ -4,6 +4,30 @@ import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const categories = ["Mobiles", "Electronics", "Fashion", "Home", "Beauty", "Sports"];
+const shoppingMissions = [
+  {
+    title: "Student tech setup",
+    text: "Phones, tablets, earbuds, and backpacks for daily college work.",
+    href: "/commerce?q=tablet"
+  },
+  {
+    title: "Work-from-home desk",
+    text: "Keyboards, lamps, webcams, storage, and comfort picks.",
+    href: "/commerce?q=desk"
+  },
+  {
+    title: "Weekend refresh",
+    text: "Fashion, grooming, fitness, and home products in one basket.",
+    href: "/commerce?category=Fashion"
+  }
+];
+
+const storeStats = [
+  { value: "232+", label: "listed products" },
+  { value: "4.6", label: "average rating" },
+  { value: "7-day", label: "replacement flow" },
+  { value: "24/7", label: "support pages" }
+];
 
 export default function Home() {
   const topDeals = products.slice(0, 4);
@@ -56,6 +80,15 @@ export default function Home() {
         <div className="storeFeature"><strong>Support</strong><span>Email and phone contact flow</span></div>
       </section>
 
+      <section className="storeStats" aria-label="Store highlights">
+        {storeStats.map((stat) => (
+          <div key={stat.label}>
+            <strong>{stat.value}</strong>
+            <span>{stat.label}</span>
+          </div>
+        ))}
+      </section>
+
       <section className="homeSection">
         <div className="sectionTitle">
           <div>
@@ -69,6 +102,25 @@ export default function Home() {
             <Link className="categoryTile" href={`/commerce?category=${category}`} key={category}>
               <span>{category}</span>
               <small>Shop now</small>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="homeSection">
+        <div className="sectionTitle">
+          <div>
+            <p className="eyebrow">Quick paths</p>
+            <h2>Shop by what you need today</h2>
+          </div>
+          <Link href="/commerce">Open marketplace</Link>
+        </div>
+        <div className="quickShopGrid">
+          {shoppingMissions.map((mission) => (
+            <Link className="quickShopCard" href={mission.href} key={mission.title}>
+              <strong>{mission.title}</strong>
+              <span>{mission.text}</span>
+              <small>Explore collection</small>
             </Link>
           ))}
         </div>
@@ -137,8 +189,15 @@ export default function Home() {
       </section>
 
       <footer className="storeFooter">
-        <strong>SealCart</strong>
-        <span>Professional e-commerce demo built with Next.js, React, API routes, GitHub, and Vercel.</span>
+        <div>
+          <strong>SealCart</strong>
+          <span>Professional e-commerce demo built with Next.js, React, API routes, GitHub, and Vercel.</span>
+        </div>
+        <div className="footerLinks">
+          <Link href="/commerce">Shop</Link>
+          <Link href="/about">About</Link>
+          <Link href="/contact">Contact</Link>
+        </div>
       </footer>
     </main>
   );

@@ -8,8 +8,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(localStorage.getItem('sealcart-theme')==='dark'){document.documentElement.classList.add('themeDark')}}catch(e){}"
+          }}
+        />
+      </head>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

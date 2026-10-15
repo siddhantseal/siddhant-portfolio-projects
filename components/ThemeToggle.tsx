@@ -9,11 +9,13 @@ export function ThemeToggle() {
     const stored = window.localStorage.getItem("sealcart-theme");
     const shouldEnable = stored === "dark";
     setEnabled(shouldEnable);
+    document.documentElement.classList.toggle("themeDark", shouldEnable);
     document.body.classList.toggle("themeDark", shouldEnable);
   }, []);
 
   function updateTheme(nextEnabled: boolean) {
     setEnabled(nextEnabled);
+    document.documentElement.classList.toggle("themeDark", nextEnabled);
     document.body.classList.toggle("themeDark", nextEnabled);
     window.localStorage.setItem("sealcart-theme", nextEnabled ? "dark" : "light");
   }
