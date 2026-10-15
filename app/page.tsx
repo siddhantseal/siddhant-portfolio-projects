@@ -31,6 +31,7 @@ const storeStats = [
 
 export default function Home() {
   const topDeals = products.slice(0, 4);
+  const productStories = [products[0], products[1], products[10]];
 
   return (
     <main>
@@ -129,22 +130,29 @@ export default function Home() {
       <section className="homeSection">
         <div className="sectionTitle">
           <div>
-            <p className="eyebrow">Product videos</p>
-            <h2>Real GIF demos from product images</h2>
+            <p className="eyebrow">Featured experiences</p>
+            <h2>Smooth product previews</h2>
           </div>
-          <Link href="/commerce">Buy featured items</Link>
+          <Link href="/commerce">Explore collection</Link>
         </div>
-        <div className="videoGrid">
-          <Link className="videoCard" href={`/commerce/${products[0].id}`}>
-            <img className="mediaPreview" alt="Nova X1 product GIF demo" src="/media/phone-demo.gif" />
-            <h3>Nova X1 camera and display</h3>
-            <p>GIF preview for shoppers comparing phone performance, storage, display, and battery value.</p>
-          </Link>
-          <Link className="videoCard" href={`/commerce/${products[1].id}`}>
-            <img className="mediaPreview" alt="AirBeat Pro product GIF demo" src="/media/audio-demo.gif" />
-            <h3>AirBeat Pro sound and case</h3>
-            <p>GIF preview for battery life, comfort, call quality, and low-latency listening.</p>
-          </Link>
+        <div className="experienceGrid">
+          {productStories.map((product, index) => (
+            <Link className="experienceCard" href={`/commerce/${product.id}`} key={product.id}>
+              <div className="experienceMedia">
+                <img alt={product.name} src={product.image} />
+                <span>{index === 0 ? "Flagship pick" : index === 1 ? "Audio deal" : "Student favorite"}</span>
+              </div>
+              <div className="experienceCopy">
+                <small>{product.badge}</small>
+                <h3>{product.name}</h3>
+                <p>{product.description}</p>
+                <div>
+                  <strong>Rs {product.price.toLocaleString("en-IN")}</strong>
+                  <span>{product.rating} stars</span>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
