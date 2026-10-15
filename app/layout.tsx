@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Siddhant Seal | Full Stack Projects",
-  description: "Live proof projects for Siddhant Seal: e-commerce and collaborative task management."
+  title: "SealCart | Online Shopping Store",
+  description: "A professional e-commerce storefront with product browsing, cart, checkout, and customer pages."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
