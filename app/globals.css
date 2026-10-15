@@ -20,7 +20,7 @@ body {
   overflow-x: hidden;
   background: var(--paper);
   color: var(--ink);
-  font-size: 15px;
+  font-size: 14px;
   font-family: Arial, Helvetica, sans-serif;
   -webkit-text-size-adjust: 100%;
 }
@@ -101,7 +101,7 @@ button:disabled {
 .eyebrow {
   margin: 0 0 10px;
   color: var(--green);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -139,12 +139,13 @@ p {
 
 .button {
   display: inline-flex;
-  min-height: 44px;
+  min-height: 38px;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0 18px;
+  padding: 0 14px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -558,7 +559,7 @@ p {
 
 .brand {
   color: var(--green);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 900;
 }
 
@@ -568,7 +569,7 @@ p {
   justify-content: center;
   gap: 18px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -578,14 +579,14 @@ p {
 
 .headerCart {
   display: inline-flex;
-  min-height: 38px;
+  min-height: 32px;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
   background: var(--ink);
   color: white;
-  padding: 0 16px;
-  font-size: 14px;
+  padding: 0 10px;
+  font-size: 12px;
   font-weight: 900;
 }
 
@@ -603,17 +604,19 @@ p {
   min-width: 0;
   border: 0;
   background: transparent;
-  padding: 0 14px;
+  padding: 0 10px;
+  font-size: 13px;
   color: var(--ink);
   outline: 0;
 }
 
 .headerSearch button {
-  min-height: 40px;
+  min-height: 34px;
   border: 0;
   background: var(--green);
   color: white;
-  padding: 0 16px;
+  padding: 0 12px;
+  font-size: 13px;
   font-weight: 900;
 }
 
@@ -626,21 +629,21 @@ p {
 
 .themeSwitch {
   display: inline-flex;
-  min-height: 38px;
+  min-height: 32px;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: white;
-  padding: 0 12px;
+  padding: 0 8px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 900;
 }
 
 .themeSwitch input {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   accent-color: var(--green);
 }
 
@@ -790,14 +793,14 @@ body.themeDark .deliveryBox {
 .storeHeroCopy h1,
 .contentHero h1 {
   max-width: 760px;
-  font-size: clamp(26px, 3.4vw, 40px);
+  font-size: clamp(22px, 2.6vw, 30px);
   line-height: 1;
 }
 
 .storeHeroCopy p:not(.eyebrow),
 .contentHero p {
   max-width: 680px;
-  font-size: 15px;
+  font-size: 13px;
 }
 
 .dealShowcase {
@@ -869,16 +872,16 @@ body.themeDark .deliveryBox {
   display: grid;
   gap: 4px;
   background: var(--panel);
-  padding: 18px;
+  padding: 14px;
 }
 
 .storeStats strong {
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .storeStats span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -902,12 +905,12 @@ body.themeDark .deliveryBox {
 .storeFeature {
   display: grid;
   gap: 6px;
-  padding: 18px;
+  padding: 14px;
 }
 
 .storeFeature strong,
 .categoryTile span {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .storeFeature span,
@@ -919,7 +922,7 @@ body.themeDark .deliveryBox {
 }
 
 .homeSection {
-  padding: 44px 0 0;
+  padding: 34px 0 0;
 }
 
 .sectionTitle {
@@ -931,7 +934,7 @@ body.themeDark .deliveryBox {
 }
 
 .sectionTitle h2 {
-  font-size: 28px;
+  font-size: 22px;
 }
 
 .sectionTitle > a,
@@ -948,9 +951,11 @@ body.themeDark .deliveryBox {
 
 .categoryTile {
   display: grid;
-  min-height: 120px;
+  position: relative;
+  overflow: hidden;
+  min-height: 96px;
   align-content: space-between;
-  padding: 18px;
+  padding: 14px;
   background: linear-gradient(145deg, white, #edf7f4);
   font-weight: 900;
   transition: transform 180ms ease, box-shadow 180ms ease;
@@ -964,24 +969,27 @@ body.themeDark .deliveryBox {
 
 .quickShopCard {
   display: grid;
+  position: relative;
+  overflow: hidden;
   gap: 12px;
-  min-height: 170px;
+  min-height: 140px;
   align-content: space-between;
   border: 1px solid var(--line);
   border-radius: 8px;
   background:
     linear-gradient(135deg, rgba(15, 118, 110, 0.08), transparent 48%),
     var(--panel);
-  padding: 22px;
+  padding: 16px;
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
 .quickShopCard strong {
-  font-size: 19px;
+  font-size: 16px;
 }
 
 .quickShopCard span {
   color: var(--muted);
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -1003,8 +1011,9 @@ body.themeDark .deliveryBox {
 }
 
 .dealCard {
+  position: relative;
   overflow: hidden;
-  padding-bottom: 16px;
+  padding-bottom: 12px;
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
@@ -1018,6 +1027,52 @@ body.themeDark .deliveryBox {
   box-shadow: var(--shadow);
 }
 
+.dealShowcase::after,
+.categoryTile::after,
+.quickShopCard::after,
+.experienceCard::after,
+.dealCard::after,
+.videoCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(45, 212, 191, 0.18), transparent 34%);
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 180ms ease, transform 220ms ease;
+}
+
+.dealShowcase:active,
+.categoryTile:active,
+.quickShopCard:active,
+.experienceCard:active,
+.dealCard:active,
+.videoCard:active {
+  transform: translateY(0) scale(0.985);
+  box-shadow: 0 12px 30px rgba(33, 42, 50, 0.14);
+}
+
+.dealShowcase:active::after,
+.categoryTile:active::after,
+.quickShopCard:active::after,
+.experienceCard:active::after,
+.dealCard:active::after,
+.videoCard:active::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.dealShowcase:focus-visible,
+.categoryTile:focus-visible,
+.quickShopCard:focus-visible,
+.experienceCard:focus-visible,
+.dealCard:focus-visible,
+.videoCard:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+
 .experienceGrid {
   display: grid;
   grid-template-columns: 1.1fr 0.95fr 0.95fr;
@@ -1026,6 +1081,7 @@ body.themeDark .deliveryBox {
 
 .experienceCard {
   overflow: hidden;
+  position: relative;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
@@ -1087,8 +1143,8 @@ body.themeDark .deliveryBox {
 
 .experienceCopy {
   display: grid;
-  gap: 9px;
-  padding: 18px;
+  gap: 7px;
+  padding: 14px;
 }
 
 .experienceCopy small {
@@ -1100,12 +1156,13 @@ body.themeDark .deliveryBox {
 
 .experienceCopy h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: 17px;
 }
 
 .experienceCopy p {
   margin: 0;
   color: var(--muted);
+  font-size: 13px;
   line-height: 1.48;
 }
 
@@ -1135,24 +1192,24 @@ body.themeDark .deliveryBox {
 .dealCard strong,
 .dealCard small {
   display: block;
-  margin: 10px 16px 0;
+  margin: 8px 12px 0;
 }
 
 .dealCard span {
   color: var(--green);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
   text-transform: uppercase;
 }
 
 .dealCard h3 {
-  min-height: 42px;
-  font-size: 17px;
+  min-height: 36px;
+  font-size: 15px;
 }
 
 .blogPreview,
 .articleCard {
-  padding: 22px;
+  padding: 16px;
 }
 
 .videoGrid {
@@ -1996,7 +2053,7 @@ body.themeDark .deliveryBox {
 
   .storeHeroCopy p:not(.eyebrow),
   .contentHero p {
-    font-size: 15px;
+    font-size: 13px;
   }
 
   .heroActions {
@@ -2010,11 +2067,11 @@ body.themeDark .deliveryBox {
 
   .storeHeroCopy h1,
   .contentHero h1 {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .sectionTitle h2 {
-    font-size: 26px;
+    font-size: 20px;
   }
 
   .storeBand,
@@ -2033,7 +2090,7 @@ body.themeDark .deliveryBox {
   }
 
   .storeStats strong {
-    font-size: 23px;
+    font-size: 18px;
   }
 
   .storeFeature,
@@ -2041,11 +2098,11 @@ body.themeDark .deliveryBox {
   .quickShopCard,
   .blogPreview,
   .articleCard {
-    padding: 16px;
+    padding: 12px;
   }
 
   .quickShopCard {
-    min-height: 145px;
+    min-height: 120px;
   }
 
   .experienceCard:first-child {
@@ -2064,11 +2121,11 @@ body.themeDark .deliveryBox {
   }
 
   .experienceCopy {
-    padding: 16px;
+    padding: 12px;
   }
 
   .experienceCopy h3 {
-    font-size: 20px;
+    font-size: 16px;
   }
 
   .mediaPreview {
