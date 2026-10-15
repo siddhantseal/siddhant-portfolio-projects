@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { blogPosts, products } from "@/lib/data";
+import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const categories = ["Mobiles", "Electronics", "Fashion", "Home", "Beauty", "Sports"];
@@ -18,6 +19,7 @@ export default function Home() {
           <Link href="/blog">Blog</Link>
           <Link href="/contact">Contact</Link>
         </nav>
+        <HeaderSearch />
         <div className="headerActions">
           <ThemeToggle />
           <Link className="headerCart" href="/commerce">Cart</Link>
@@ -37,14 +39,14 @@ export default function Home() {
             <Link className="button secondary" href="/about">Why SealCart</Link>
           </div>
         </div>
-        <div className="dealShowcase" aria-label="Featured sale product">
+        <Link className="dealShowcase" href={`/commerce/${products[0].id}`} aria-label={`Open ${products[0].name}`}>
           <span className="saleTag">Today only</span>
           <img alt="Featured smartphone deal" src={products[0].image} />
           <div>
             <strong>{products[0].name}</strong>
             <p>From Rs {products[0].price.toLocaleString("en-IN")} with fast delivery.</p>
           </div>
-        </div>
+        </Link>
       </section>
 
       <section className="storeBand">
@@ -81,16 +83,16 @@ export default function Home() {
           <Link href="/commerce">Buy featured items</Link>
         </div>
         <div className="videoGrid">
-          <article className="videoCard">
+          <Link className="videoCard" href={`/commerce/${products[0].id}`}>
             <img className="mediaPreview" alt="Nova X1 product GIF demo" src="/media/phone-demo.gif" />
             <h3>Nova X1 camera and display</h3>
             <p>GIF preview for shoppers comparing phone performance, storage, display, and battery value.</p>
-          </article>
-          <article className="videoCard">
+          </Link>
+          <Link className="videoCard" href={`/commerce/${products[1].id}`}>
             <img className="mediaPreview" alt="AirBeat Pro product GIF demo" src="/media/audio-demo.gif" />
             <h3>AirBeat Pro sound and case</h3>
             <p>GIF preview for battery life, comfort, call quality, and low-latency listening.</p>
-          </article>
+          </Link>
         </div>
       </section>
 
@@ -104,7 +106,7 @@ export default function Home() {
         </div>
         <div className="dealGrid">
           {topDeals.map((product) => (
-            <Link className="dealCard" href="/commerce" key={product.id}>
+            <Link className="dealCard" href={`/commerce/${product.id}`} key={product.id}>
               <img alt={product.name} src={product.image} />
               <span>{product.badge}</span>
               <h3>{product.name}</h3>

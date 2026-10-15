@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function ContactPage() {
@@ -13,6 +14,7 @@ export default function ContactPage() {
           <Link href="/blog">Blog</Link>
           <Link href="/contact">Contact</Link>
         </nav>
+        <HeaderSearch />
         <div className="headerActions">
           <ThemeToggle />
           <Link className="headerCart" href="/commerce">Cart</Link>

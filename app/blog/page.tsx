@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { blogPosts } from "@/lib/data";
+import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function BlogPage() {
@@ -14,6 +15,7 @@ export default function BlogPage() {
           <Link href="/blog">Blog</Link>
           <Link href="/contact">Contact</Link>
         </nav>
+        <HeaderSearch />
         <div className="headerActions">
           <ThemeToggle />
           <Link className="headerCart" href="/commerce">Shop deals</Link>

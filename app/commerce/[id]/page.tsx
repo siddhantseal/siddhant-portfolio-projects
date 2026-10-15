@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { HeaderSearch } from "@/components/HeaderSearch";
+import { ProductZoomGallery } from "@/components/ProductZoomGallery";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { products } from "@/lib/data";
 
@@ -58,6 +60,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <Link href="/blog">Blog</Link>
           <Link href="/contact">Contact</Link>
         </nav>
+        <HeaderSearch />
         <div className="headerActions">
           <ThemeToggle />
           <Link className="headerCart" href="/commerce">Back to shop</Link>
@@ -66,14 +69,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
       <section className="productDetail">
         <div className="galleryPanel">
-          <img className="mainProductImage" alt={product.name} src={media[0]} />
-          <div className="thumbnailGrid">
-            {media.map((image, index) => (
-              <a href={`#media-${index + 1}`} key={image}>
-                <img alt={`${product.name} view ${index + 1}`} src={image} />
-              </a>
-            ))}
-          </div>
+          <ProductZoomGallery images={media} productName={product.name} />
         </div>
 
         <div className="detailInfo">
