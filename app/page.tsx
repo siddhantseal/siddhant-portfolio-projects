@@ -76,26 +76,20 @@ export default function Home() {
         <div className="sectionTitle">
           <div>
             <p className="eyebrow">Product videos</p>
-            <h2>Animated product explainers</h2>
+            <h2>Real GIF demos from product images</h2>
           </div>
           <Link href="/commerce">Buy featured items</Link>
         </div>
         <div className="videoGrid">
           <article className="videoCard">
-            <div className="videoMock phoneDemo">
-              <span />
-              <i />
-            </div>
+            <img className="mediaPreview" alt="Nova X1 product GIF demo" src="/media/phone-demo.gif" />
             <h3>Nova X1 camera and display</h3>
-            <p>Feature preview for shoppers comparing phone performance, storage, display, and battery value.</p>
+            <p>GIF preview for shoppers comparing phone performance, storage, display, and battery value.</p>
           </article>
           <article className="videoCard">
-            <div className="videoMock audioDemo">
-              <span />
-              <i />
-            </div>
-            <h3>AirBeat Pro sound test</h3>
-            <p>Animated buyer preview for battery life, comfort, call quality, and low-latency listening.</p>
+            <img className="mediaPreview" alt="AirBeat Pro product GIF demo" src="/media/audio-demo.gif" />
+            <h3>AirBeat Pro sound and case</h3>
+            <p>GIF preview for battery life, comfort, call quality, and low-latency listening.</p>
           </article>
         </div>
       </section>

@@ -11,6 +11,7 @@ const categories = ["All", "Mobiles", "Electronics", "Fashion", "Home", "Beauty"
 
 export default function CommercePage() {
   const [category, setCategory] = useState<(typeof categories)[number]>("All");
+  const [searchDraft, setSearchDraft] = useState("");
   const [query, setQuery] = useState("");
   const [cart, setCart] = useState<Cart>({});
   const [orderMessage, setOrderMessage] = useState("");
@@ -137,10 +138,7 @@ export default function CommercePage() {
 
         <div className="catalogPanel">
           <section className="productSpotlight">
-            <div className="videoMock commerceVideo">
-              <span />
-              <i />
-            </div>
+            <img className="mediaPreview commerceMedia" alt="Nova X1 product GIF demo" src="/media/phone-demo.gif" />
             <div>
               <p className="eyebrow">Product spotlight</p>
               <h2>Nova X1 5G explains the full buying flow.</h2>
@@ -158,22 +156,35 @@ export default function CommercePage() {
           </section>
 
           <div className="toolbar">
-            <input
-              aria-label="Search products"
-              placeholder="Search for mobiles, fashion, headphones"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
+            <form
+              className="searchForm"
+              onSubmit={(event) => {
+                event.preventDefault();
+                setQuery(searchDraft);
+              }}
+            >
+              <input
+                aria-label="Search products"
+                placeholder="Search for mobiles, tablets, fashion, headphones"
+                value={searchDraft}
+                onChange={(event) => setSearchDraft(event.target.value)}
+              />
+              <button className="searchButton" type="submit">Search</button>
+            </form>
             <span className="resultCount">{filteredProducts.length} products</span>
           </div>
 
           <div className="productGrid">
             {filteredProducts.map((product) => (
               <article className="productCard" key={product.id}>
-                <img alt={product.name} src={product.image} />
+                <Link href={`/commerce/${product.id}`}>
+                  <img alt={product.name} src={product.image} />
+                </Link>
                 <div className="productBody">
                   <span style={{ color: product.accent }}>{product.badge}</span>
-                  <h2>{product.name}</h2>
+                  <h2>
+                    <Link href={`/commerce/${product.id}`}>{product.name}</Link>
+                  </h2>
                   <p>{product.description}</p>
                   <div className="ratingRow">
                     <strong>{product.rating} stars</strong>
@@ -189,6 +200,9 @@ export default function CommercePage() {
                   <button className="button primary full" onClick={() => addToCart(product.id)} type="button">
                     Add to cart
                   </button>
+                  <Link className="button secondary full" href={`/commerce/${product.id}`}>
+                    View product
+                  </Link>
                 </div>
               </article>
             ))}
