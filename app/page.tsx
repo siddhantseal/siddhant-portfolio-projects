@@ -102,6 +102,7 @@ export default function Home() {
         <nav>
           <Link href="/">Home</Link>
           <Link href="/commerce">Shop</Link>
+          <Link href="/cart">Cart</Link>
           <Link href="/about">About</Link>
           <Link href="/blog">Blog</Link>
           <Link href="/orders">Orders</Link>
@@ -319,6 +320,7 @@ export default function Home() {
         </div>
         <div className="footerLinks">
           <Link href="/commerce">Shop</Link>
+          <Link href="/cart">Cart</Link>
           <Link href="/orders">Orders</Link>
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>

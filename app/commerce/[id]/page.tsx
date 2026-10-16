@@ -99,6 +99,7 @@ export default async function ProductDetailPage({ params, searchParams }: Produc
         <nav>
           <Link href="/">Home</Link>
           <Link href="/commerce">Shop</Link>
+          <Link href="/cart">Cart</Link>
           <Link href="/about">About</Link>
           <Link href="/blog">Blog</Link>
           <Link href="/orders">Orders</Link>
