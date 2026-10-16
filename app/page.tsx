@@ -57,7 +57,7 @@ const shoppingMissions = [
 ];
 
 const storeStats = [
-  { value: "232+", label: "listed products" },
+  { value: "300+", label: "listed products" },
   { value: "4.6", label: "average rating" },
   { value: "7-day", label: "replacement flow" },
   { value: "24/7", label: "support pages" }
