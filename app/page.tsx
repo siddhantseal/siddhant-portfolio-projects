@@ -6,7 +6,38 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { AnimatedCommerceShowcase } from "@/components/ui/animated-commerce-showcase";
 import { MotionEffects } from "@/components/ui/motion-effects";
 
-const categories = ["Mobiles", "Electronics", "Fashion", "Home", "Beauty", "Sports"];
+const categories = [
+  {
+    name: "Mobiles",
+    image: products.find((product) => product.category === "Mobiles")?.image ?? products[0].image,
+    label: "Phones, tablets, and accessories"
+  },
+  {
+    name: "Electronics",
+    image: products.find((product) => product.id === "studio-headphones")?.image ?? products[1].image,
+    label: "Audio, gadgets, and work tech"
+  },
+  {
+    name: "Fashion",
+    image: products.find((product) => product.category === "Fashion")?.image ?? products[2].image,
+    label: "Clothing, bags, and daily style"
+  },
+  {
+    name: "Home",
+    image: products.find((product) => product.category === "Home")?.image ?? products[3].image,
+    label: "Kitchen, decor, and comfort"
+  },
+  {
+    name: "Beauty",
+    image: products.find((product) => product.category === "Beauty")?.image ?? products[8].image,
+    label: "Skincare and grooming essentials"
+  },
+  {
+    name: "Sports",
+    image: products.find((product) => product.category === "Sports")?.image ?? products[6].image,
+    label: "Fitness, training, and outdoors"
+  }
+];
 const shoppingMissions = [
   {
     title: "Student tech setup",
@@ -110,8 +141,10 @@ export default function Home() {
         </div>
         <div className="categoryGrid">
           {categories.map((category) => (
-            <Link className="categoryTile" href={`/commerce?category=${category}`} key={category}>
-              <span>{category}</span>
+            <Link className="categoryTile" href={`/commerce?category=${category.name}`} key={category.name}>
+              <img alt={`${category.name} department`} src={category.image} />
+              <span>{category.name}</span>
+              <p>{category.label}</p>
               <small>Shop now</small>
             </Link>
           ))}
