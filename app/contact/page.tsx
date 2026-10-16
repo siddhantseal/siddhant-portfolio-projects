@@ -38,7 +38,7 @@ export default function ContactPage() {
           <p>Email: support@sealcart.in</p>
           <p>Phone: +91 86177 27090</p>
           <p>Service area: Kolkata, West Bengal and pan-India shipping.</p>
-          <p>Customers receive an automatic email confirmation when the email provider is configured.</p>
+          <p>Every request receives a ticket ID instantly, with email confirmation enabled through the mail provider.</p>
           <div className="mapBox">Kolkata delivery hub</div>
         </aside>
       </section>

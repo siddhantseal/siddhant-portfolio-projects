@@ -28,7 +28,7 @@ export function ContactForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)
       });
-      const data = (await response.json()) as { message?: string };
+      const data = (await response.json()) as { message?: string; ticketId?: string; emailDelivered?: boolean };
 
       if (!response.ok) {
         setState("error");
@@ -38,6 +38,26 @@ export function ContactForm() {
 
       setState("success");
       setStatusMessage(data.message ?? "Message sent. Please check your email inbox.");
+      if (data.ticketId) {
+        try {
+          const savedTickets = JSON.parse(window.localStorage.getItem("sealcart-support-tickets") ?? "[]");
+          window.localStorage.setItem(
+            "sealcart-support-tickets",
+            JSON.stringify([
+              {
+                id: data.ticketId,
+                email: form.email,
+                message: form.message,
+                emailDelivered: Boolean(data.emailDelivered),
+                createdAt: new Date().toISOString()
+              },
+              ...savedTickets
+            ].slice(0, 10))
+          );
+        } catch {
+          // Ticket history is a convenience for this browser.
+        }
+      }
       setForm({ name: "", email: "", message: "" });
     } catch {
       setState("error");

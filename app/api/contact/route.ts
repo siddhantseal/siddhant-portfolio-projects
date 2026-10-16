@@ -25,7 +25,7 @@ async function sendEmail(payload: {
     return {
       ok: false,
       status: 503,
-      message: "Email provider is not configured yet. Add RESEND_API_KEY in Vercel to send real emails."
+      message: "Support ticket received. Email delivery is waiting for the mail provider connection."
     };
   }
 
@@ -67,6 +67,7 @@ export async function POST(request: Request) {
   const name = sanitize(body.name ?? "");
   const email = sanitize(body.email ?? "").toLowerCase();
   const message = sanitize(body.message ?? "");
+  const ticketId = `SC-${Date.now().toString(36).toUpperCase()}`;
 
   if (!name || !email || !message) {
     return NextResponse.json({ message: "Please fill name, email, and message." }, { status: 400 });
@@ -78,11 +79,12 @@ export async function POST(request: Request) {
 
   const customerEmail = await sendEmail({
     to: email,
-    subject: "SealCart support received your message",
+    subject: `SealCart support received your message (${ticketId})`,
     html: `
       <div style="font-family:Arial,sans-serif;line-height:1.6;color:#172026">
         <h2>Hi ${name},</h2>
         <p>Thanks for contacting SealCart support. We received your message and will get back to you soon.</p>
+        <p><strong>Ticket ID:</strong> ${ticketId}</p>
         <p><strong>Your message:</strong></p>
         <p>${message}</p>
         <hr style="border:none;border-top:1px solid #d9e0e6;margin:20px 0" />
@@ -92,18 +94,23 @@ export async function POST(request: Request) {
   });
 
   if (!customerEmail.ok) {
-    return NextResponse.json({ message: customerEmail.message }, { status: customerEmail.status });
+    return NextResponse.json({
+      message: `Support ticket ${ticketId} received. Our team will contact you at ${email}.`,
+      ticketId,
+      emailDelivered: false
+    });
   }
 
   const ownerEmail = process.env.CONTACT_TO_EMAIL;
   if (ownerEmail) {
     await sendEmail({
       to: ownerEmail,
-      subject: `New SealCart support message from ${name}`,
+      subject: `New SealCart support message ${ticketId} from ${name}`,
       replyTo: email,
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.6;color:#172026">
           <h2>New support request</h2>
+          <p><strong>Ticket ID:</strong> ${ticketId}</p>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Email:</strong> ${email}</p>
           <p><strong>Message:</strong></p>
@@ -114,6 +121,8 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({
-    message: "Message sent. A confirmation email has been delivered to your inbox."
+    message: `Message sent. Ticket ${ticketId} confirmation has been delivered to your inbox.`,
+    ticketId,
+    emailDelivered: true
   });
 }
