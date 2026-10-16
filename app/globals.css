@@ -4439,11 +4439,28 @@ body.themeDark .gatewaySteps span.done i {
   .commerceMotionShowcase {
     gap: 14px;
     margin-top: 12px;
-    padding: 12px;
+    overflow: visible;
+    padding: 14px;
   }
 
   .motionShowcaseCopy h2 {
-    font-size: 21px;
+    font-size: 20px;
+    line-height: 1.08;
+  }
+
+  .motionShowcaseCopy p:not(.eyebrow) {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .motionPillRow {
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .motionPillRow span {
+    padding: 6px 8px;
+    font-size: 11px;
   }
 
   .motionActions {
@@ -4454,28 +4471,87 @@ body.themeDark .gatewaySteps span.done i {
   .motionProductStack {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 8px;
     min-height: auto;
   }
 
   .motionProductCard {
     position: relative;
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr);
+    gap: 8px 10px;
+    align-items: center;
     top: auto !important;
     right: auto !important;
     bottom: auto !important;
     left: auto !important;
     width: 100%;
+    min-height: 94px;
+    border-color: var(--line);
+    box-shadow: none;
     animation: none;
+    backdrop-filter: none;
     transform: none !important;
   }
 
+  .motionProductCard img {
+    grid-row: span 3;
+    width: 74px;
+    height: 74px;
+    aspect-ratio: auto;
+  }
+
+  .motionProductCard span,
+  .motionProductCard strong,
+  .motionProductCard small {
+    min-width: 0;
+  }
+
+  .motionProductCard strong {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .motionProductCard small {
+    font-size: 12px;
+  }
+
   .productMarquee {
-    padding: 8px;
+    max-width: 100%;
+    overflow: hidden;
+    border-color: rgba(15, 118, 110, 0.2);
+    padding: 10px;
+  }
+
+  .productMarquee > div {
+    gap: 8px;
+    animation-duration: 38s;
+    will-change: transform;
   }
 
   .marqueeProduct {
-    grid-template-columns: 40px minmax(120px, 1fr) auto;
-    min-width: 235px;
+    grid-template-columns: 42px minmax(0, 1fr);
+    min-width: 218px;
+    gap: 7px 9px;
+    padding: 8px;
+  }
+
+  .marqueeProduct img {
+    grid-row: span 2;
+    width: 42px;
+    height: 42px;
+  }
+
+  .marqueeProduct span {
+    min-width: 0;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
+  .marqueeProduct strong {
+    grid-column: 2;
+    font-size: 11px;
+    line-height: 1;
   }
 
   .sectionTitle h2 {
