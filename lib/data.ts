@@ -522,12 +522,8 @@ function realProductPhoto(category: Product["category"], name: string, index: nu
   return `https://tse${host}.mm.bing.net/th?${params.toString()}`;
 }
 
-function productGallery(product: Pick<Product, "image" | "category" | "name">, index: number) {
-  return [
-    product.image,
-    realProductPhoto(product.category, product.name, index + 100, "detail"),
-    realProductPhoto(product.category, product.name, index + 200, "alternate")
-  ];
+function productGallery(product: Pick<Product, "image">) {
+  return [product.image];
 }
 
 function generatedProducts(): Product[] {
@@ -558,7 +554,7 @@ function generatedProducts(): Product[] {
         accent: ["#0f766e", "#2563eb", "#be123c", "#b45309"][index % 4],
         badge: seed.badges[index % seed.badges.length],
         description: `${name} with ${seed.features.slice(0, 3).join(", ").toLowerCase()} and dependable SealCart delivery support.`,
-        gallery: productGallery({ image, category, name }, index),
+        gallery: productGallery({ image }),
         features: seed.features,
         specs: [
           { label: "Category", value: category },
@@ -573,9 +569,9 @@ function generatedProducts(): Product[] {
 }
 
 export const products: Product[] = [
-  ...featuredProducts.map((product, index) => ({
+  ...featuredProducts.map((product) => ({
     ...product,
-    gallery: productGallery(product, index)
+    gallery: productGallery(product)
   })),
   ...generatedProducts()
 ];

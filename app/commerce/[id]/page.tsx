@@ -33,6 +33,28 @@ const reviews = [
   }
 ];
 
+function productTokens(name: string) {
+  return new Set(
+    name
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((token) => token.length > 2 && !["pro", "max", "plus", "elite", "prime", "active", "daily", "luxe", "modern", "classic", "premium", "everyday", "weekend"].includes(token))
+  );
+}
+
+function similarityScore(currentName: string, candidateName: string) {
+  const currentTokens = productTokens(currentName);
+  const candidateTokens = productTokens(candidateName);
+  let score = 0;
+
+  currentTokens.forEach((token) => {
+    if (candidateTokens.has(token)) score += 4;
+    if (candidateName.toLowerCase().includes(token)) score += 1;
+  });
+
+  return score;
+}
+
 export function generateStaticParams() {
   return products.map((product) => ({ id: product.id }));
 }
@@ -48,6 +70,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const media = product.gallery?.length ? product.gallery : [product.image];
   const relatedProducts = products
     .filter((item) => item.category === product.category && item.id !== product.id)
+    .map((item) => ({
+      item,
+      score: similarityScore(product.name, item.name)
+    }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score || b.item.rating - a.item.rating)
+    .map(({ item }) => item)
     .slice(0, 4);
 
   return (
