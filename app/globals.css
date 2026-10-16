@@ -2339,6 +2339,243 @@ body.themeDark .authTabs button.active {
   margin-top: 18px;
 }
 
+.modernSignInShell {
+  position: relative;
+  display: grid;
+  min-height: 620px;
+  width: min(1180px, calc(100% - 32px));
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(45, 212, 191, 0.16), transparent 34%),
+    radial-gradient(circle at 80% 78%, rgba(37, 99, 235, 0.18), transparent 35%),
+    #111315;
+  margin: 0 auto 58px;
+  padding: 44px 18px;
+  color: white;
+}
+
+.modernSignInAmbient {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  filter: blur(26px);
+  opacity: 0.34;
+  pointer-events: none;
+}
+
+.modernSignInAmbient.one {
+  top: -80px;
+  left: 12%;
+  background: #2dd4bf;
+}
+
+.modernSignInAmbient.two {
+  right: 12%;
+  bottom: -90px;
+  background: #2563eb;
+}
+
+.modernSignInCard {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(390px, 100%);
+  gap: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04));
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.36);
+  padding: 28px;
+  backdrop-filter: blur(16px);
+}
+
+.modernLogo {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+  font-size: 22px;
+  font-weight: 950;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.modernEyebrow {
+  margin: 6px 0 0;
+  color: #5eead4;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.modernSignInCard h2 {
+  margin: 0;
+  color: white;
+  font-size: 24px;
+  line-height: 1.08;
+}
+
+.modernIntro {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.modernAuthTabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.modernAuthTabs button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.64);
+  font-weight: 900;
+}
+
+.modernAuthTabs button.active {
+  background: white;
+  color: #121212;
+}
+
+.modernFields {
+  display: grid;
+  gap: 10px;
+}
+
+.modernFields input {
+  min-height: 44px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 0 14px;
+  outline: 0;
+}
+
+.modernFields input::placeholder {
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.modernFields input:focus {
+  border-color: rgba(94, 234, 212, 0.58);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+}
+
+.modernError {
+  color: #fca5a5;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.modernPrimaryAction,
+.modernGoogleAction {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 999px;
+  color: white;
+  padding: 0 16px;
+  font-weight: 900;
+  transition: transform 180ms ease, filter 180ms ease, background 180ms ease;
+}
+
+.modernPrimaryAction {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.modernGoogleAction {
+  background: linear-gradient(180deg, #24272a, #1b1d20);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modernPrimaryAction:hover,
+.modernGoogleAction:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.modernGoogleAction span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  background: white;
+  color: #2563eb;
+  font-weight: 950;
+}
+
+.modernSwitch {
+  color: rgba(255, 255, 255, 0.52);
+  text-align: center;
+  font-size: 12px;
+}
+
+.modernSwitch button {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.86);
+  padding: 0;
+  font-weight: 900;
+  text-decoration: underline;
+}
+
+.modernSocialProof {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  margin-top: 28px;
+  text-align: center;
+}
+
+.modernSocialProof p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 13px;
+}
+
+.modernSocialProof strong {
+  color: white;
+}
+
+.modernAvatarStack {
+  display: flex;
+  justify-content: center;
+}
+
+.modernAvatarStack img {
+  width: 34px;
+  height: 34px;
+  border: 2px solid #111315;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.modernAvatarStack img + img {
+  margin-left: -9px;
+}
+
 .paymentOverlay {
   position: fixed;
   inset: 0;
@@ -2801,6 +3038,24 @@ body.themeDark .authTabs button.active {
     width: 96px;
     height: 96px;
     font-size: 34px;
+  }
+
+  .modernSignInShell {
+    min-height: auto;
+    padding: 18px 12px;
+  }
+
+  .modernSignInCard {
+    border-radius: 18px;
+    padding: 18px;
+  }
+
+  .modernSignInCard h2 {
+    font-size: 20px;
+  }
+
+  .modernSocialProof {
+    margin-top: 18px;
   }
 
   .paymentModal {

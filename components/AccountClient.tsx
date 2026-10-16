@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
+import { type ChangeEvent, useEffect, useMemo, useState } from "react";
 import { sampleOrders } from "@/components/OrdersClient";
+import { SignIn1 } from "@/components/ui/modern-stunning-sign-in";
 
 type Mode = "login" | "signup";
 
@@ -64,11 +65,6 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
   const [user, setUser] = useState<DemoUser | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [message, setMessage] = useState("");
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: ""
-  });
 
   useEffect(() => {
     try {
@@ -84,10 +80,6 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
   const allOrders = useMemo(() => [...orders, ...sampleOrders], [orders]);
   const recentOrders = allOrders.slice(0, 4);
 
-  function updateForm(field: keyof typeof form, value: string) {
-    setForm((current) => ({ ...current, [field]: value }));
-  }
-
   function signInWithGoogleDemo() {
     const nextUser = { ...defaultUser, signedInAt: new Date().toISOString() };
     saveSession(nextUser);
@@ -95,20 +87,20 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
     setMessage("Signed in with Google demo account.");
   }
 
-  function submitAuth(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const email = form.email.trim().toLowerCase();
-    const password = form.password.trim();
-    const name = form.name.trim();
+  function submitEmailAuth(details: { mode: Mode; name: string; email: string; password: string }) {
+    const email = details.email.trim().toLowerCase();
+    const password = details.password.trim();
+    const name = details.name.trim();
+    const selectedMode = details.mode;
 
-    if (!email || !password || (mode === "signup" && !name)) {
+    if (!email || !password || (selectedMode === "signup" && !name)) {
       setMessage("Please fill all required fields.");
       return;
     }
 
     const storedUsers = readStoredUsers();
 
-    if (mode === "signup") {
+    if (selectedMode === "signup") {
       const nextUser: StoredUser = {
         name,
         email,
@@ -256,55 +248,15 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
   }
 
   return (
-    <section className="authLayout">
-      <div className="authPanel authCopy">
-        <p className="eyebrow">SealCart account</p>
-        <h2>Sign in to manage profile, orders, and checkout history.</h2>
-        <p>
-          This is a live demo authentication flow. Google demo creates a safe browser session instantly,
-          while email signup lets interviewers test account creation without private credentials.
-        </p>
-        <div className="authHighlights">
-          <span>Profile picture upload</span>
-          <span>Logout and session state</span>
-          <span>Past orders dashboard</span>
-        </div>
-      </div>
-
-      <form className="authPanel authForm" onSubmit={submitAuth}>
-        <div className="authTabs" role="tablist" aria-label="Authentication mode">
-          <button className={mode === "login" ? "active" : ""} onClick={() => setMode("login")} type="button">
-            Login
-          </button>
-          <button className={mode === "signup" ? "active" : ""} onClick={() => setMode("signup")} type="button">
-            Sign up
-          </button>
-        </div>
-
-        <button className="googleButton" onClick={signInWithGoogleDemo} type="button">
-          <span>G</span>
-          Continue with Google Demo
-        </button>
-
-        {mode === "signup" ? (
-          <label>
-            Full name
-            <input value={form.name} onChange={(event) => updateForm("name", event.target.value)} placeholder="Your name" />
-          </label>
-        ) : null}
-        <label>
-          Email
-          <input value={form.email} onChange={(event) => updateForm("email", event.target.value)} placeholder="you@example.com" type="email" />
-        </label>
-        <label>
-          Password
-          <input value={form.password} onChange={(event) => updateForm("password", event.target.value)} placeholder="Demo password" type="password" />
-        </label>
-        <button className="button primary full" type="submit">
-          {mode === "signup" ? "Create account" : "Login"}
-        </button>
-        {message ? <p className="authMessage">{message}</p> : null}
-      </form>
-    </section>
+    <SignIn1
+      mode={mode}
+      message={message}
+      onEmailAuth={submitEmailAuth}
+      onGoogleDemo={signInWithGoogleDemo}
+      onModeChange={(nextMode) => {
+        setMode(nextMode);
+        setMessage("");
+      }}
+    />
   );
 }
