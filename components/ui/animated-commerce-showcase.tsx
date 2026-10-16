@@ -1,33 +1,33 @@
 import Link from "next/link";
 import { products } from "@/lib/data";
 
-const platformSignals = ["Realtime cart", "Google account", "Email support", "Order tracking", "Secure checkout"];
+const shoppingSignals = ["Fresh deals", "Fast delivery", "Easy returns", "Top brands", "Secure payments"];
 
 export function AnimatedCommerceShowcase() {
   const heroProducts = [products[0], products[1], products[2]];
   const marqueeProducts = products.slice(3, 11);
 
   return (
-    <section className="commerceMotionShowcase" aria-label="SealCart shopping experience">
+    <section className="commerceMotionShowcase" aria-label="SealCart featured deals">
       <div className="motionGrid" aria-hidden="true" />
       <div className="motionShowcaseCopy">
-        <p className="eyebrow">Modern shopping system</p>
-        <h2>Animated product discovery built for a real storefront feel.</h2>
+        <p className="eyebrow">Today&apos;s best picks</p>
+        <h2>Big savings across phones, fashion, home, beauty, and daily essentials.</h2>
         <p>
-          Fast browsing, synced carts, account flows, order history, and polished motion details
-          come together in one responsive commerce experience.
+          Discover handpicked deals, compare popular products, add everything to your cart,
+          and get quick delivery updates from your account.
         </p>
         <div className="motionPillRow">
-          {platformSignals.map((signal) => (
+          {shoppingSignals.map((signal) => (
             <span key={signal}>{signal}</span>
           ))}
         </div>
         <div className="motionActions">
           <Link className="button primary shimmerAction" href="/commerce">
-            Browse live catalog
+            Shop today&apos;s deals
           </Link>
           <Link className="button secondary glassAction" href="/account">
-            Open account
+            Track my orders
           </Link>
         </div>
       </div>
