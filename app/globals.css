@@ -1045,6 +1045,8 @@ html.themeDark .mapBox,
 html.themeDark .deliveryBox,
 html.themeDark .ordersSummary article,
 html.themeDark .orderCard,
+html.themeDark .cancelOrderBox,
+html.themeDark .cancelledOrderNote,
 html.themeDark .paymentModal,
 html.themeDark .authPanel,
 html.themeDark .accountPanel,
@@ -1075,6 +1077,10 @@ body:has(.themeSwitch input:checked) .ordersSummary article,
 body.themeDark .ordersSummary article,
 body:has(.themeSwitch input:checked) .orderCard,
 body.themeDark .orderCard,
+body:has(.themeSwitch input:checked) .cancelOrderBox,
+body.themeDark .cancelOrderBox,
+body:has(.themeSwitch input:checked) .cancelledOrderNote,
+body.themeDark .cancelledOrderNote,
 body:has(.themeSwitch input:checked) .paymentModal,
 body.themeDark .paymentModal,
 body:has(.themeSwitch input:checked) .authPanel,
@@ -1099,6 +1105,77 @@ body:has(.themeSwitch input:checked) .authTabs button.active,
 body.themeDark .authTabs button.active {
   background: #2dd4bf;
   color: #071012;
+}
+
+html.themeDark .cartHero,
+html.themeDark .cartPageLayout,
+body:has(.themeSwitch input:checked) main,
+body.themeDark main,
+body:has(.themeSwitch input:checked) .cartHero,
+body.themeDark .cartHero,
+body:has(.themeSwitch input:checked) .cartPageLayout,
+body.themeDark .cartPageLayout {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+html.themeDark .cartPageCard,
+html.themeDark .emptyCartState,
+html.themeDark .cartPageItem,
+html.themeDark .relatedCartItem,
+html.themeDark .gatewayHero,
+body:has(.themeSwitch input:checked) .cartPageCard,
+body.themeDark .cartPageCard,
+body:has(.themeSwitch input:checked) .emptyCartState,
+body.themeDark .emptyCartState,
+body:has(.themeSwitch input:checked) .cartPageItem,
+body.themeDark .cartPageItem,
+body:has(.themeSwitch input:checked) .relatedCartItem,
+body.themeDark .relatedCartItem,
+body:has(.themeSwitch input:checked) .gatewayHero,
+body.themeDark .gatewayHero {
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(15, 118, 110, 0.08)),
+    #101b20;
+  color: var(--ink);
+}
+
+html.themeDark .checkoutFormGrid input,
+html.themeDark .checkoutFormGrid textarea,
+html.themeDark .checkoutFormGrid select,
+html.themeDark .checkoutSelectLabel select,
+html.themeDark .paymentFields input,
+html.themeDark .paymentMethods button,
+html.themeDark .gatewaySteps i,
+html.themeDark .cancelOrderBox select,
+body:has(.themeSwitch input:checked) .checkoutFormGrid input,
+body.themeDark .checkoutFormGrid input,
+body:has(.themeSwitch input:checked) .checkoutFormGrid textarea,
+body.themeDark .checkoutFormGrid textarea,
+body:has(.themeSwitch input:checked) .checkoutFormGrid select,
+body.themeDark .checkoutFormGrid select,
+body:has(.themeSwitch input:checked) .checkoutSelectLabel select,
+body.themeDark .checkoutSelectLabel select,
+body:has(.themeSwitch input:checked) .paymentFields input,
+body.themeDark .paymentFields input,
+body:has(.themeSwitch input:checked) .paymentMethods button,
+body.themeDark .paymentMethods button,
+body:has(.themeSwitch input:checked) .gatewaySteps i,
+body.themeDark .gatewaySteps i,
+body:has(.themeSwitch input:checked) .cancelOrderBox select,
+body.themeDark .cancelOrderBox select {
+  background: #0c1114;
+  color: var(--ink);
+}
+
+html.themeDark .paymentMethods button.active,
+html.themeDark .gatewaySteps span.done i,
+body:has(.themeSwitch input:checked) .paymentMethods button.active,
+body.themeDark .paymentMethods button.active,
+body:has(.themeSwitch input:checked) .gatewaySteps span.done i,
+body.themeDark .gatewaySteps span.done i {
+  background: #2563eb;
+  color: white;
 }
 
 .storeHero,
@@ -2884,6 +2961,10 @@ body.themeDark .authTabs button.active {
   text-transform: uppercase;
 }
 
+.orderStatus:has(+ *) {
+  white-space: nowrap;
+}
+
 .orderProgress {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2904,6 +2985,12 @@ body.themeDark .authTabs button.active {
 .orderProgress span.done {
   background: rgba(15, 118, 110, 0.13);
   color: var(--green);
+}
+
+.orderProgress span.cancelled,
+.orderStatus.cancelled {
+  background: rgba(225, 29, 72, 0.12);
+  color: var(--rose) !important;
 }
 
 .orderItems {
@@ -2940,6 +3027,73 @@ body.themeDark .authTabs button.active {
 
 .orderItem small {
   color: var(--muted);
+}
+
+.orderFooterActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.orderFooterActions .button {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+.cancelOrderBox,
+.cancelledOrderNote {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(104, 114, 125, 0.08);
+  padding: 12px;
+}
+
+.cancelOrderBox label {
+  display: grid;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.cancelOrderBox select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink);
+  padding: 11px 12px;
+}
+
+.cancelOrderActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancelledOrderNote {
+  border-color: rgba(225, 29, 72, 0.24);
+  background: rgba(225, 29, 72, 0.08);
+}
+
+.cancelledOrderNote span,
+.cancelledOrderNote small,
+.orderActionMessage {
+  color: var(--muted);
+}
+
+.cancelledOrderNote small,
+.orderActionMessage {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.orderActionMessage {
+  margin: -14px 0 0;
 }
 
 .authLayout,
@@ -3445,6 +3599,23 @@ body.themeDark .authTabs button.active {
   padding: 18px;
 }
 
+.gatewayModal {
+  position: relative;
+  overflow: hidden;
+  animation: gatewayEnter 220ms ease both;
+}
+
+.gatewayModal::before {
+  position: absolute;
+  inset: -130px -90px auto auto;
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.24), transparent 64%);
+  content: "";
+  pointer-events: none;
+}
+
 .paymentTop,
 .paymentMerchant,
 .paymentActions {
@@ -3455,6 +3626,8 @@ body.themeDark .authTabs button.active {
 }
 
 .paymentTop {
+  position: relative;
+  z-index: 1;
   border-bottom: 1px solid var(--line);
   padding-bottom: 14px;
 }
@@ -3472,12 +3645,110 @@ body.themeDark .authTabs button.active {
 }
 
 .paymentTop button {
+  position: relative;
+  z-index: 1;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: transparent;
   color: var(--ink);
   padding: 8px 10px;
   font-weight: 900;
+}
+
+.gatewayHero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin-top: 16px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(15, 118, 110, 0.12)),
+    rgba(255, 255, 255, 0.78);
+  padding: 14px;
+}
+
+.gatewayOrb {
+  position: relative;
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  font-size: 28px;
+  font-weight: 900;
+  box-shadow: 0 16px 34px rgba(37, 99, 235, 0.32);
+}
+
+.gatewayOrb::before,
+.gatewayOrb::after {
+  position: absolute;
+  inset: -8px;
+  border: 1px solid rgba(37, 99, 235, 0.32);
+  border-radius: 50%;
+  content: "";
+  animation: paymentPulse 1.55s ease-out infinite;
+}
+
+.gatewayOrb::after {
+  animation-delay: 520ms;
+}
+
+.gatewayModal.success .gatewayOrb {
+  background: var(--green);
+  box-shadow: 0 16px 34px rgba(15, 118, 110, 0.34);
+}
+
+.gatewayHero small,
+.gatewaySteps {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.gatewayHero strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+}
+
+.gatewaySteps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.gatewaySteps span {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.gatewaySteps i {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: white;
+  color: var(--muted);
+  font-style: normal;
+  font-weight: 900;
+  transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.gatewaySteps span.done i {
+  border-color: rgba(37, 99, 235, 0.2);
+  background: #2563eb;
+  color: white;
+  transform: scale(1.04);
 }
 
 .paymentMerchant {
@@ -3544,6 +3815,9 @@ body.themeDark .authTabs button.active {
 }
 
 .paymentState {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   border-radius: 8px;
   margin-top: 14px;
   background: rgba(104, 114, 125, 0.12);
@@ -3552,8 +3826,21 @@ body.themeDark .authTabs button.active {
   font-weight: 900;
 }
 
+.stateDot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+}
+
 .paymentState.processing {
   color: var(--amber);
+}
+
+.paymentState.processing .stateDot {
+  animation: gatewayBlink 760ms ease-in-out infinite;
 }
 
 .paymentState.success {
@@ -3566,6 +3853,40 @@ body.themeDark .authTabs button.active {
 
 .paymentActions {
   margin-top: 14px;
+}
+
+@keyframes gatewayEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes paymentPulse {
+  0% {
+    opacity: 0.72;
+    transform: scale(0.82);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.38);
+  }
+}
+
+@keyframes gatewayBlink {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.82);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
 }
 
 @media (max-width: 1050px) {
@@ -3787,6 +4108,57 @@ body.themeDark .authTabs button.active {
     padding-top: 22px;
   }
 
+  .cartHero,
+  .cartPageLayout {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .cartHero {
+    gap: 14px;
+    padding: 20px 0 14px;
+  }
+
+  .cartHero .cartPageCard,
+  .cartPageCard,
+  .emptyCartState {
+    padding: 14px;
+  }
+
+  .cartPageLayout,
+  .cartMainColumn,
+  .checkoutColumn,
+  .cartItemList,
+  .checkoutFormGrid {
+    gap: 12px;
+  }
+
+  .checkoutFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .checkoutFormGrid .wide {
+    grid-column: auto;
+  }
+
+  .cartPageItem {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .cartPageItem h3,
+  .relatedCartItem h3 {
+    font-size: 15px;
+  }
+
+  .cartPageItem p {
+    font-size: 12px;
+  }
+
+  .cartPaymentMethods {
+    grid-template-columns: 1fr;
+  }
+
   .storeHeroCopy p:not(.eyebrow),
   .contentHero p {
     font-size: 13px;
@@ -3907,6 +4279,18 @@ body.themeDark .authTabs button.active {
     flex-direction: column;
   }
 
+  .orderFooterActions,
+  .cancelOrderActions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .orderFooterActions .button,
+  .cancelOrderActions .button {
+    width: 100%;
+  }
+
   .orderItem {
     grid-template-columns: 48px minmax(0, 1fr);
   }
@@ -3960,7 +4344,37 @@ body.themeDark .authTabs button.active {
   }
 
   .paymentModal {
+    width: min(100%, 420px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
     padding: 14px;
+  }
+
+  .paymentTop h2 {
+    font-size: 19px;
+  }
+
+  .gatewayHero {
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .gatewayOrb {
+    width: 48px;
+    height: 48px;
+    font-size: 23px;
+  }
+
+  .gatewaySteps {
+    gap: 5px;
+    font-size: 10px;
+  }
+
+  .gatewaySteps i {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
   }
 
   .paymentMethods,

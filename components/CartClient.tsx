@@ -26,6 +26,7 @@ const initialAddress: AddressForm = {
 
 const deliverySlots = ["Today 6 PM - 9 PM", "Tomorrow 9 AM - 12 PM", "Tomorrow 2 PM - 6 PM", "Weekend delivery"];
 const paymentTimes = ["Pay now", "Pay at delivery", "Pay after packing confirmation"];
+const gatewaySteps = ["Order", "Method", "Verify", "Done"];
 
 export function CartClient() {
   const syncSourceId = useRef(`sealcart-cart-${Math.random().toString(36).slice(2)}`);
@@ -396,13 +397,33 @@ export function CartClient() {
 
       {isPaymentOpen ? (
         <div className="paymentOverlay" role="dialog" aria-modal="true" aria-label="Payment confirmation">
-          <section className="paymentModal">
+          <section className={`paymentModal gatewayModal ${paymentStep}`}>
             <div className="paymentTop">
               <div>
-                <span>Secure checkout</span>
-                <h2>Confirm payment</h2>
+                <span>Razorpay-style secure checkout</span>
+                <h2>Complete payment</h2>
               </div>
               <button onClick={() => setIsPaymentOpen(false)} type="button">Close</button>
+            </div>
+            <div className="gatewayHero" aria-hidden="true">
+              <div className="gatewayOrb">
+                <span>{paymentStep === "success" ? "✓" : "₹"}</span>
+              </div>
+              <div>
+                <small>SealCart Pay</small>
+                <strong>Bank-grade payment confirmation</strong>
+              </div>
+            </div>
+            <div className="gatewaySteps" aria-label="Payment progress">
+              {gatewaySteps.map((step, index) => {
+                const currentIndex = paymentStep === "ready" ? 1 : paymentStep === "processing" ? 2 : paymentStep === "success" ? 3 : 1;
+                return (
+                  <span className={index <= currentIndex ? "done" : ""} key={step}>
+                    <i>{index < currentIndex || paymentStep === "success" ? "✓" : index + 1}</i>
+                    {step}
+                  </span>
+                );
+              })}
             </div>
             <div className="paymentMerchant">
               <div>
@@ -417,9 +438,10 @@ export function CartClient() {
               <span>{deliverySlot}</span>
             </div>
             <div className={`paymentState ${paymentStep}`}>
+              <span className="stateDot" />
               {paymentStep === "ready" ? "Ready to place your order." : null}
-              {paymentStep === "processing" ? "Confirming payment and creating order..." : null}
-              {paymentStep === "success" ? "Order placed successfully." : null}
+              {paymentStep === "processing" ? "Verifying payment, bank response, and order token..." : null}
+              {paymentStep === "success" ? "Payment verified. Order placed successfully." : null}
               {paymentStep === "failed" ? "Payment failed. No order was created." : null}
             </div>
             <div className="paymentActions">
