@@ -146,6 +146,60 @@ button:disabled {
   opacity: 0.45;
 }
 
+.toastPop {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 90;
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  width: min(360px, calc(100% - 28px));
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--ink);
+  padding: 13px 14px;
+  box-shadow: 0 20px 54px rgba(15, 23, 42, 0.24);
+  animation: toastLift 260ms ease both;
+  backdrop-filter: blur(16px);
+}
+
+.toastPop span {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--green);
+  box-shadow: 0 0 0 7px rgba(15, 118, 110, 0.12);
+}
+
+.toastPop.danger span {
+  background: var(--rose);
+  box-shadow: 0 0 0 7px rgba(190, 18, 60, 0.12);
+}
+
+.toastPop.info span {
+  background: var(--blue);
+  box-shadow: 0 0 0 7px rgba(37, 99, 235, 0.12);
+}
+
+.toastPop strong {
+  min-width: 0;
+  font-size: 13px;
+}
+
+@keyframes toastLift {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .shell {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
@@ -1101,6 +1155,137 @@ body.themeDark .assuranceCard,
 body:has(.themeSwitch input:checked) .footerColumns section,
 body.themeDark .footerColumns section {
   background: #101b20;
+}
+
+html.themeDark .productCard,
+html.themeDark .catalogPanel,
+html.themeDark .cartPanel,
+html.themeDark .filterPanel,
+html.themeDark .galleryPanel,
+html.themeDark .detailInfo,
+html.themeDark .productVideoDetail,
+html.themeDark .featureSpecGrid article,
+html.themeDark .thumbnailGrid button,
+html.themeDark .suggestionItem,
+html.themeDark .commerceMotionShowcase,
+html.themeDark .motionProductCard,
+html.themeDark .productMarquee,
+html.themeDark .marqueeProduct,
+html.themeDark .storeStats div,
+html.themeDark .miniChart,
+html.themeDark .deployStrip span,
+html.themeDark .taskCard,
+html.themeDark .orderMessage,
+html.themeDark .motionPillRow span,
+html.themeDark .contactForm,
+html.themeDark .contactCard,
+html.themeDark .articleCard,
+html.themeDark .blogPreview,
+body:has(.themeSwitch input:checked) .productCard,
+body.themeDark .productCard,
+body:has(.themeSwitch input:checked) .catalogPanel,
+body.themeDark .catalogPanel,
+body:has(.themeSwitch input:checked) .cartPanel,
+body.themeDark .cartPanel,
+body:has(.themeSwitch input:checked) .filterPanel,
+body.themeDark .filterPanel,
+body:has(.themeSwitch input:checked) .galleryPanel,
+body.themeDark .galleryPanel,
+body:has(.themeSwitch input:checked) .detailInfo,
+body.themeDark .detailInfo,
+body:has(.themeSwitch input:checked) .productVideoDetail,
+body.themeDark .productVideoDetail,
+body:has(.themeSwitch input:checked) .featureSpecGrid article,
+body.themeDark .featureSpecGrid article,
+body:has(.themeSwitch input:checked) .thumbnailGrid button,
+body.themeDark .thumbnailGrid button,
+body:has(.themeSwitch input:checked) .suggestionItem,
+body.themeDark .suggestionItem,
+body:has(.themeSwitch input:checked) .commerceMotionShowcase,
+body.themeDark .commerceMotionShowcase,
+body:has(.themeSwitch input:checked) .motionProductCard,
+body.themeDark .motionProductCard,
+body:has(.themeSwitch input:checked) .productMarquee,
+body.themeDark .productMarquee,
+body:has(.themeSwitch input:checked) .marqueeProduct,
+body.themeDark .marqueeProduct,
+body:has(.themeSwitch input:checked) .storeStats div,
+body.themeDark .storeStats div,
+body:has(.themeSwitch input:checked) .miniChart,
+body.themeDark .miniChart,
+body:has(.themeSwitch input:checked) .deployStrip span,
+body.themeDark .deployStrip span,
+body:has(.themeSwitch input:checked) .taskCard,
+body.themeDark .taskCard,
+body:has(.themeSwitch input:checked) .orderMessage,
+body.themeDark .orderMessage,
+body:has(.themeSwitch input:checked) .motionPillRow span,
+body.themeDark .motionPillRow span,
+body:has(.themeSwitch input:checked) .contactForm,
+body.themeDark .contactForm,
+body:has(.themeSwitch input:checked) .contactCard,
+body.themeDark .contactCard,
+body:has(.themeSwitch input:checked) .articleCard,
+body.themeDark .articleCard,
+body:has(.themeSwitch input:checked) .blogPreview,
+body.themeDark .blogPreview {
+  background: #101b20;
+  color: var(--ink);
+}
+
+html.themeDark .productCard,
+html.themeDark .catalogPanel,
+html.themeDark .cartPanel,
+html.themeDark .filterPanel,
+html.themeDark .galleryPanel,
+html.themeDark .detailInfo,
+html.themeDark .productVideoDetail,
+html.themeDark .featureSpecGrid article,
+body.themeDark .productCard,
+body.themeDark .catalogPanel,
+body.themeDark .cartPanel,
+body.themeDark .filterPanel,
+body.themeDark .galleryPanel,
+body.themeDark .detailInfo,
+body.themeDark .productVideoDetail,
+body.themeDark .featureSpecGrid article {
+  box-shadow: none;
+}
+
+html.themeDark .serviceNote,
+html.themeDark .resultCount,
+html.themeDark .deliveryBox,
+body:has(.themeSwitch input:checked) .serviceNote,
+body.themeDark .serviceNote,
+body:has(.themeSwitch input:checked) .resultCount,
+body.themeDark .resultCount,
+body:has(.themeSwitch input:checked) .deliveryBox,
+body.themeDark .deliveryBox {
+  background: rgba(15, 118, 110, 0.13);
+}
+
+html.themeDark .toolbar input,
+html.themeDark .searchForm input,
+html.themeDark .contactForm input,
+html.themeDark .contactForm textarea,
+body:has(.themeSwitch input:checked) .toolbar input,
+body.themeDark .toolbar input,
+body:has(.themeSwitch input:checked) .searchForm input,
+body.themeDark .searchForm input,
+body:has(.themeSwitch input:checked) .contactForm input,
+body.themeDark .contactForm input,
+body:has(.themeSwitch input:checked) .contactForm textarea,
+body.themeDark .contactForm textarea {
+  background: #0c1114;
+  color: var(--ink);
+}
+
+html.themeDark .toastPop,
+body:has(.themeSwitch input:checked) .toastPop,
+body.themeDark .toastPop {
+  border-color: #26343a;
+  background: rgba(17, 26, 31, 0.95);
+  color: var(--ink);
 }
 
 html.themeDark .authTabs button.active,
@@ -3993,12 +4178,37 @@ body.themeDark .gatewaySteps span.done i {
   .orderProgress {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .commerceMotionShowcase {
+    grid-template-columns: 1fr;
+  }
+
+  .motionProductStack {
+    min-height: 300px;
+  }
 }
 
 @media (pointer: coarse) {
   .motionCursor,
   .motionCursorDot {
     display: none !important;
+  }
+
+  .dealShowcase:hover,
+  .categoryTile:hover,
+  .quickShopCard:hover,
+  .experienceCard:hover,
+  .dealCard:hover,
+  .videoCard:hover,
+  .motionProductCard:hover {
+    transform: none !important;
+  }
+
+  .experienceCard:hover .experienceMedia img,
+  .zoomImageButton:hover img,
+  .thumbnailGrid button:hover img,
+  .categoryTile:hover img {
+    transform: none;
   }
 }
 
@@ -4024,12 +4234,41 @@ body.themeDark .gatewaySteps span.done i {
 }
 
 @media (max-width: 640px) {
+  html,
+  body {
+    width: 100%;
+    overflow-x: clip;
+  }
+
+  .storeHero,
+  .homeSection,
+  .storeBand,
+  .storeStats,
+  .commerceHero,
+  .shopLayout,
+  .contentHero,
+  .infoGrid,
+  .contactLayout,
+  .articleList,
+  .ordersLayout,
+  .storeFooter,
+  .commerceMotionShowcase,
+  .shopperLoveSection {
+    width: min(100% - 24px, 1180px);
+  }
+
   .storeHeader {
     position: sticky;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px 10px;
     min-height: 0;
     padding: 10px 12px;
+  }
+
+  .toastPop {
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: calc(100% - 24px);
   }
 
   .brand {
@@ -4041,7 +4280,7 @@ body.themeDark .gatewaySteps span.done i {
     grid-column: 1 / -1;
     flex-wrap: nowrap;
     justify-content: flex-start;
-    gap: 12px;
+    gap: 10px;
     overflow-x: auto;
     padding-bottom: 2px;
     font-size: 12px;
@@ -4070,12 +4309,14 @@ body.themeDark .gatewaySteps span.done i {
   }
 
   .headerActions {
-    grid-column: 2;
-    grid-row: 1;
-    gap: 6px;
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .themeSwitch {
+    justify-content: center;
     min-height: 32px;
     gap: 5px;
     padding: 0 8px;
@@ -4088,20 +4329,22 @@ body.themeDark .gatewaySteps span.done i {
   }
 
   .headerCart {
+    justify-content: center;
     min-height: 32px;
     padding: 0 10px;
     font-size: 12px;
   }
 
   .headerAuth {
+    justify-content: center;
     min-height: 32px;
-    max-width: 86px;
+    max-width: none;
     padding: 0 8px;
     font-size: 12px;
   }
 
   .headerAuth strong {
-    max-width: 44px;
+    max-width: 70px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -4109,6 +4352,18 @@ body.themeDark .gatewaySteps span.done i {
   .storeHero {
     min-height: auto;
     padding-top: 22px;
+  }
+
+  .checkoutPanel,
+  .statPanel,
+  .syncPanel {
+    padding: 14px;
+  }
+
+  .checkoutPanel strong,
+  .statPanel strong,
+  .syncPanel strong {
+    font-size: 24px;
   }
 
   .cartHero,
@@ -4181,6 +4436,48 @@ body.themeDark .gatewaySteps span.done i {
     font-size: 22px;
   }
 
+  .commerceMotionShowcase {
+    gap: 14px;
+    margin-top: 12px;
+    padding: 12px;
+  }
+
+  .motionShowcaseCopy h2 {
+    font-size: 21px;
+  }
+
+  .motionActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .motionProductStack {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    min-height: auto;
+  }
+
+  .motionProductCard {
+    position: relative;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 100%;
+    animation: none;
+    transform: none !important;
+  }
+
+  .productMarquee {
+    padding: 8px;
+  }
+
+  .marqueeProduct {
+    grid-template-columns: 40px minmax(120px, 1fr) auto;
+    min-width: 235px;
+  }
+
   .sectionTitle h2 {
     font-size: 20px;
   }
@@ -4198,6 +4495,53 @@ body.themeDark .gatewaySteps span.done i {
 
   .storeStats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .categoryGrid,
+  .dealGrid,
+  .blogPreviewGrid,
+  .testimonialGrid,
+  .brandAssurance,
+  .footerColumns {
+    grid-template-columns: 1fr;
+  }
+
+  .categoryTile {
+    min-height: 170px;
+  }
+
+  .productGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .productCard img,
+  .dealCard img,
+  .mediaGallery img {
+    aspect-ratio: 1 / 1;
+  }
+
+  .productBody {
+    padding: 12px;
+  }
+
+  .productBody h2 {
+    font-size: 18px;
+  }
+
+  .productMeta,
+  .ratingRow,
+  .cartLine {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .suggestionItem {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .suggestionItem strong {
+    grid-column: 2;
   }
 
   .storeStats strong {

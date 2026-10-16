@@ -46,7 +46,7 @@ export function ProductZoomGallery({ images, productName }: ProductZoomGalleryPr
   return (
     <>
       <button className="zoomImageButton" onClick={() => setIsZoomOpen(true)} type="button">
-        <img className="mainProductImage" alt={productName} src={activeImage} />
+        <img className="mainProductImage" alt={productName} src={activeImage} fetchPriority="high" decoding="async" />
         <span>Click to zoom</span>
       </button>
       <div className="thumbnailGrid" aria-label={`${productName} product views`}>
@@ -58,7 +58,7 @@ export function ProductZoomGallery({ images, productName }: ProductZoomGalleryPr
             onClick={() => setActiveIndex(index)}
             type="button"
           >
-            <img alt={`${productName} view ${index + 1}`} src={image} />
+            <img alt={`${productName} view ${index + 1}`} src={image} loading="lazy" decoding="async" />
           </button>
         ))}
       </div>
@@ -71,7 +71,7 @@ export function ProductZoomGallery({ images, productName }: ProductZoomGalleryPr
           <button className="zoomNav previous" onClick={goToPrevious} type="button" aria-label="Previous image">
             Prev
           </button>
-          <img alt={`${productName} zoomed view`} src={activeImage} />
+          <img alt={`${productName} zoomed view`} src={activeImage} decoding="async" />
           <button className="zoomNav next" onClick={goToNext} type="button" aria-label="Next image">
             Next
           </button>

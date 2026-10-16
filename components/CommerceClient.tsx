@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { products, type Product } from "@/lib/data";
 import { AuthStatus } from "@/components/AuthStatus";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useToast } from "@/components/Toast";
 
 type Cart = Record<string, number>;
 
@@ -17,6 +19,7 @@ type CommerceClientProps = {
 };
 
 export function CommerceClient({ initialCategory, initialQuery }: CommerceClientProps) {
+  const router = useRouter();
   const syncSourceId = useRef(`sealcart-${Math.random().toString(36).slice(2)}`);
   const cartChannel = useRef<BroadcastChannel | null>(null);
   const hasLoadedCart = useRef(false);
@@ -31,6 +34,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [paymentStep, setPaymentStep] = useState<"ready" | "processing" | "success" | "failed">("ready");
+  const { showToast, ToastViewport } = useToast();
 
   useEffect(() => {
     try {
@@ -121,14 +125,26 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + delivery + tax;
 
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      filteredProducts.slice(0, 10).forEach((product) => {
+        router.prefetch(productHref(product.id));
+      });
+    }, 450);
+
+    return () => window.clearTimeout(timeout);
+  }, [filteredProducts, category, query, router]);
+
   function addToCart(id: string) {
     setCart((current) => ({ ...current, [id]: (current[id] ?? 0) + 1 }));
     const product = products.find((item) => item.id === id);
+    showToast(`${product?.name ?? "Item"} added to cart.`);
     setLiveEvents((current) => [`Added ${product?.name ?? "product"} to the live cart.`, ...current].slice(0, 4));
     setOrderMessage("");
   }
 
   function updateQuantity(id: string, delta: number) {
+    const product = products.find((item) => item.id === id);
     setCart((current) => {
       const nextQuantity = (current[id] ?? 0) + delta;
       const next = { ...current };
@@ -139,6 +155,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
       }
       return next;
     });
+    showToast(delta < 0 ? `${product?.name ?? "Item"} removed from cart.` : `${product?.name ?? "Item"} added to cart.`, delta < 0 ? "danger" : "success");
   }
 
   async function checkout() {
@@ -202,14 +219,23 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
     setOrderMessage("Payment failed. Try again or choose another method.");
   }
 
+  function updateShopUrl(nextCategory: (typeof categories)[number], nextQuery: string) {
+    const params = new URLSearchParams();
+    if (nextCategory !== "All") params.set("category", nextCategory);
+    if (nextQuery.trim()) params.set("q", nextQuery.trim());
+    const nextUrl = params.toString() ? `/commerce?${params.toString()}` : "/commerce";
+    window.history.replaceState(null, "", nextUrl);
+  }
+
+  function selectCategory(nextCategory: (typeof categories)[number]) {
+    setCategory(nextCategory);
+    updateShopUrl(nextCategory, query);
+  }
+
   function submitSearch() {
     const nextQuery = searchDraft.trim();
     setQuery(nextQuery);
-    const params = new URLSearchParams();
-    if (category !== "All") params.set("category", category);
-    if (nextQuery) params.set("q", nextQuery);
-    const nextUrl = params.toString() ? `/commerce?${params.toString()}` : "/commerce";
-    window.history.replaceState(null, "", nextUrl);
+    updateShopUrl(category, nextQuery);
   }
 
   function productHref(id: string) {
@@ -218,6 +244,10 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
     if (query.trim()) params.set("q", query.trim());
     const suffix = params.toString();
     return suffix ? `/commerce/${id}?${suffix}` : `/commerce/${id}`;
+  }
+
+  function prefetchProduct(id: string) {
+    router.prefetch(productHref(id));
   }
 
   return (
@@ -265,7 +295,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
               <button
                 className={category === item ? "active" : ""}
                 key={item}
-                onClick={() => setCategory(item)}
+                onClick={() => selectCategory(item)}
                 type="button"
               >
                 {item}
@@ -280,7 +310,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
 
         <div className="catalogPanel">
           <section className="productSpotlight">
-            <img className="mediaPreview commerceMedia" alt="Nova X1 product media" src="/media/phone-demo.gif" />
+            <img className="mediaPreview commerceMedia" alt="Nova X1 product media" src="/media/phone-demo.gif" loading="lazy" decoding="async" />
             <div>
               <p className="eyebrow">Product spotlight</p>
               <h2>Nova X1 5G explains the full buying flow.</h2>
@@ -319,13 +349,13 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           <div className="productGrid">
             {filteredProducts.map((product) => (
               <article className="productCard" key={product.id}>
-                <Link href={productHref(product.id)}>
-                  <img alt={product.name} src={product.image} />
+                <Link href={productHref(product.id)} onMouseEnter={() => prefetchProduct(product.id)} onTouchStart={() => prefetchProduct(product.id)}>
+                  <img alt={product.name} src={product.image} loading="lazy" decoding="async" />
                 </Link>
                 <div className="productBody">
                   <span style={{ color: product.accent }}>{product.badge}</span>
                   <h2>
-                    <Link href={productHref(product.id)}>{product.name}</Link>
+                    <Link href={productHref(product.id)} onMouseEnter={() => prefetchProduct(product.id)} onTouchStart={() => prefetchProduct(product.id)}>{product.name}</Link>
                   </h2>
                   <p>{product.description}</p>
                   <div className="ratingRow">
@@ -342,7 +372,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
                   <button className="button primary full" onClick={() => addToCart(product.id)} type="button">
                     Add to cart
                   </button>
-                  <Link className="button secondary full" href={productHref(product.id)}>
+                  <Link className="button secondary full" href={productHref(product.id)} onMouseEnter={() => prefetchProduct(product.id)} onTouchStart={() => prefetchProduct(product.id)}>
                     View product
                   </Link>
                 </div>
@@ -397,7 +427,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
             <h3>Frequently bought together</h3>
             {suggestedProducts.map((product) => (
               <button className="suggestionItem" key={product.id} onClick={() => addToCart(product.id)} type="button">
-                <img alt={product.name} src={product.image} />
+                <img alt={product.name} src={product.image} loading="lazy" decoding="async" />
                 <span>{product.name}</span>
                 <strong>Rs {product.price.toLocaleString("en-IN")}</strong>
               </button>
@@ -481,6 +511,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           </section>
         </div>
       ) : null}
+      <ToastViewport />
     </main>
   );
 }

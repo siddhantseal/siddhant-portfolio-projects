@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ChangeEvent, useEffect, useMemo, useState } from "react";
 import { sampleOrders } from "@/components/OrdersClient";
+import { useToast } from "@/components/Toast";
 import { SignIn1 } from "@/components/ui/modern-stunning-sign-in";
 
 type Mode = "login" | "signup";
@@ -58,6 +59,7 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
   const [user, setUser] = useState<AccountUser | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [message, setMessage] = useState("");
+  const { showToast, ToastViewport } = useToast();
 
   useEffect(() => {
     async function loadAccount() {
@@ -67,6 +69,10 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
         setMessage("Real Google login needs GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel.");
       } else if (authStatus === "google-failed") {
         setMessage("Google sign-in could not be completed. Please try again.");
+      } else if (authStatus === "google-success") {
+        setMessage("Login successful. Welcome to the SealCart family.");
+        showToast("Login successful. Welcome to the SealCart family.");
+        window.history.replaceState(null, "", "/account");
       }
 
       const rawUser = window.localStorage.getItem("sealcart-user");
@@ -126,7 +132,8 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
       const { password: _password, ...sessionUser } = nextUser;
       saveSession(sessionUser);
       setUser(sessionUser);
-      setMessage("Account created and signed in.");
+      setMessage("Login successful. Welcome to the SealCart family.");
+      showToast("Account created. Welcome to the SealCart family.");
       return;
     }
 
@@ -145,7 +152,8 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
     };
     saveSession(sessionUser);
     setUser(sessionUser);
-    setMessage("Welcome back.");
+    setMessage("Login successful. Welcome to the SealCart family.");
+    showToast("Login successful. Welcome to the SealCart family.");
   }
 
   function updateProfileName(value: string) {
@@ -173,7 +181,8 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
     window.localStorage.removeItem("sealcart-user");
     fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
     setUser(null);
-    setMessage("Signed out.");
+    setMessage("Logged out successfully.");
+    showToast("Logged out successfully.", "info");
     broadcastAuthChange();
   }
 
@@ -257,20 +266,24 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
         </div>
 
         {message ? <p className="authMessage">{message}</p> : null}
+        <ToastViewport />
       </section>
     );
   }
 
   return (
-    <SignIn1
-      mode={mode}
-      message={message}
-      onEmailAuth={submitEmailAuth}
-      onGoogle={startGoogleSignIn}
-      onModeChange={(nextMode) => {
-        setMode(nextMode);
-        setMessage("");
-      }}
-    />
+    <>
+      <SignIn1
+        mode={mode}
+        message={message}
+        onEmailAuth={submitEmailAuth}
+        onGoogle={startGoogleSignIn}
+        onModeChange={(nextMode) => {
+          setMode(nextMode);
+          setMessage("");
+        }}
+      />
+      <ToastViewport />
+    </>
   );
 }

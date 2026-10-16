@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { products, type Product } from "@/lib/data";
+import { useToast } from "@/components/Toast";
 
 type Cart = Record<string, number>;
 
@@ -42,6 +43,7 @@ export function CartClient() {
   const [paymentStep, setPaymentStep] = useState<"ready" | "processing" | "success" | "failed">("ready");
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const { showToast, ToastViewport } = useToast();
 
   useEffect(() => {
     try {
@@ -123,6 +125,7 @@ export function CartClient() {
   }, [cart, cartLines]);
 
   function updateQuantity(id: string, delta: number) {
+    const product = products.find((item) => item.id === id);
     setCart((current) => {
       const nextQuantity = (current[id] ?? 0) + delta;
       const next = { ...current };
@@ -133,6 +136,7 @@ export function CartClient() {
       }
       return next;
     });
+    showToast(delta < 0 ? `${product?.name ?? "Item"} removed from cart.` : `${product?.name ?? "Item"} added to cart.`, delta < 0 ? "danger" : "success");
     setStatusMessage("");
   }
 
@@ -146,6 +150,8 @@ export function CartClient() {
 
   function addRelatedProduct(id: string) {
     setCart((current) => ({ ...current, [id]: (current[id] ?? 0) + 1 }));
+    const product = products.find((item) => item.id === id);
+    showToast(`${product?.name ?? "Suggested item"} added to cart.`);
     setStatusMessage("Added suggested item to your cart.");
   }
 
@@ -455,6 +461,7 @@ export function CartClient() {
           </section>
         </div>
       ) : null}
+      <ToastViewport />
     </>
   );
 }

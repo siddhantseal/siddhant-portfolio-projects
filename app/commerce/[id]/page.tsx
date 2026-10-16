@@ -150,14 +150,14 @@ export default async function ProductDetailPage({ params, searchParams }: Produc
         </div>
         <div className="mediaGallery">
           {media.map((image, index) => (
-            <img id={`media-${index + 1}`} alt={`${product.name} gallery ${index + 1}`} key={image} src={image} />
+            <img id={`media-${index + 1}`} alt={`${product.name} gallery ${index + 1}`} key={image} src={image} loading="lazy" decoding="async" />
           ))}
         </div>
       </section>
 
       <section className="productMediaSection">
         <div className="productVideoDetail">
-          <img className="mediaPreview detailMedia" alt={`${product.name} product media`} src={mediaByCategory[product.category]} />
+          <img className="mediaPreview detailMedia" alt={`${product.name} product media`} src={mediaByCategory[product.category]} loading="lazy" decoding="async" />
           <div>
             <p className="eyebrow">Product GIF video</p>
             <h2>Real product-media walkthrough</h2>
@@ -224,7 +224,7 @@ export default async function ProductDetailPage({ params, searchParams }: Produc
         <div className="dealGrid">
           {relatedProducts.map((item) => (
             <Link className="dealCard" href={`/commerce/${item.id}?category=${encodeURIComponent(product.category)}`} key={item.id}>
-              <img alt={item.name} src={item.image} />
+              <img alt={item.name} src={item.image} loading="lazy" decoding="async" />
               <span>{item.badge}</span>
               <h3>{item.name}</h3>
               <strong>Rs {item.price.toLocaleString("en-IN")}</strong>

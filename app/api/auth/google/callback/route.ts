@@ -65,7 +65,7 @@ export async function GET(request: Request) {
     signedInAt: new Date().toISOString()
   };
 
-  const response = NextResponse.redirect(new URL("/account", request.url));
+  const response = NextResponse.redirect(new URL("/account?auth=google-success", request.url));
   response.cookies.set("sealcart-auth", encodeSession(user), {
     httpOnly: true,
     maxAge: 60 * 60 * 24 * 7,
