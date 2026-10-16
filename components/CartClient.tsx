@@ -32,6 +32,7 @@ export function CartClient() {
   const cartChannel = useRef<BroadcastChannel | null>(null);
   const hasLoadedCart = useRef(false);
   const skipNextBroadcast = useRef(false);
+  const checkoutDetailsRef = useRef<HTMLElement | null>(null);
   const [cart, setCart] = useState<Cart>({});
   const [address, setAddress] = useState<AddressForm>(initialAddress);
   const [deliverySlot, setDeliverySlot] = useState(deliverySlots[1]);
@@ -136,6 +137,10 @@ export function CartClient() {
 
   function updateAddress(field: keyof AddressForm, value: string) {
     setAddress((current) => ({ ...current, [field]: value }));
+    if (paymentStep === "failed") {
+      setPaymentStep("ready");
+      setStatusMessage("");
+    }
   }
 
   function addRelatedProduct(id: string) {
@@ -156,7 +161,13 @@ export function CartClient() {
   function openPayment() {
     const validationMessage = validateCheckout();
     if (validationMessage) {
+      setPaymentStep("failed");
       setStatusMessage(validationMessage);
+      checkoutDetailsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const emptyField = checkoutDetailsRef.current?.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+        "input:placeholder-shown, textarea:placeholder-shown"
+      );
+      emptyField?.focus();
       return;
     }
     setPaymentStep("ready");
@@ -316,33 +327,33 @@ export function CartClient() {
           </section>
         </div>
 
-        <aside className="checkoutColumn">
+        <aside className="checkoutColumn" ref={checkoutDetailsRef}>
           <section className="cartPageCard">
             <h2>Delivery address</h2>
             <div className="checkoutFormGrid">
               <label>
                 Full name
-                <input value={address.fullName} onChange={(event) => updateAddress("fullName", event.target.value)} />
+                <input required placeholder="Full name" value={address.fullName} onChange={(event) => updateAddress("fullName", event.target.value)} />
               </label>
               <label>
                 Phone number
-                <input value={address.phone} onChange={(event) => updateAddress("phone", event.target.value)} />
+                <input required placeholder="10-digit mobile number" value={address.phone} onChange={(event) => updateAddress("phone", event.target.value)} />
               </label>
               <label className="wide">
                 Address
-                <textarea rows={3} value={address.line1} onChange={(event) => updateAddress("line1", event.target.value)} />
+                <textarea required placeholder="House number, street, area" rows={3} value={address.line1} onChange={(event) => updateAddress("line1", event.target.value)} />
               </label>
               <label>
                 City
-                <input value={address.city} onChange={(event) => updateAddress("city", event.target.value)} />
+                <input required placeholder="City" value={address.city} onChange={(event) => updateAddress("city", event.target.value)} />
               </label>
               <label>
                 State
-                <input value={address.state} onChange={(event) => updateAddress("state", event.target.value)} />
+                <input required placeholder="State" value={address.state} onChange={(event) => updateAddress("state", event.target.value)} />
               </label>
               <label>
                 Pincode
-                <input value={address.pincode} onChange={(event) => updateAddress("pincode", event.target.value)} />
+                <input required placeholder="6-digit pincode" value={address.pincode} onChange={(event) => updateAddress("pincode", event.target.value)} />
               </label>
               <label>
                 Delivery slot
