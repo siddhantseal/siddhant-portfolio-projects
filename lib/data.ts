@@ -505,22 +505,28 @@ function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function productArtImage(category: Product["category"], name: string, index: number, view = "front") {
+function realProductPhoto(category: Product["category"], name: string, index: number, view = "front") {
+  const searchTerms = `${name} ${category} ${view === "front" ? "product photo" : `${view} product image`}`;
+  const host = (index % 4) + 1;
   const params = new URLSearchParams({
-    category,
-    name,
-    view,
-    tone: String(index)
+    q: searchTerms,
+    w: "900",
+    h: "900",
+    c: "7",
+    rs: "1",
+    p: "0",
+    o: "5",
+    pid: "1.7"
   });
 
-  return `/api/product-art?${params.toString()}`;
+  return `https://tse${host}.mm.bing.net/th?${params.toString()}`;
 }
 
 function productGallery(product: Pick<Product, "image" | "category" | "name">, index: number) {
   return [
     product.image,
-    productArtImage(product.category, product.name, index + 100, "detail"),
-    productArtImage(product.category, product.name, index + 200, "box")
+    realProductPhoto(product.category, product.name, index + 100, "detail"),
+    realProductPhoto(product.category, product.name, index + 200, "alternate")
   ];
 }
 
@@ -537,7 +543,7 @@ function generatedProducts(): Product[] {
       const name = `${variant} ${baseName}`;
       const price = seed.basePrice + (index % 12) * seed.priceStep + Math.floor(index / 12) * 500;
       const mrp = Math.round(price * (1.35 + (index % 5) * 0.08));
-      const image = productArtImage(category, name, index);
+      const image = realProductPhoto(category, name, index);
 
       result.push({
         id: `${slugify(category)}-${slugify(name)}`,
