@@ -2429,6 +2429,17 @@ body.themeDark .gatewaySteps span.done i {
   }
 }
 
+@keyframes departmentRefresh {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .storeFooter {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
@@ -2550,6 +2561,10 @@ body.themeDark .gatewaySteps span.done i {
 .marketLayout {
   grid-template-columns: 220px minmax(0, 1fr) 340px;
   margin-bottom: 56px;
+}
+
+.departmentResults {
+  animation: departmentRefresh 260ms ease both;
 }
 
 .filterPanel,
@@ -4227,6 +4242,10 @@ body.themeDark .gatewaySteps span.done i {
     transform: none;
   }
 
+  .departmentResults {
+    animation: none;
+  }
+
   .motionCursor,
   .motionCursorDot {
     display: none !important;
@@ -4438,8 +4457,32 @@ body.themeDark .gatewaySteps span.done i {
   }
 
   .storeHeroCopy h1,
-  .contentHero h1 {
+  .contentHero h1,
+  .commerceHero h1,
+  .shopHero h1,
+  .cartHero h1,
+  .detailInfo h1,
+  h1 {
     font-size: 22px;
+    line-height: 1.08;
+  }
+
+  .commerceHero p,
+  .shopHero p,
+  .cartHero p,
+  .detailInfo p,
+  .productSpotlight p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .productSpotlight {
+    gap: 12px;
+  }
+
+  .productSpotlight h2 {
+    font-size: 20px;
+    line-height: 1.1;
   }
 
   .commerceMotionShowcase {

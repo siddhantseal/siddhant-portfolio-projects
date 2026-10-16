@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { products, type Product } from "@/lib/data";
 import { AuthStatus } from "@/components/AuthStatus";
-import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/components/Toast";
 
@@ -116,8 +115,11 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
     .filter((line): line is { product: Product; quantity: number } => Boolean(line.product));
 
   const itemCount = cartLines.reduce((sum, line) => sum + line.quantity, 0);
-  const suggestedProducts = products
+  const departmentProducts = category === "All" ? products : products.filter((product) => product.category === category);
+  const spotlightProduct = filteredProducts[0] ?? departmentProducts[0] ?? products[0];
+  const suggestedProducts = departmentProducts
     .filter((product) => !cartLines.some((line) => line.product.id === product.id))
+    .filter((product) => product.id !== spotlightProduct.id)
     .slice(0, 3);
   const subtotal = cartLines.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
   const savings = cartLines.reduce((sum, line) => sum + (line.product.mrp - line.product.price) * line.quantity, 0);
@@ -264,7 +266,6 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           <Link href="/account">Account</Link>
           <Link href="/contact">Contact</Link>
         </nav>
-        <HeaderSearch />
         <div className="headerActions">
           <AuthStatus />
           <ThemeToggle />
@@ -309,21 +310,20 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           </div>
         </aside>
 
-        <div className="catalogPanel">
+        <div className="catalogPanel departmentResults" key={`${category}-${query}`}>
           <section className="productSpotlight">
-            <img className="mediaPreview commerceMedia" alt="Nova X1 product media" src="/media/phone-demo.gif" loading="lazy" decoding="async" />
+            <img className="mediaPreview commerceMedia" alt={`${spotlightProduct.name} product media`} src={spotlightProduct.image} loading="lazy" decoding="async" />
             <div>
-              <p className="eyebrow">Product spotlight</p>
-              <h2>Nova X1 5G explains the full buying flow.</h2>
+              <p className="eyebrow">{category === "All" ? "Product spotlight" : `${category} spotlight`}</p>
+              <h2>{spotlightProduct.name}</h2>
               <p>
-                Compare discount, reviews, stock, delivery, cart totals, GST, savings, and order confirmation
-                before checkout.
+                Explore matching products with real photos, reviews, stock, delivery, cart totals, GST, savings,
+                and order confirmation before checkout.
               </p>
               <div className="featurePills">
-                <span>AMOLED display</span>
-                <span>Fast charging</span>
-                <span>128 GB storage</span>
-                <span>Easy replacement</span>
+                {(spotlightProduct.features ?? ["Trusted quality", "Great value", "Fast delivery", "Easy replacement"]).slice(0, 4).map((feature) => (
+                  <span key={feature}>{feature}</span>
+                ))}
               </div>
             </div>
           </section>
@@ -425,7 +425,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           ) : null}
 
           <div className="suggestionBox">
-            <h3>Frequently bought together</h3>
+            <h3>{category === "All" ? "Frequently bought together" : `More from ${category}`}</h3>
             {suggestedProducts.map((product) => (
               <button className="suggestionItem" key={product.id} onClick={() => addToCart(product.id)} type="button">
                 <img alt={product.name} src={product.image} loading="lazy" decoding="async" />
