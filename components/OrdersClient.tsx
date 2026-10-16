@@ -20,7 +20,7 @@ type Order = {
   items: OrderItem[];
 };
 
-const sampleOrders: Order[] = [
+export const sampleOrders: Order[] = [
   {
     id: "ORD-DEMO-4812",
     placedAt: "2026-10-14T10:30:00.000Z",

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { blogPosts, products } from "@/lib/data";
+import { AuthStatus } from "@/components/AuthStatus";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -47,6 +48,7 @@ export default function Home() {
         </nav>
         <HeaderSearch />
         <div className="headerActions">
+          <AuthStatus />
           <ThemeToggle />
           <Link className="headerCart" href="/commerce">Cart</Link>
         </div>

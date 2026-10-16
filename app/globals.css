@@ -590,6 +590,42 @@ p {
   font-weight: 900;
 }
 
+.headerAuth {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: white;
+  color: var(--ink);
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.headerAuth img,
+.headerAuth span {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+
+.headerAuth img {
+  object-fit: cover;
+}
+
+.headerAuth span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: white;
+  font-size: 11px;
+}
+
 .headerSearch {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -682,6 +718,7 @@ body.themeDark .storeHeader {
 }
 
 html.themeDark .themeSwitch,
+html.themeDark .headerAuth,
 html.themeDark .headerSearch,
 html.themeDark .button.secondary,
 html.themeDark .segments button,
@@ -692,10 +729,16 @@ html.themeDark .taskControls input,
 html.themeDark .taskControls select,
 html.themeDark .contactForm input,
 html.themeDark .contactForm textarea,
+html.themeDark .authForm input,
+html.themeDark .profilePanel input,
+html.themeDark .googleButton,
+html.themeDark .authTabs,
 html.themeDark .headerSearch input,
 html.themeDark .searchButton,
 body:has(.themeSwitch input:checked) .themeSwitch,
 body.themeDark .themeSwitch,
+body:has(.themeSwitch input:checked) .headerAuth,
+body.themeDark .headerAuth,
 body:has(.themeSwitch input:checked) .headerSearch,
 body.themeDark .headerSearch,
 body:has(.themeSwitch input:checked) .button.secondary,
@@ -716,6 +759,14 @@ body:has(.themeSwitch input:checked) .contactForm input,
 body.themeDark .contactForm input,
 body:has(.themeSwitch input:checked) .contactForm textarea,
 body.themeDark .contactForm textarea,
+body:has(.themeSwitch input:checked) .authForm input,
+body.themeDark .authForm input,
+body:has(.themeSwitch input:checked) .profilePanel input,
+body.themeDark .profilePanel input,
+body:has(.themeSwitch input:checked) .googleButton,
+body.themeDark .googleButton,
+body:has(.themeSwitch input:checked) .authTabs,
+body.themeDark .authTabs,
 body:has(.themeSwitch input:checked) .headerSearch input,
 body.themeDark .headerSearch input,
 body:has(.themeSwitch input:checked) .searchButton,
@@ -746,6 +797,10 @@ html.themeDark .mapBox,
 html.themeDark .deliveryBox,
 html.themeDark .ordersSummary article,
 html.themeDark .orderCard,
+html.themeDark .paymentModal,
+html.themeDark .authPanel,
+html.themeDark .accountPanel,
+html.themeDark .accountStats article,
 body:has(.themeSwitch input:checked) .dealShowcase,
 body.themeDark .dealShowcase,
 body:has(.themeSwitch input:checked) .categoryTile,
@@ -767,8 +822,23 @@ body.themeDark .deliveryBox,
 body:has(.themeSwitch input:checked) .ordersSummary article,
 body.themeDark .ordersSummary article,
 body:has(.themeSwitch input:checked) .orderCard,
-body.themeDark .orderCard {
+body.themeDark .orderCard,
+body:has(.themeSwitch input:checked) .paymentModal,
+body.themeDark .paymentModal,
+body:has(.themeSwitch input:checked) .authPanel,
+body.themeDark .authPanel,
+body:has(.themeSwitch input:checked) .accountPanel,
+body.themeDark .accountPanel,
+body:has(.themeSwitch input:checked) .accountStats article,
+body.themeDark .accountStats article {
   background: #101b20;
+}
+
+html.themeDark .authTabs button.active,
+body:has(.themeSwitch input:checked) .authTabs button.active,
+body.themeDark .authTabs button.active {
+  background: #2dd4bf;
+  color: #071012;
 }
 
 .storeHero,
@@ -2023,6 +2093,395 @@ body.themeDark .orderCard {
   color: var(--muted);
 }
 
+.authLayout,
+.accountLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
+  gap: 18px;
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto 58px;
+}
+
+.accountLayout {
+  grid-template-columns: minmax(280px, 0.55fr) minmax(0, 1fr);
+}
+
+.authPanel,
+.accountPanel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 22px;
+  box-shadow: 0 16px 42px rgba(33, 42, 50, 0.08);
+}
+
+.authCopy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 360px;
+}
+
+.authCopy h2,
+.accountPanel h2 {
+  font-size: 28px;
+  line-height: 1.08;
+}
+
+.authHighlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.authHighlights span,
+.accountMeta span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--green);
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.authForm,
+.profilePanel {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.authForm label,
+.profilePanel label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.authForm input,
+.profilePanel input {
+  min-height: 40px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink);
+  padding: 0 12px;
+  outline: 0;
+}
+
+.authTabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.authTabs button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.authTabs button.active {
+  background: var(--ink);
+  color: white;
+}
+
+.googleButton {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.googleButton span {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  font-size: 13px;
+}
+
+.authMessage {
+  grid-column: 1 / -1;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--green);
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.profileAvatar {
+  display: grid;
+  width: 118px;
+  height: 118px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  color: white;
+  font-size: 44px;
+  font-weight: 900;
+}
+
+.profileAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photoUpload {
+  display: inline-flex;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.photoUpload input {
+  min-height: auto;
+  border: 0;
+  padding: 0;
+  font-size: 12px;
+}
+
+.accountMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.accountStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.accountStats article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.06);
+  padding: 14px;
+}
+
+.accountStats span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.accountStats strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 26px;
+}
+
+.accountOrders {
+  display: grid;
+  gap: 10px;
+}
+
+.accountOrder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.accountOrder:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.accountOrder div {
+  display: grid;
+  gap: 4px;
+}
+
+.accountOrder span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.accountActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.paymentOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 10, 14, 0.72);
+  padding: 18px;
+  backdrop-filter: blur(10px);
+}
+
+.paymentModal {
+  width: min(460px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
+  padding: 18px;
+}
+
+.paymentTop,
+.paymentMerchant,
+.paymentActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.paymentTop {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+
+.paymentTop span,
+.paymentMerchant span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.paymentTop h2 {
+  margin-top: 4px;
+  font-size: 22px;
+}
+
+.paymentTop button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  padding: 8px 10px;
+  font-weight: 900;
+}
+
+.paymentMerchant {
+  margin-top: 14px;
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.08);
+  padding: 14px;
+}
+
+.paymentMerchant div {
+  display: grid;
+  gap: 4px;
+}
+
+.paymentMethods {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.paymentMethods button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.paymentMethods button.active {
+  border-color: var(--green);
+  background: rgba(15, 118, 110, 0.12);
+  color: var(--green);
+}
+
+.paymentFields {
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.paymentFields label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.paymentFields label:only-child {
+  grid-column: 1 / -1;
+}
+
+.paymentFields input {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  padding: 0 12px;
+}
+
+.paymentState {
+  border-radius: 8px;
+  margin-top: 14px;
+  background: rgba(104, 114, 125, 0.12);
+  color: var(--muted);
+  padding: 12px;
+  font-weight: 900;
+}
+
+.paymentState.processing {
+  color: var(--amber);
+}
+
+.paymentState.success {
+  color: var(--green);
+}
+
+.paymentState.failed {
+  color: var(--rose);
+}
+
+.paymentActions {
+  margin-top: 14px;
+}
+
 @media (max-width: 1050px) {
   .storeHero,
   .storeBand,
@@ -2042,7 +2501,10 @@ body.themeDark .orderCard {
   .reviewGrid,
   .infoGrid,
   .contactLayout,
-  .ordersSummary {
+  .ordersSummary,
+  .authLayout,
+  .accountLayout,
+  .accountStats {
     grid-template-columns: 1fr;
   }
 
@@ -2185,6 +2647,19 @@ body.themeDark .orderCard {
     font-size: 12px;
   }
 
+  .headerAuth {
+    min-height: 32px;
+    max-width: 86px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  .headerAuth strong {
+    max-width: 44px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .storeHero {
     min-height: auto;
     padding-top: 22px;
@@ -2300,5 +2775,45 @@ body.themeDark .orderCard {
 
   .orderItem small {
     grid-column: 2;
+  }
+
+  .authPanel,
+  .accountPanel {
+    padding: 14px;
+  }
+
+  .authCopy {
+    min-height: auto;
+  }
+
+  .authCopy h2,
+  .accountPanel h2 {
+    font-size: 20px;
+  }
+
+  .accountOrder,
+  .accountActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .profileAvatar {
+    width: 96px;
+    height: 96px;
+    font-size: 34px;
+  }
+
+  .paymentModal {
+    padding: 14px;
+  }
+
+  .paymentMethods,
+  .paymentFields,
+  .paymentActions {
+    grid-template-columns: 1fr;
+  }
+
+  .paymentActions {
+    display: grid;
   }
 }

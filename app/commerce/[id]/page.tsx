@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AuthStatus } from "@/components/AuthStatus";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { ProductZoomGallery } from "@/components/ProductZoomGallery";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -63,6 +64,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </nav>
         <HeaderSearch />
         <div className="headerActions">
+          <AuthStatus />
           <ThemeToggle />
           <Link className="headerCart" href="/commerce">Back to shop</Link>
         </div>

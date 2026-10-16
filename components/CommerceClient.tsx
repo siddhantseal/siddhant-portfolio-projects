@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { products, type Product } from "@/lib/data";
+import { AuthStatus } from "@/components/AuthStatus";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -21,6 +22,9 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
   const [query, setQuery] = useState(initialQuery);
   const [cart, setCart] = useState<Cart>({});
   const [orderMessage, setOrderMessage] = useState("");
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("UPI");
+  const [paymentStep, setPaymentStep] = useState<"ready" | "processing" | "success" | "failed">("ready");
 
   const filteredProducts = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -68,6 +72,16 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
   }
 
   async function checkout() {
+    if (!cartLines.length) return;
+    setIsPaymentOpen(true);
+    setPaymentStep("ready");
+    setOrderMessage("");
+  }
+
+  async function confirmPayment() {
+    setPaymentStep("processing");
+    await new Promise((resolve) => setTimeout(resolve, 900));
+
     const orderItems = cartLines.map((line) => ({
       id: line.product.id,
       name: line.product.name,
@@ -75,6 +89,8 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
       price: line.product.price,
       quantity: line.quantity
     }));
+    const paymentId = `pay_demo_${Date.now().toString(36)}`;
+
     const response = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -83,7 +99,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
       })
     });
     const data = await response.json();
-    setOrderMessage(response.ok ? `Order placed. ${data.orderId} total: Rs ${data.total}.` : data.message);
+    setOrderMessage(response.ok ? `Payment confirmed. ${data.orderId} total: Rs ${data.total}.` : data.message);
     if (response.ok) {
       try {
         const savedOrders = JSON.parse(window.localStorage.getItem("sealcart-orders") ?? "[]");
@@ -92,6 +108,8 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           placedAt: new Date().toISOString(),
           status: "Preparing",
           eta: "Arriving in 2-4 days",
+          paymentId,
+          paymentMethod,
           total: data.total,
           items: orderItems
         };
@@ -99,8 +117,19 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
       } catch {
         // Order persistence is best-effort for the demo storefront.
       }
-      setCart({});
+      setPaymentStep("success");
+      setTimeout(() => {
+        setIsPaymentOpen(false);
+        setCart({});
+      }, 900);
+    } else {
+      setPaymentStep("failed");
     }
+  }
+
+  function failPaymentDemo() {
+    setPaymentStep("failed");
+    setOrderMessage("Payment failed in demo mode. Try again or choose another method.");
   }
 
   function submitSearch() {
@@ -127,6 +156,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
         </nav>
         <HeaderSearch />
         <div className="headerActions">
+          <AuthStatus />
           <ThemeToggle />
           <span className="headerCart">{itemCount} items</span>
         </div>
@@ -276,11 +306,11 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           </dl>
 
           <button className="button primary full" disabled={!cartLines.length} onClick={checkout} type="button">
-            Place order
+            Pay securely
           </button>
           {orderMessage ? (
             <p className="orderMessage">
-              {orderMessage} {orderMessage.startsWith("Order placed") ? <Link href="/orders">View orders</Link> : null}
+              {orderMessage} {orderMessage.startsWith("Payment confirmed") ? <Link href="/orders">View orders</Link> : null}
             </p>
           ) : null}
 
@@ -296,6 +326,82 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           </div>
         </aside>
       </section>
+      {isPaymentOpen ? (
+        <div className="paymentOverlay" role="dialog" aria-modal="true" aria-label="Razorpay payment confirmation demo">
+          <section className="paymentModal">
+            <div className="paymentTop">
+              <div>
+                <span>Razorpay-style demo</span>
+                <h2>Confirm payment</h2>
+              </div>
+              <button onClick={() => setIsPaymentOpen(false)} type="button">Close</button>
+            </div>
+
+            <div className="paymentMerchant">
+              <div>
+                <strong>SealCart Checkout</strong>
+                <span>Test mode - no real money is charged</span>
+              </div>
+              <strong>Rs {total.toLocaleString("en-IN")}</strong>
+            </div>
+
+            <div className="paymentMethods" aria-label="Payment method">
+              {["UPI", "Card", "Wallet", "Netbanking"].map((method) => (
+                <button
+                  className={paymentMethod === method ? "active" : ""}
+                  disabled={paymentStep === "processing"}
+                  key={method}
+                  onClick={() => setPaymentMethod(method)}
+                  type="button"
+                >
+                  {method}
+                </button>
+              ))}
+            </div>
+
+            <div className="paymentFields">
+              {paymentMethod === "UPI" ? (
+                <label>
+                  UPI ID
+                  <input readOnly value="demo@sbi" />
+                </label>
+              ) : paymentMethod === "Card" ? (
+                <>
+                  <label>
+                    Card number
+                    <input readOnly value="4111 1111 1111 1111" />
+                  </label>
+                  <label>
+                    CVV
+                    <input readOnly value="123" />
+                  </label>
+                </>
+              ) : (
+                <label>
+                  Demo account
+                  <input readOnly value={`${paymentMethod.toLowerCase()}_test_user`} />
+                </label>
+              )}
+            </div>
+
+            <div className={`paymentState ${paymentStep}`}>
+              {paymentStep === "ready" ? "Ready to verify demo payment." : null}
+              {paymentStep === "processing" ? "Contacting secure payment gateway..." : null}
+              {paymentStep === "success" ? "Payment successful. Creating your order..." : null}
+              {paymentStep === "failed" ? "Payment failed. No order was created." : null}
+            </div>
+
+            <div className="paymentActions">
+              <button className="button secondary full" disabled={paymentStep === "processing"} onClick={failPaymentDemo} type="button">
+                Simulate failed payment
+              </button>
+              <button className="button primary full" disabled={paymentStep === "processing" || paymentStep === "success"} onClick={confirmPayment} type="button">
+                {paymentStep === "processing" ? "Processing..." : `Pay Rs ${total.toLocaleString("en-IN")}`}
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }

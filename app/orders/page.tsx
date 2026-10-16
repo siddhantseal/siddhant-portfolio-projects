@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthStatus } from "@/components/AuthStatus";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { OrdersClient } from "@/components/OrdersClient";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -18,6 +19,7 @@ export default function OrdersPage() {
         </nav>
         <HeaderSearch />
         <div className="headerActions">
+          <AuthStatus />
           <ThemeToggle />
           <Link className="headerCart" href="/commerce">Shop</Link>
         </div>
