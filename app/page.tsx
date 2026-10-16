@@ -3,6 +3,8 @@ import { blogPosts, products } from "@/lib/data";
 import { AuthStatus } from "@/components/AuthStatus";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AnimatedCommerceShowcase } from "@/components/ui/animated-commerce-showcase";
+import { MotionEffects } from "@/components/ui/motion-effects";
 
 const categories = ["Mobiles", "Electronics", "Fashion", "Home", "Beauty", "Sports"];
 const shoppingMissions = [
@@ -36,6 +38,7 @@ export default function Home() {
 
   return (
     <main>
+      <MotionEffects />
       <header className="storeHeader">
         <Link className="brand" href="/">SealCart</Link>
         <nav>
@@ -54,7 +57,7 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="storeHero">
+      <section className="storeHero" data-scroll-reveal>
         <div className="storeHeroCopy">
           <p className="eyebrow">Big sale deals</p>
           <h1>Shop smarter across electronics, fashion, home, and daily essentials.</h1>
@@ -77,14 +80,18 @@ export default function Home() {
         </Link>
       </section>
 
-      <section className="storeBand">
+      <div data-scroll-reveal>
+        <AnimatedCommerceShowcase />
+      </div>
+
+      <section className="storeBand" data-scroll-reveal>
         <div className="storeFeature"><strong>Free delivery</strong><span>On orders above Rs 5,000</span></div>
         <div className="storeFeature"><strong>Easy returns</strong><span>7-day replacement support</span></div>
         <div className="storeFeature"><strong>Secure checkout</strong><span>API-backed order processing</span></div>
         <div className="storeFeature"><strong>Support</strong><span>Email and phone contact flow</span></div>
       </section>
 
-      <section className="storeStats" aria-label="Store highlights">
+      <section className="storeStats" aria-label="Store highlights" data-scroll-reveal>
         {storeStats.map((stat) => (
           <div key={stat.label}>
             <strong>{stat.value}</strong>
@@ -93,7 +100,7 @@ export default function Home() {
         ))}
       </section>
 
-      <section className="homeSection">
+      <section className="homeSection" data-scroll-reveal>
         <div className="sectionTitle">
           <div>
             <p className="eyebrow">Categories</p>
@@ -111,7 +118,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="homeSection">
+      <section className="homeSection" data-scroll-reveal>
         <div className="sectionTitle">
           <div>
             <p className="eyebrow">Quick paths</p>
@@ -130,7 +137,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="homeSection">
+      <section className="homeSection" data-scroll-reveal>
         <div className="sectionTitle">
           <div>
             <p className="eyebrow">Featured experiences</p>
@@ -159,7 +166,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="homeSection">
+      <section className="homeSection" data-scroll-reveal>
         <div className="sectionTitle">
           <div>
             <p className="eyebrow">Deals</p>
@@ -180,7 +187,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="homeSection">
+      <section className="homeSection" data-scroll-reveal>
         <div className="sectionTitle">
           <div>
             <p className="eyebrow">News</p>
@@ -199,7 +206,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="storeFooter">
+      <footer className="storeFooter" data-scroll-reveal>
         <div>
           <strong>SealCart</strong>
           <span>Professional e-commerce platform built with Next.js, React, API routes, GitHub, and Vercel.</span>
