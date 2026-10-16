@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { products, type Product } from "@/lib/data";
 import { AuthStatus } from "@/components/AuthStatus";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -21,7 +21,6 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
   const router = useRouter();
   const syncSourceId = useRef(`sealcart-${Math.random().toString(36).slice(2)}`);
   const cartChannel = useRef<BroadcastChannel | null>(null);
-  const categoryRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const hasLoadedCart = useRef(false);
   const skipNextBroadcast = useRef(false);
   const [category, setCategory] = useState<(typeof categories)[number]>(initialCategory);
@@ -127,15 +126,6 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
   const delivery = subtotal > 5000 || subtotal === 0 ? 0 : 149;
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + delivery + tax;
-
-  useLayoutEffect(() => {
-    const activeButton = categoryRefs.current[category];
-    const buttonRow = activeButton?.parentElement;
-    if (!activeButton || !buttonRow || buttonRow.scrollWidth <= buttonRow.clientWidth) return;
-
-    const nextLeft = activeButton.offsetLeft - (buttonRow.clientWidth - activeButton.clientWidth) / 2;
-    buttonRow.scrollTo({ left: Math.max(0, nextLeft), behavior: "auto" });
-  }, [category]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -327,9 +317,6 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
                 className={category === item ? "active" : ""}
                 aria-pressed={category === item}
                 key={item}
-                ref={(element) => {
-                  categoryRefs.current[item] = element;
-                }}
                 onClick={() => selectCategory(item)}
                 type="button"
               >
