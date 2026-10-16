@@ -29,8 +29,8 @@ export default function OrdersPage() {
         <p className="eyebrow">My orders</p>
         <h1>Track deliveries, current purchases, and previous orders.</h1>
         <p>
-          Orders placed through the demo checkout are saved on this browser, alongside sample
-          active and delivered orders for a complete ecommerce account experience.
+          Orders placed through checkout are saved on this browser, alongside active and delivered orders
+          for a complete ecommerce account experience.
         </p>
       </section>
 

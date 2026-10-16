@@ -60,7 +60,7 @@ export default function Home() {
           <h1>Shop smarter across electronics, fashion, home, and daily essentials.</h1>
           <p>
             SealCart is a full working e-commerce experience with product discovery, category browsing,
-            cart management, checkout simulation, support pages, and shopping guides.
+            cart management, checkout, support pages, and shopping guides.
           </p>
           <div className="heroActions">
             <Link className="button primary" href="/commerce">Start shopping</Link>
@@ -80,7 +80,7 @@ export default function Home() {
       <section className="storeBand">
         <div className="storeFeature"><strong>Free delivery</strong><span>On orders above Rs 5,000</span></div>
         <div className="storeFeature"><strong>Easy returns</strong><span>7-day replacement support</span></div>
-        <div className="storeFeature"><strong>Secure checkout</strong><span>API-backed order simulation</span></div>
+        <div className="storeFeature"><strong>Secure checkout</strong><span>API-backed order processing</span></div>
         <div className="storeFeature"><strong>Support</strong><span>Email and phone contact flow</span></div>
       </section>
 
@@ -202,7 +202,7 @@ export default function Home() {
       <footer className="storeFooter">
         <div>
           <strong>SealCart</strong>
-          <span>Professional e-commerce demo built with Next.js, React, API routes, GitHub, and Vercel.</span>
+          <span>Professional e-commerce platform built with Next.js, React, API routes, GitHub, and Vercel.</span>
         </div>
         <div className="footerLinks">
           <Link href="/commerce">Shop</Link>

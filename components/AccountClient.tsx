@@ -7,7 +7,7 @@ import { SignIn1 } from "@/components/ui/modern-stunning-sign-in";
 
 type Mode = "login" | "signup";
 
-type DemoUser = {
+type AccountUser = {
   name: string;
   email: string;
   provider: string;
@@ -15,7 +15,7 @@ type DemoUser = {
   signedInAt: string;
 };
 
-type StoredUser = DemoUser & {
+type StoredUser = AccountUser & {
   password: string;
 };
 
@@ -36,13 +36,6 @@ type Order = {
   items: OrderItem[];
 };
 
-const defaultUser: DemoUser = {
-  name: "Siddhant Shopper",
-  email: "siddhant.demo@gmail.com",
-  provider: "Google Demo",
-  signedInAt: new Date().toISOString()
-};
-
 function broadcastAuthChange() {
   window.dispatchEvent(new Event("sealcart-auth-change"));
 }
@@ -55,36 +48,56 @@ function readStoredUsers() {
   }
 }
 
-function saveSession(user: DemoUser) {
+function saveSession(user: AccountUser) {
   window.localStorage.setItem("sealcart-user", JSON.stringify(user));
   broadcastAuthChange();
 }
 
 export function AccountClient({ initialMode = "login" }: { initialMode?: Mode }) {
   const [mode, setMode] = useState<Mode>(initialMode);
-  const [user, setUser] = useState<DemoUser | null>(null);
+  const [user, setUser] = useState<AccountUser | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    try {
+    async function loadAccount() {
+      const params = new URLSearchParams(window.location.search);
+      const authStatus = params.get("auth");
+      if (authStatus === "google-config-required") {
+        setMessage("Real Google login needs GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel.");
+      } else if (authStatus === "google-failed") {
+        setMessage("Google sign-in could not be completed. Please try again.");
+      }
+
       const rawUser = window.localStorage.getItem("sealcart-user");
-      setUser(rawUser ? (JSON.parse(rawUser) as DemoUser) : null);
+      let nextUser = rawUser ? (JSON.parse(rawUser) as AccountUser) : null;
+
+      try {
+        const response = await fetch("/api/auth/session");
+        const session = (await response.json()) as { user?: AccountUser | null };
+        if (session.user) {
+          nextUser = session.user;
+          saveSession(session.user);
+        }
+      } catch {
+        // Local email accounts still work if the session endpoint is unavailable.
+      }
+
+      setUser(nextUser);
       setOrders(JSON.parse(window.localStorage.getItem("sealcart-orders") ?? "[]"));
-    } catch {
+    }
+
+    loadAccount().catch(() => {
       setUser(null);
       setOrders([]);
-    }
+    });
   }, []);
 
   const allOrders = useMemo(() => [...orders, ...sampleOrders], [orders]);
   const recentOrders = allOrders.slice(0, 4);
 
-  function signInWithGoogleDemo() {
-    const nextUser = { ...defaultUser, signedInAt: new Date().toISOString() };
-    saveSession(nextUser);
-    setUser(nextUser);
-    setMessage("Signed in with Google demo account.");
+  function startGoogleSignIn() {
+    window.location.href = "/api/auth/google";
   }
 
   function submitEmailAuth(details: { mode: Mode; name: string; email: string; password: string }) {
@@ -105,7 +118,7 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
         name,
         email,
         password,
-        provider: "Email Demo",
+        provider: "Email",
         signedInAt: new Date().toISOString()
       };
       const withoutDuplicate = storedUsers.filter((item) => item.email !== email);
@@ -119,11 +132,11 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
 
     const foundUser = storedUsers.find((item) => item.email === email && item.password === password);
     if (!foundUser) {
-      setMessage("No matching demo account found. Try signing up first or use Google demo.");
+      setMessage("No matching account found. Try signing up first or continue with Google.");
       return;
     }
 
-    const sessionUser: DemoUser = {
+    const sessionUser: AccountUser = {
       name: foundUser.name,
       email: foundUser.email,
       provider: foundUser.provider,
@@ -158,6 +171,7 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
 
   function logout() {
     window.localStorage.removeItem("sealcart-user");
+    fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
     setUser(null);
     setMessage("Signed out.");
     broadcastAuthChange();
@@ -216,7 +230,7 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
             </article>
             <article>
               <span>Saved session</span>
-              <strong>Demo</strong>
+              <strong>Secure</strong>
             </article>
           </div>
 
@@ -252,7 +266,7 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
       mode={mode}
       message={message}
       onEmailAuth={submitEmailAuth}
-      onGoogleDemo={signInWithGoogleDemo}
+      onGoogle={startGoogleSignIn}
       onModeChange={(nextMode) => {
         setMode(nextMode);
         setMessage("");

@@ -1517,6 +1517,33 @@ body.themeDark .authTabs button.active {
   color: var(--ink);
 }
 
+.liveCommercePanel {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.08);
+  padding: 14px;
+}
+
+.liveCommercePanel strong {
+  color: var(--green);
+}
+
+.liveCommercePanel span,
+.liveCommercePanel small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.liveCommercePanel div {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+}
+
 .resultCount {
   display: inline-flex;
   min-height: 44px;
@@ -1638,6 +1665,25 @@ body.themeDark .authTabs button.active {
   border-radius: 8px;
   padding: 12px;
   resize: vertical;
+}
+
+.contactStatus {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.contactStatus.success {
+  background: rgba(15, 118, 110, 0.09);
+  color: var(--green);
+}
+
+.contactStatus.error {
+  background: rgba(190, 18, 60, 0.08);
+  color: var(--rose);
 }
 
 .mapBox {

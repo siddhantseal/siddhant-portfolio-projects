@@ -27,8 +27,8 @@ export default function LoginPage() {
 
       <section className="contentHero">
         <p className="eyebrow">Login and signup</p>
-        <h1>Authenticate shoppers with a complete demo account flow.</h1>
-        <p>Visitors can sign up, use a Google-style demo login, manage profile details, and view order history.</p>
+        <h1>Authenticate shoppers with a complete account flow.</h1>
+        <p>Visitors can sign up, continue with Google, manage profile details, and view order history.</p>
       </section>
 
       <AccountClient initialMode="login" />

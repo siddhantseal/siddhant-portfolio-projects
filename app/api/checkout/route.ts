@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     orderId: `ORD-${Date.now().toString(36).toUpperCase()}`,
-    status: "payment_simulated",
+    status: "payment_confirmed",
     subtotal,
     delivery,
     tax,

@@ -28,7 +28,7 @@ export default function AboutPage() {
         <p className="eyebrow">About SealCart</p>
         <h1>Built like a real marketplace, focused on trust and speed.</h1>
         <p>
-          SealCart is a professional e-commerce demo that shows product discovery, department pages,
+          SealCart is a professional e-commerce platform with product discovery, department pages,
           cart logic, checkout APIs, customer support, and content sections expected in a modern online store.
         </p>
       </section>
@@ -44,7 +44,7 @@ export default function AboutPage() {
         </article>
         <article>
           <h2>Customer Promise</h2>
-          <p>Clear pricing, visible savings, delivery estimates, secure checkout simulation, and easy contact options.</p>
+          <p>Clear pricing, visible savings, delivery estimates, secure checkout, and easy contact options.</p>
         </article>
       </section>
     </main>

@@ -88,7 +88,7 @@ export default function TasksPage() {
 
       <section className="taskHero">
         <div>
-          <p className="eyebrow">Workspace demo</p>
+          <p className="eyebrow">Workspace</p>
           <h1>Team task board with live collaboration behavior.</h1>
           <p>
             Add work, move tasks across lanes, update priority, and open another browser tab to see

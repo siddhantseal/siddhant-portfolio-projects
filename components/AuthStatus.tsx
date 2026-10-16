@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type DemoUser = {
+type AccountUser = {
   name: string;
   email: string;
   provider: string;
@@ -13,14 +13,14 @@ type DemoUser = {
 function readUser() {
   try {
     const rawUser = window.localStorage.getItem("sealcart-user");
-    return rawUser ? (JSON.parse(rawUser) as DemoUser) : null;
+    return rawUser ? (JSON.parse(rawUser) as AccountUser) : null;
   } catch {
     return null;
   }
 }
 
 export function AuthStatus() {
-  const [user, setUser] = useState<DemoUser | null>(null);
+  const [user, setUser] = useState<AccountUser | null>(null);
 
   useEffect(() => {
     const syncUser = () => setUser(readUser());

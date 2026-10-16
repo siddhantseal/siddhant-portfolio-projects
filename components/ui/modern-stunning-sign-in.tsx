@@ -10,7 +10,7 @@ type SignIn1Props = {
   message?: string;
   onModeChange?: (mode: AuthMode) => void;
   onEmailAuth?: (details: { mode: AuthMode; name: string; email: string; password: string }) => void;
-  onGoogleDemo?: () => void;
+  onGoogle?: () => void;
 };
 
 const shopperAvatars = [
@@ -20,7 +20,7 @@ const shopperAvatars = [
   "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80"
 ];
 
-const SignIn1 = ({ mode = "login", message, onModeChange, onEmailAuth, onGoogleDemo }: SignIn1Props) => {
+const SignIn1 = ({ mode = "login", message, onModeChange, onEmailAuth, onGoogle }: SignIn1Props) => {
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -105,9 +105,9 @@ const SignIn1 = ({ mode = "login", message, onModeChange, onEmailAuth, onGoogleD
           {mode === "signup" ? "Create account" : "Sign in"}
         </button>
 
-        <button className="modernGoogleAction" onClick={onGoogleDemo} type="button">
+        <button className="modernGoogleAction" onClick={onGoogle} type="button">
           <span>G</span>
-          Continue with Google Demo
+          Continue with Google
         </button>
 
         <div className="modernSwitch">

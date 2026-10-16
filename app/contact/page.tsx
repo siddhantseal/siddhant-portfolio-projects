@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuthStatus } from "@/components/AuthStatus";
+import { ContactForm } from "@/components/ContactForm";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -31,26 +32,13 @@ export default function ContactPage() {
       </section>
 
       <section className="contactLayout">
-        <form className="contactForm">
-          <label>
-            Name
-            <input placeholder="Your name" />
-          </label>
-          <label>
-            Email
-            <input placeholder="you@example.com" type="email" />
-          </label>
-          <label>
-            Message
-            <textarea placeholder="How can we help?" rows={5} />
-          </label>
-          <button className="button primary" type="button">Send message</button>
-        </form>
+        <ContactForm />
         <aside className="contactCard">
           <h2>Reach us</h2>
-          <p>Email: support@sealcart.example</p>
+          <p>Email: support@sealcart.in</p>
           <p>Phone: +91 86177 27090</p>
-          <p>Service area: Kolkata, West Bengal and pan-India shipping demo.</p>
+          <p>Service area: Kolkata, West Bengal and pan-India shipping.</p>
+          <p>Customers receive an automatic email confirmation when the email provider is configured.</p>
           <div className="mapBox">Kolkata delivery hub</div>
         </aside>
       </section>

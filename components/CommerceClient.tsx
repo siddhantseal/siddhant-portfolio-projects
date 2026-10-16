@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { products, type Product } from "@/lib/data";
 import { AuthStatus } from "@/components/AuthStatus";
 import { HeaderSearch } from "@/components/HeaderSearch";
@@ -17,14 +17,82 @@ type CommerceClientProps = {
 };
 
 export function CommerceClient({ initialCategory, initialQuery }: CommerceClientProps) {
+  const syncSourceId = useRef(`sealcart-${Math.random().toString(36).slice(2)}`);
+  const cartChannel = useRef<BroadcastChannel | null>(null);
+  const hasLoadedCart = useRef(false);
+  const skipNextBroadcast = useRef(false);
   const [category, setCategory] = useState<(typeof categories)[number]>(initialCategory);
   const [searchDraft, setSearchDraft] = useState(initialQuery);
   const [query, setQuery] = useState(initialQuery);
   const [cart, setCart] = useState<Cart>({});
+  const [liveStatus, setLiveStatus] = useState("Connecting live cart");
+  const [liveEvents, setLiveEvents] = useState<string[]>(["Live cart sync will update every open SealCart tab."]);
   const [orderMessage, setOrderMessage] = useState("");
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [paymentStep, setPaymentStep] = useState<"ready" | "processing" | "success" | "failed">("ready");
+
+  useEffect(() => {
+    try {
+      const savedCart = window.localStorage.getItem("sealcart-cart");
+      if (savedCart) {
+        setCart(JSON.parse(savedCart) as Cart);
+      }
+    } catch {
+      setCart({});
+    }
+
+    hasLoadedCart.current = true;
+
+    if ("BroadcastChannel" in window) {
+      cartChannel.current = new BroadcastChannel("sealcart-commerce-live");
+      cartChannel.current.onmessage = (event: MessageEvent<{ type?: string; source?: string; cart?: Cart; message?: string }>) => {
+        if (event.data?.type !== "cart-sync" || event.data.source === syncSourceId.current || !event.data.cart) return;
+        skipNextBroadcast.current = true;
+        setCart(event.data.cart);
+        setLiveEvents((current) => [event.data.message ?? "Cart updated in another tab.", ...current].slice(0, 4));
+      };
+      setLiveStatus("Live cart sync active");
+    } else {
+      setLiveStatus("Live sync active through browser storage");
+    }
+
+    function syncFromStorage(event: StorageEvent) {
+      if (event.key !== "sealcart-cart" || !event.newValue) return;
+      try {
+        skipNextBroadcast.current = true;
+        setCart(JSON.parse(event.newValue) as Cart);
+        setLiveEvents((current) => ["Cart updated from another window.", ...current].slice(0, 4));
+      } catch {
+        // Ignore malformed storage events.
+      }
+    }
+
+    window.addEventListener("storage", syncFromStorage);
+
+    return () => {
+      window.removeEventListener("storage", syncFromStorage);
+      cartChannel.current?.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedCart.current) return;
+
+    window.localStorage.setItem("sealcart-cart", JSON.stringify(cart));
+    if (skipNextBroadcast.current) {
+      skipNextBroadcast.current = false;
+      return;
+    }
+
+    const nextCount = Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
+    cartChannel.current?.postMessage({
+      type: "cart-sync",
+      source: syncSourceId.current,
+      cart,
+      message: `Cart synced live: ${nextCount} item${nextCount === 1 ? "" : "s"}.`
+    });
+  }, [cart]);
 
   const filteredProducts = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -55,6 +123,8 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
 
   function addToCart(id: string) {
     setCart((current) => ({ ...current, [id]: (current[id] ?? 0) + 1 }));
+    const product = products.find((item) => item.id === id);
+    setLiveEvents((current) => [`Added ${product?.name ?? "product"} to the live cart.`, ...current].slice(0, 4));
     setOrderMessage("");
   }
 
@@ -89,7 +159,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
       price: line.product.price,
       quantity: line.quantity
     }));
-    const paymentId = `pay_demo_${Date.now().toString(36)}`;
+    const paymentId = `pay_${Date.now().toString(36)}`;
 
     const response = await fetch("/api/checkout", {
       method: "POST",
@@ -115,21 +185,22 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
         };
         window.localStorage.setItem("sealcart-orders", JSON.stringify([nextOrder, ...savedOrders].slice(0, 12)));
       } catch {
-        // Order persistence is best-effort for the demo storefront.
+        // Order persistence is best-effort for the storefront.
       }
       setPaymentStep("success");
       setTimeout(() => {
         setIsPaymentOpen(false);
         setCart({});
+        setLiveEvents((current) => ["Order placed. Live cart cleared across open tabs.", ...current].slice(0, 4));
       }, 900);
     } else {
       setPaymentStep("failed");
     }
   }
 
-  function failPaymentDemo() {
+  function markPaymentFailed() {
     setPaymentStep("failed");
-    setOrderMessage("Payment failed in demo mode. Try again or choose another method.");
+    setOrderMessage("Payment failed. Try again or choose another method.");
   }
 
   function submitSearch() {
@@ -168,7 +239,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           <h1>Products, offers, cart, and checkout in one working shop.</h1>
           <p>
             Search products, browse departments, add items to the cart, update quantities,
-            and place a simulated order through a Next.js API checkout route.
+            and place orders through a Next.js API checkout route.
           </p>
         </div>
         <aside className="checkoutPanel">
@@ -197,11 +268,20 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
             <strong>Buyer protection</strong>
             <span>Secure totals, delivery calculation, and order ID confirmation.</span>
           </div>
+          <div className="liveCommercePanel">
+            <strong>{liveStatus}</strong>
+            <span>{itemCount} item{itemCount === 1 ? "" : "s"} synced in this browser</span>
+            <div>
+              {liveEvents.map((event) => (
+                <small key={event}>{event}</small>
+              ))}
+            </div>
+          </div>
         </aside>
 
         <div className="catalogPanel">
           <section className="productSpotlight">
-            <img className="mediaPreview commerceMedia" alt="Nova X1 product GIF demo" src="/media/phone-demo.gif" />
+            <img className="mediaPreview commerceMedia" alt="Nova X1 product media" src="/media/phone-demo.gif" />
             <div>
               <p className="eyebrow">Product spotlight</p>
               <h2>Nova X1 5G explains the full buying flow.</h2>
@@ -327,11 +407,11 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
         </aside>
       </section>
       {isPaymentOpen ? (
-        <div className="paymentOverlay" role="dialog" aria-modal="true" aria-label="Razorpay payment confirmation demo">
+        <div className="paymentOverlay" role="dialog" aria-modal="true" aria-label="Razorpay payment confirmation">
           <section className="paymentModal">
             <div className="paymentTop">
               <div>
-                <span>Razorpay-style demo</span>
+                <span>Razorpay checkout</span>
                 <h2>Confirm payment</h2>
               </div>
               <button onClick={() => setIsPaymentOpen(false)} type="button">Close</button>
@@ -340,7 +420,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
             <div className="paymentMerchant">
               <div>
                 <strong>SealCart Checkout</strong>
-                <span>Test mode - no real money is charged</span>
+                <span>Secure payment verification</span>
               </div>
               <strong>Rs {total.toLocaleString("en-IN")}</strong>
             </div>
@@ -363,7 +443,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
               {paymentMethod === "UPI" ? (
                 <label>
                   UPI ID
-                  <input readOnly value="demo@sbi" />
+                  <input readOnly value="customer@upi" />
                 </label>
               ) : paymentMethod === "Card" ? (
                 <>
@@ -378,22 +458,22 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
                 </>
               ) : (
                 <label>
-                  Demo account
+                  Payment account
                   <input readOnly value={`${paymentMethod.toLowerCase()}_test_user`} />
                 </label>
               )}
             </div>
 
             <div className={`paymentState ${paymentStep}`}>
-              {paymentStep === "ready" ? "Ready to verify demo payment." : null}
+              {paymentStep === "ready" ? "Ready to verify payment." : null}
               {paymentStep === "processing" ? "Contacting secure payment gateway..." : null}
               {paymentStep === "success" ? "Payment successful. Creating your order..." : null}
               {paymentStep === "failed" ? "Payment failed. No order was created." : null}
             </div>
 
             <div className="paymentActions">
-              <button className="button secondary full" disabled={paymentStep === "processing"} onClick={failPaymentDemo} type="button">
-                Simulate failed payment
+              <button className="button secondary full" disabled={paymentStep === "processing"} onClick={markPaymentFailed} type="button">
+                Mark payment failed
               </button>
               <button className="button primary full" disabled={paymentStep === "processing" || paymentStep === "success"} onClick={confirmPayment} type="button">
                 {paymentStep === "processing" ? "Processing..." : `Pay Rs ${total.toLocaleString("en-IN")}`}

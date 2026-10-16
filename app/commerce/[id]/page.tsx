@@ -114,7 +114,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
       <section className="productMediaSection">
         <div className="productVideoDetail">
-          <img className="mediaPreview detailMedia" alt={`${product.name} product GIF demo`} src={mediaByCategory[product.category]} />
+          <img className="mediaPreview detailMedia" alt={`${product.name} product media`} src={mediaByCategory[product.category]} />
           <div>
             <p className="eyebrow">Product GIF video</p>
             <h2>Real product-media walkthrough</h2>
@@ -141,7 +141,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             {(product.specs ?? [
               { label: "Category", value: product.category },
               { label: "Stock", value: `${product.stock} units` },
-              { label: "Warranty", value: "Demo replacement support" }
+              { label: "Warranty", value: "Replacement support" }
             ]).map((spec) => (
               <div key={spec.label}>
                 <dt>{spec.label}</dt>
