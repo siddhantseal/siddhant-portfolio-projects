@@ -344,7 +344,7 @@ const categorySeeds: Record<Product["category"], {
   priceStep: number;
 }> = {
   Mobiles: {
-    names: ["Astra 5G Phone", "NeoMax Smartphone", "TabLite Student Tablet", "PixelView Tablet", "PowerCell Phone", "NoteMate Tablet", "FoldEdge Phone", "CamPro Smartphone", "MiniPad Tablet", "GameMax Phone", "UltraView Tablet", "Pocket 5G", "Creator Stylus Tablet", "Rugged Outdoor Phone", "Kids Learning Tab", "PhotoPro Camera Phone"],
+    names: ["Astra 5G Phone", "NeoMax Smartphone", "TabLite Student Tablet", "PixelView Tablet", "PowerCell Phone", "NoteMate Tablet", "FoldEdge Phone", "CamPro Smartphone", "MiniPad Tablet", "GameMax Phone", "UltraView Tablet", "Pocket 5G", "Creator Stylus Tablet", "Rugged Outdoor Phone", "Kids Learning Tab", "PhotoPro Camera Phone", "Vision Fold Tablet", "Spark Lite Phone", "ProShot 5G", "NoteEdge Phablet", "WorkTab Keyboard Bundle", "Travel SIM Phone", "Creator Pencil Pad", "Ultra Battery Phone", "Pocket Reader Tablet", "Gaming Cooling Phone", "Secure Business Phone", "SlimView Mini Tablet", "Student Note Slate", "Cinema AMOLED Phone", "Outdoor GPS Phone", "Family Video Tablet"],
     variants: ["Prime", "Elite", "Max"],
     badges: ["Exchange offer", "Student pick", "5G deal", "New launch"],
     images: [
@@ -359,14 +359,18 @@ const categorySeeds: Record<Product["category"], {
       "https://images.unsplash.com/photo-1610792516307-ea5acd9c3b00?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=900&q=80"
+      "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1546054454-aa26e2b734c7?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1533228100845-08145b01de14?auto=format&fit=crop&w=900&q=80"
     ],
     features: ["Fast charging", "Large display", "Long battery", "High storage"],
     basePrice: 8999,
     priceStep: 1350
   },
   Electronics: {
-    names: ["WavePods Earbuds", "SoundCore Headphones", "Orbit Smart Watch", "Tactile Keyboard", "Creator Webcam", "USB-C Hub", "Studio Speaker", "Gaming Mouse", "Portable SSD", "WiFi Mesh Router", "Action Camera", "Desk Microphone", "Noise Cancel Soundbar", "Laptop Cooling Stand", "Smart Home Plug", "Mini Projector"],
+    names: ["WavePods Earbuds", "SoundCore Headphones", "Orbit Smart Watch", "Tactile Keyboard", "Creator Webcam", "USB-C Hub", "Studio Speaker", "Gaming Mouse", "Portable SSD", "WiFi Mesh Router", "Action Camera", "Desk Microphone", "Noise Cancel Soundbar", "Laptop Cooling Stand", "Smart Home Plug", "Mini Projector", "UltraBook Laptop", "Graphic Drawing Tablet", "4K Monitor", "Bluetooth Turntable", "Streaming Stick", "Smart Door Camera", "RGB Light Bar", "Wireless Charger", "Podcast Mixer", "Drone Starter Kit", "Portable Power Bank", "Mechanical Number Pad", "Noise Meter Speaker", "Cable Organizer Dock", "HD Capture Card", "Smart Thermostat"],
     variants: ["Pro", "Plus", "Studio"],
     badges: ["Tech deal", "Top rated", "Creator choice", "Best seller"],
     images: [
@@ -381,14 +385,18 @@ const categorySeeds: Record<Product["category"], {
       "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=900&q=80"
+      "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=900&q=80"
     ],
     features: ["Wireless setup", "Fast pairing", "Durable build", "Work-ready"],
     basePrice: 799,
     priceStep: 720
   },
   Fashion: {
-    names: ["Linen Casual Shirt", "Urban Denim Jacket", "Metro Backpack", "Classic Sneakers", "Cotton Hoodie", "Formal Slim Trousers", "Canvas Tote Bag", "Knit Polo Tee", "Everyday Chinos", "Bomber Jacket", "Travel Weekender", "Athleisure Joggers", "Leather Belt", "Running Cap", "Oversized Tee", "Minimal White Sneakers"],
+    names: ["Linen Casual Shirt", "Urban Denim Jacket", "Metro Backpack", "Classic Sneakers", "Cotton Hoodie", "Formal Slim Trousers", "Canvas Tote Bag", "Knit Polo Tee", "Everyday Chinos", "Bomber Jacket", "Travel Weekender", "Athleisure Joggers", "Leather Belt", "Running Cap", "Oversized Tee", "Minimal White Sneakers", "Rain Shell Jacket", "Textured Knit Sweater", "Leather Office Shoes", "Crossbody Sling Bag", "Denim Overshirt", "Pleated Midi Skirt", "Canvas High Tops", "Cotton Kurta Set", "Slim Wallet", "Sports Sunglasses", "Training Track Pants", "Graphic Street Tee", "Quilted Vest", "Formal Oxford Shirt", "Weekend Cargo Pants", "Travel Packing Cubes"],
     variants: ["Everyday", "Premium", "Weekend"],
     badges: ["Fashion sale", "Fresh drop", "Trending", "Weekend deal"],
     images: [
@@ -403,14 +411,18 @@ const categorySeeds: Record<Product["category"], {
       "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&q=80"
+      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80"
     ],
     features: ["Comfort fit", "Daily wear", "Easy care", "Premium feel"],
     basePrice: 699,
     priceStep: 260
   },
   Home: {
-    names: ["Ceramic Cookware", "Smart Desk Lamp", "Sofa Throw", "Storage Organizer", "Dinnerware Set", "Study Chair", "Cotton Bedsheet", "Wooden Shelf", "Aroma Diffuser", "Wall Clock", "Coffee Mug Set", "Table Planter", "Air Fryer Basket", "Bath Towel Set", "Bedside Table", "Laundry Hamper"],
+    names: ["Ceramic Cookware", "Smart Desk Lamp", "Sofa Throw", "Storage Organizer", "Dinnerware Set", "Study Chair", "Cotton Bedsheet", "Wooden Shelf", "Aroma Diffuser", "Wall Clock", "Coffee Mug Set", "Table Planter", "Air Fryer Basket", "Bath Towel Set", "Bedside Table", "Laundry Hamper", "Memory Foam Pillow", "Modular Shoe Rack", "Glass Water Bottle Set", "Compact Vacuum Cleaner", "Bamboo Cutting Board", "LED Mirror", "Kitchen Scale", "Foldable Study Table", "Spice Jar Carousel", "Door Mat Runner", "Dinner Tray Set", "Velvet Cushion Pair", "Bathroom Caddy", "Laptop Bed Desk", "Floor Reading Lamp", "Window Curtain Set"],
     variants: ["Classic", "Modern", "Signature"],
     badges: ["Home refresh", "Kitchen sale", "Work desk", "Limited deal"],
     images: [
@@ -425,14 +437,18 @@ const categorySeeds: Record<Product["category"], {
       "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1567016432779-094069958ea5?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=900&q=80"
+      "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=900&q=80"
     ],
     features: ["Easy clean", "Space saving", "Modern finish", "Everyday use"],
     basePrice: 499,
     priceStep: 310
   },
   Beauty: {
-    names: ["Glow Skin Kit", "Matte Lip Set", "Hydra Serum", "Daily Grooming Kit", "Face Care Combo", "Travel Beauty Pouch", "Vitamin C Cream", "Hair Care Duo", "Fragrance Mist", "Makeup Brush Set", "Sunscreen Gel", "Beard Care Box", "Charcoal Face Wash", "Nail Care Kit", "Body Lotion Duo", "Hair Dryer Brush"],
+    names: ["Glow Skin Kit", "Matte Lip Set", "Hydra Serum", "Daily Grooming Kit", "Face Care Combo", "Travel Beauty Pouch", "Vitamin C Cream", "Hair Care Duo", "Fragrance Mist", "Makeup Brush Set", "Sunscreen Gel", "Beard Care Box", "Charcoal Face Wash", "Nail Care Kit", "Body Lotion Duo", "Hair Dryer Brush", "Aloe Night Gel", "Keratin Shampoo", "Rose Toner", "Under Eye Roller", "Compact Makeup Mirror", "Clay Mask Jar", "Lip Balm Trio", "Men Styling Wax", "Body Scrub Tub", "Cuticle Oil Pen", "Cleanser Foam Pump", "Conditioner Bar", "Perfume Discovery Set", "Facial Razor Pack", "Bath Salt Jar", "Hair Straightener Comb"],
     variants: ["Daily", "Luxe", "Travel"],
     badges: ["Beauty deal", "Self care", "Limited", "Glow pick"],
     images: [
@@ -447,14 +463,18 @@ const categorySeeds: Record<Product["category"], {
       "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1506617420156-8e4536971650?auto=format&fit=crop&w=900&q=80"
+      "https://images.unsplash.com/photo-1506617420156-8e4536971650?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=900&q=80"
     ],
     features: ["Daily routine", "Travel friendly", "Gentle formula", "Value combo"],
     basePrice: 299,
     priceStep: 180
   },
   Sports: {
-    names: ["AeroRun Shoes", "PulseFit Band", "Yoga Mat", "Training Bottle", "Gym Duffel", "Cricket Practice Kit", "Resistance Bands", "Football", "Cycling Gloves", "Jump Rope", "Badminton Racket", "Trail Backpack", "Court Basketball Shoes", "Turf Football Shoes", "Training Dumbbells", "Swimming Goggles"],
+    names: ["AeroRun Shoes", "PulseFit Band", "Yoga Mat", "Training Bottle", "Gym Duffel", "Cricket Practice Kit", "Resistance Bands", "Football", "Cycling Gloves", "Jump Rope", "Badminton Racket", "Trail Backpack", "Court Basketball Shoes", "Turf Football Shoes", "Training Dumbbells", "Swimming Goggles", "Tennis Starter Kit", "Hiking Trek Poles", "Boxing Gloves", "Foam Roller", "Table Tennis Set", "Skate Helmet", "Running Waist Belt", "Pull Up Bar", "Agility Ladder", "Basketball", "Cycling Bottle Cage", "Compression Sleeves", "Fitness Balance Board", "Camping Lantern", "Trail Running Vest", "Pilates Ring"],
     variants: ["Active", "Pro", "Endurance"],
     badges: ["Sport deal", "Fitness pick", "Training ready", "Top value"],
     images: [
@@ -469,7 +489,11 @@ const categorySeeds: Record<Product["category"], {
       "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=900&q=80"
+      "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?auto=format&fit=crop&w=900&q=80"
     ],
     features: ["Lightweight", "Training comfort", "Durable", "Easy carry"],
     basePrice: 399,
@@ -481,20 +505,39 @@ function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+function productArtImage(category: Product["category"], name: string, index: number, view = "front") {
+  const params = new URLSearchParams({
+    category,
+    name,
+    view,
+    tone: String(index)
+  });
+
+  return `/api/product-art?${params.toString()}`;
+}
+
+function productGallery(product: Pick<Product, "image" | "category" | "name">, index: number) {
+  return [
+    product.image,
+    productArtImage(product.category, product.name, index + 100, "detail"),
+    productArtImage(product.category, product.name, index + 200, "box")
+  ];
+}
+
 function generatedProducts(): Product[] {
   const result: Product[] = [];
   const categories = Object.keys(categorySeeds) as Product["category"][];
 
   for (const category of categories) {
     const seed = categorySeeds[category];
-    const productCount = Math.min(seed.names.length, seed.images.length);
+    const productCount = seed.names.length;
     for (let index = 0; index < productCount; index += 1) {
       const baseName = seed.names[index];
       const variant = seed.variants[index % seed.variants.length];
       const name = `${variant} ${baseName}`;
       const price = seed.basePrice + (index % 12) * seed.priceStep + Math.floor(index / 12) * 500;
       const mrp = Math.round(price * (1.35 + (index % 5) * 0.08));
-      const image = seed.images[index];
+      const image = productArtImage(category, name, index);
 
       result.push({
         id: `${slugify(category)}-${slugify(name)}`,
@@ -509,11 +552,7 @@ function generatedProducts(): Product[] {
         accent: ["#0f766e", "#2563eb", "#be123c", "#b45309"][index % 4],
         badge: seed.badges[index % seed.badges.length],
         description: `${name} with ${seed.features.slice(0, 3).join(", ").toLowerCase()} and dependable SealCart delivery support.`,
-        gallery: [
-          image,
-          seed.images[(index + 1) % seed.images.length],
-          seed.images[(index + 2) % seed.images.length]
-        ],
+        gallery: productGallery({ image, category, name }, index),
         features: seed.features,
         specs: [
           { label: "Category", value: category },
@@ -527,7 +566,13 @@ function generatedProducts(): Product[] {
   return result;
 }
 
-export const products: Product[] = [...featuredProducts, ...generatedProducts()];
+export const products: Product[] = [
+  ...featuredProducts.map((product, index) => ({
+    ...product,
+    gallery: productGallery(product, index)
+  })),
+  ...generatedProducts()
+];
 
 export const blogPosts = [
   {
