@@ -85,6 +85,42 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Please enter a valid email address." }, { status: 400 });
   }
 
+  const ownerEmail = process.env.CONTACT_TO_EMAIL;
+
+  if (!ownerEmail) {
+    return NextResponse.json({
+      message: "Support receiver email is not configured yet. Add CONTACT_TO_EMAIL in Vercel.",
+      ticketId,
+      emailDelivered: false
+    }, { status: 503 });
+  }
+
+  const ownerDelivery = await sendEmail({
+    to: ownerEmail,
+    subject: `New SealCart support message ${ticketId} from ${name}`,
+    replyTo: email,
+    html: `
+      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#172026">
+        <h2>New support request</h2>
+        <p><strong>Ticket ID:</strong> ${ticketId}</p>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+        <hr style="border:none;border-top:1px solid #d9e0e6;margin:20px 0" />
+        <p style="color:#68727d;font-size:13px">Reply directly to this email to contact the customer.</p>
+      </div>
+    `
+  });
+
+  if (!ownerDelivery.ok) {
+    return NextResponse.json({
+      message: ownerDelivery.message,
+      ticketId,
+      emailDelivered: false
+    }, { status: ownerDelivery.status });
+  }
+
   const customerEmail = await sendEmail({
     to: email,
     subject: `SealCart support received your message (${ticketId})`,
@@ -103,34 +139,17 @@ export async function POST(request: Request) {
 
   if (!customerEmail.ok) {
     return NextResponse.json({
-      message: customerEmail.message,
+      message: `Message sent to the support desk. Customer confirmation email could not be delivered yet: ${customerEmail.message}`,
       ticketId,
-      emailDelivered: false
-    }, { status: customerEmail.status });
-  }
-
-  const ownerEmail = process.env.CONTACT_TO_EMAIL;
-  if (ownerEmail) {
-    await sendEmail({
-      to: ownerEmail,
-      subject: `New SealCart support message ${ticketId} from ${name}`,
-      replyTo: email,
-      html: `
-        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#172026">
-          <h2>New support request</h2>
-          <p><strong>Ticket ID:</strong> ${ticketId}</p>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Message:</strong></p>
-          <p>${message}</p>
-        </div>
-      `
+      emailDelivered: true,
+      customerConfirmationDelivered: false
     });
   }
 
   return NextResponse.json({
-    message: `Message sent. Ticket ${ticketId} confirmation has been delivered to your inbox.`,
+    message: `Message sent to the support desk. Ticket ${ticketId} confirmation has also been delivered to the customer.`,
     ticketId,
-    emailDelivered: true
+    emailDelivered: true,
+    customerConfirmationDelivered: true
   });
 }
