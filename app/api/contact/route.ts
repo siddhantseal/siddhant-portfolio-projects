@@ -19,13 +19,21 @@ async function sendEmail(payload: {
   replyTo?: string;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.CONTACT_FROM_EMAIL ?? "SealCart Support <onboarding@resend.dev>";
+  const from = process.env.CONTACT_FROM_EMAIL;
 
   if (!apiKey) {
     return {
       ok: false,
       status: 503,
-      message: "Support ticket received. Email delivery is waiting for the mail provider connection."
+      message: "Email provider is not configured yet. Add RESEND_API_KEY in Vercel."
+    };
+  }
+
+  if (!from) {
+    return {
+      ok: false,
+      status: 503,
+      message: "Sender email is not configured yet. Add CONTACT_FROM_EMAIL in Vercel."
     };
   }
 
@@ -48,7 +56,7 @@ async function sendEmail(payload: {
     return {
       ok: false,
       status: response.status,
-      message: "Email service rejected the message. Check the sender domain and API key."
+      message: "Email service rejected the message. Check RESEND_API_KEY and your verified sender domain."
     };
   }
 
@@ -95,10 +103,10 @@ export async function POST(request: Request) {
 
   if (!customerEmail.ok) {
     return NextResponse.json({
-      message: `Support ticket ${ticketId} received. Our team will contact you at ${email}.`,
+      message: customerEmail.message,
       ticketId,
       emailDelivered: false
-    });
+    }, { status: customerEmail.status });
   }
 
   const ownerEmail = process.env.CONTACT_TO_EMAIL;
