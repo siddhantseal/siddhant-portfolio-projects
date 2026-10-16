@@ -4282,9 +4282,15 @@ body.themeDark .gatewaySteps span.done i {
     justify-content: flex-start;
     gap: 10px;
     overflow-x: auto;
-    padding-bottom: 2px;
+    padding: 2px 0 4px;
     font-size: 12px;
     scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+
+  .storeHeader nav a {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
   }
 
   .storeHeader nav::-webkit-scrollbar {
