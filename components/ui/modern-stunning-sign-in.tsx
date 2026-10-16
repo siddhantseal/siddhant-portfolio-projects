@@ -120,7 +120,7 @@ const SignIn1 = ({ mode = "login", message, onModeChange, onEmailAuth, onGoogle 
 
       <div className="modernSocialProof">
         <p>
-          Join <strong>thousands</strong> of shoppers testing a professional e-commerce experience.
+          Join <strong>thousands</strong> of shoppers browsing deals, tracking orders, and managing accounts.
         </p>
         <div className="modernAvatarStack" aria-hidden="true">
           {shopperAvatars.map((avatar) => (

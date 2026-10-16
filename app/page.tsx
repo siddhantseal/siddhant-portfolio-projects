@@ -63,12 +63,39 @@ const storeStats = [
   { value: "24/7", label: "support pages" }
 ];
 
+const customerReviews = [
+  {
+    name: "Riya Sharma",
+    city: "Kolkata",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=140&q=80",
+    rating: "5.0",
+    text: "The phone deals were clear, delivery updates were easy to follow, and checkout felt quick."
+  },
+  {
+    name: "Arjun Mehta",
+    city: "Bengaluru",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=140&q=80",
+    rating: "4.8",
+    text: "I liked how electronics, fashion, and home products were all easy to compare in one place."
+  },
+  {
+    name: "Neha Das",
+    city: "Mumbai",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=140&q=80",
+    rating: "4.9",
+    text: "The order section and account page make repeat shopping feel smooth and trustworthy."
+  }
+];
+
+const shopperAvatars = customerReviews.map((review) => review.avatar);
+
 export default function Home() {
   const topDeals = products.slice(0, 4);
   const productStories = [products[0], products[1], products[10]];
 
   return (
     <main>
+      <div className="siteShader" aria-hidden="true" />
       <MotionEffects />
       <header className="storeHeader">
         <Link className="brand" href="/">SealCart</Link>
@@ -220,6 +247,52 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="shopperLoveSection" data-scroll-reveal>
+        <div className="shopperLoveHeader">
+          <div>
+            <p className="eyebrow">Customer reviews</p>
+            <h2>Trusted by shoppers across India</h2>
+            <p>Real marketplace details customers care about: clear pricing, fast discovery, order tracking, and support.</p>
+          </div>
+          <div className="avatarStack" aria-label="Recent customers">
+            {shopperAvatars.map((avatar) => (
+              <img alt="" src={avatar} key={avatar} />
+            ))}
+            <span>2k+</span>
+          </div>
+        </div>
+        <div className="testimonialGrid">
+          {customerReviews.map((review) => (
+            <article className="testimonialCard" key={review.name}>
+              <div className="testimonialTop">
+                <img alt={`${review.name} avatar`} src={review.avatar} />
+                <div>
+                  <strong>{review.name}</strong>
+                  <span>{review.city}</span>
+                </div>
+                <small>{review.rating} stars</small>
+              </div>
+              <p>{review.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="homeSection brandAssurance" data-scroll-reveal>
+        <div className="assuranceCard">
+          <span>Secure payments</span>
+          <strong>UPI, cards, wallets, and netbanking</strong>
+        </div>
+        <div className="assuranceCard">
+          <span>Easy returns</span>
+          <strong>Replacement support on eligible orders</strong>
+        </div>
+        <div className="assuranceCard">
+          <span>Account benefits</span>
+          <strong>Track orders and manage your profile</strong>
+        </div>
+      </section>
+
       <section className="homeSection" data-scroll-reveal>
         <div className="sectionTitle">
           <div>
@@ -242,13 +315,42 @@ export default function Home() {
       <footer className="storeFooter" data-scroll-reveal>
         <div>
           <strong>SealCart</strong>
-          <span>Professional e-commerce platform built with Next.js, React, API routes, GitHub, and Vercel.</span>
+          <span>Shop electronics, fashion, home, beauty, sports, and daily essentials with fast support.</span>
         </div>
         <div className="footerLinks">
           <Link href="/commerce">Shop</Link>
           <Link href="/orders">Orders</Link>
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>
+        </div>
+        <div className="footerColumns">
+          <section>
+            <h3>Departments</h3>
+            <Link href="/commerce?category=Mobiles">Mobiles</Link>
+            <Link href="/commerce?category=Electronics">Electronics</Link>
+            <Link href="/commerce?category=Fashion">Fashion</Link>
+            <Link href="/commerce?category=Home">Home</Link>
+          </section>
+          <section>
+            <h3>Customer care</h3>
+            <Link href="/orders">Track orders</Link>
+            <Link href="/contact">Returns help</Link>
+            <Link href="/contact">Product support</Link>
+            <Link href="/account">My account</Link>
+          </section>
+          <section>
+            <h3>SealCart</h3>
+            <Link href="/about">About us</Link>
+            <Link href="/blog">Shopping guides</Link>
+            <Link href="/commerce">Today&apos;s deals</Link>
+            <Link href="/contact">Contact</Link>
+          </section>
+        </div>
+        <div className="footerTrust">
+          <span>Secure checkout</span>
+          <span>Fast delivery</span>
+          <span>7-day replacement flow</span>
+          <span>Support: +91 86177 27090</span>
         </div>
       </footer>
     </main>
