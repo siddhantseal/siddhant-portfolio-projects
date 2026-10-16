@@ -481,25 +481,20 @@ function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function productImage(category: Product["category"], name: string, index: number, view = 0) {
-  const topic = encodeURIComponent(`${category} ${name} product`);
-  return `https://source.unsplash.com/900x900/?${topic}&sig=${slugify(category)}-${index}-${view}`;
-}
-
 function generatedProducts(): Product[] {
   const result: Product[] = [];
   const categories = Object.keys(categorySeeds) as Product["category"][];
 
   for (const category of categories) {
     const seed = categorySeeds[category];
-    const productCount = seed.names.length * seed.variants.length;
+    const productCount = Math.min(seed.names.length, seed.images.length);
     for (let index = 0; index < productCount; index += 1) {
-      const baseName = seed.names[index % seed.names.length];
-      const variant = seed.variants[Math.floor(index / seed.names.length) % seed.variants.length];
+      const baseName = seed.names[index];
+      const variant = seed.variants[index % seed.variants.length];
       const name = `${variant} ${baseName}`;
       const price = seed.basePrice + (index % 12) * seed.priceStep + Math.floor(index / 12) * 500;
       const mrp = Math.round(price * (1.35 + (index % 5) * 0.08));
-      const image = productImage(category, name, index);
+      const image = seed.images[index];
 
       result.push({
         id: `${slugify(category)}-${slugify(name)}`,
@@ -516,8 +511,8 @@ function generatedProducts(): Product[] {
         description: `${name} with ${seed.features.slice(0, 3).join(", ").toLowerCase()} and dependable SealCart delivery support.`,
         gallery: [
           image,
-          productImage(category, name, index, 1),
-          productImage(category, name, index, 2)
+          seed.images[(index + 1) % seed.images.length],
+          seed.images[(index + 2) % seed.images.length]
         ],
         features: seed.features,
         specs: [
