@@ -154,7 +154,7 @@ export function CartClient() {
     if (!address.fullName || !address.phone || !address.line1 || !address.city || !address.state || !address.pincode) {
       return "Please complete the delivery address before payment.";
     }
-    if (address.phone.replace(/\D/g, "").length < 10) return "Please enter a valid phone number.";
+    if (address.phone.replace(/\D/g, "").length < 10) return "Please enter a valid phone number with country code, for example +91 9876543210.";
     if (address.pincode.replace(/\D/g, "").length < 6) return "Please enter a valid pincode.";
     return "";
   }
@@ -338,7 +338,7 @@ export function CartClient() {
               </label>
               <label>
                 Phone number
-                <input required placeholder="10-digit mobile number" value={address.phone} onChange={(event) => updateAddress("phone", event.target.value)} />
+                <input required placeholder="+91 9876543210" value={address.phone} onChange={(event) => updateAddress("phone", event.target.value)} />
               </label>
               <label className="wide">
                 Address
