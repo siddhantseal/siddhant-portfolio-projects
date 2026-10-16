@@ -21,7 +21,7 @@ export default function AccountPage() {
         <div className="headerActions">
           <AuthStatus />
           <ThemeToggle />
-          <Link className="headerCart" href="/commerce">Cart</Link>
+          <Link className="headerCart" href="/cart">Cart</Link>
         </div>
       </header>
 

@@ -143,8 +143,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
 
   async function checkout() {
     if (!cartLines.length) return;
-    setIsPaymentOpen(true);
-    setPaymentStep("ready");
+    window.location.href = "/cart";
     setOrderMessage("");
   }
 
@@ -229,7 +228,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
         <div className="headerActions">
           <AuthStatus />
           <ThemeToggle />
-          <span className="headerCart">{itemCount} items</span>
+          <Link className="headerCart" href="/cart">{itemCount} items</Link>
         </div>
       </header>
 
@@ -266,7 +265,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           </div>
           <div className="serviceNote">
             <strong>Buyer protection</strong>
-            <span>Secure totals, delivery calculation, and order ID confirmation.</span>
+            <span>Review your cart page for address, delivery slot, payment timing, and order confirmation.</span>
           </div>
           <div className="liveCommercePanel">
             <strong>{liveStatus}</strong>
@@ -355,7 +354,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
         <aside className="cartPanel">
           <h2>Order Summary</h2>
           {cartLines.length === 0 ? (
-            <p className="muted">Your cart is empty. Add a product to test the complete checkout flow.</p>
+            <p className="muted">Your cart is empty. Add a product, then open the dedicated cart page for checkout.</p>
           ) : (
             <div className="cartLines">
               {cartLines.map((line) => (
@@ -386,7 +385,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           </dl>
 
           <button className="button primary full" disabled={!cartLines.length} onClick={checkout} type="button">
-            Pay securely
+            Review cart and checkout
           </button>
           {orderMessage ? (
             <p className="orderMessage">

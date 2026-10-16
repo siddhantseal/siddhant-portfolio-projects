@@ -6,8 +6,23 @@ type CheckoutItem = {
   quantity: number;
 };
 
+type DeliveryAddress = {
+  fullName?: string;
+  phone?: string;
+  line1?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+};
+
 export async function POST(request: Request) {
-  const body = (await request.json()) as { items?: CheckoutItem[] };
+  const body = (await request.json()) as {
+    items?: CheckoutItem[];
+    address?: DeliveryAddress;
+    deliverySlot?: string;
+    paymentMethod?: string;
+    paymentTime?: string;
+  };
   const items = body.items ?? [];
 
   if (!items.length) {
@@ -29,6 +44,10 @@ export async function POST(request: Request) {
     subtotal,
     delivery,
     tax,
-    total
+    total,
+    address: body.address ?? null,
+    deliverySlot: body.deliverySlot ?? null,
+    paymentMethod: body.paymentMethod ?? null,
+    paymentTime: body.paymentTime ?? null
   });
 }
