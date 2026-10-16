@@ -212,6 +212,14 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
     window.history.replaceState(null, "", nextUrl);
   }
 
+  function productHref(id: string) {
+    const params = new URLSearchParams();
+    if (category !== "All") params.set("category", category);
+    if (query.trim()) params.set("q", query.trim());
+    const suffix = params.toString();
+    return suffix ? `/commerce/${id}?${suffix}` : `/commerce/${id}`;
+  }
+
   return (
     <main>
       <header className="storeHeader compact">
@@ -267,15 +275,6 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
             <strong>Buyer protection</strong>
             <span>Review your cart page for address, delivery slot, payment timing, and order confirmation.</span>
           </div>
-          <div className="liveCommercePanel">
-            <strong>{liveStatus}</strong>
-            <span>{itemCount} item{itemCount === 1 ? "" : "s"} synced in this browser</span>
-            <div>
-              {liveEvents.map((event) => (
-                <small key={event}>{event}</small>
-              ))}
-            </div>
-          </div>
         </aside>
 
         <div className="catalogPanel">
@@ -319,13 +318,13 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
           <div className="productGrid">
             {filteredProducts.map((product) => (
               <article className="productCard" key={product.id}>
-                <Link href={`/commerce/${product.id}`}>
+                <Link href={productHref(product.id)}>
                   <img alt={product.name} src={product.image} />
                 </Link>
                 <div className="productBody">
                   <span style={{ color: product.accent }}>{product.badge}</span>
                   <h2>
-                    <Link href={`/commerce/${product.id}`}>{product.name}</Link>
+                    <Link href={productHref(product.id)}>{product.name}</Link>
                   </h2>
                   <p>{product.description}</p>
                   <div className="ratingRow">
@@ -342,7 +341,7 @@ export function CommerceClient({ initialCategory, initialQuery }: CommerceClient
                   <button className="button primary full" onClick={() => addToCart(product.id)} type="button">
                     Add to cart
                   </button>
-                  <Link className="button secondary full" href={`/commerce/${product.id}`}>
+                  <Link className="button secondary full" href={productHref(product.id)}>
                     View product
                   </Link>
                 </div>

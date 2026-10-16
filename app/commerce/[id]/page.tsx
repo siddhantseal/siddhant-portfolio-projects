@@ -59,14 +59,27 @@ export function generateStaticParams() {
   return products.map((product) => ({ id: product.id }));
 }
 
-export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+type ProductDetailPageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{
+    category?: string;
+    q?: string;
+  }>;
+};
+
+export default async function ProductDetailPage({ params, searchParams }: ProductDetailPageProps) {
   const { id } = await params;
+  const sourceParams = await searchParams;
   const product = products.find((item) => item.id === id);
 
   if (!product) {
     notFound();
   }
 
+  const backParams = new URLSearchParams();
+  if (sourceParams.category) backParams.set("category", sourceParams.category);
+  if (sourceParams.q) backParams.set("q", sourceParams.q);
+  const backHref = backParams.toString() ? `/commerce?${backParams.toString()}` : "/commerce";
   const media = product.gallery?.length ? product.gallery : [product.image];
   const relatedProducts = products
     .filter((item) => item.category === product.category && item.id !== product.id)
@@ -95,7 +108,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="headerActions">
           <AuthStatus />
           <ThemeToggle />
-          <Link className="headerCart" href="/commerce">Back to shop</Link>
+          <Link className="headerCart" href={backHref}>Back to shop</Link>
         </div>
       </header>
 
@@ -205,11 +218,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <p className="eyebrow">Recommended</p>
             <h2>Similar products</h2>
           </div>
-          <Link href="/commerce">View all</Link>
+          <Link href={backHref}>View all</Link>
         </div>
         <div className="dealGrid">
           {relatedProducts.map((item) => (
-            <Link className="dealCard" href={`/commerce/${item.id}`} key={item.id}>
+            <Link className="dealCard" href={`/commerce/${item.id}?category=${encodeURIComponent(product.category)}`} key={item.id}>
               <img alt={item.name} src={item.image} />
               <span>{item.badge}</span>
               <h3>{item.name}</h3>
