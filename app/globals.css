@@ -308,6 +308,12 @@ p {
   background: rgba(255, 255, 255, 0.7);
 }
 
+.button.danger {
+  border-color: var(--rose);
+  background: var(--rose);
+  color: white;
+}
+
 .button.full {
   width: 100%;
 }
@@ -497,18 +503,61 @@ p {
 .taskMoves button,
 .stepper button,
 .taskCardTop button {
+  position: relative;
+  overflow: hidden;
   min-height: 36px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: white;
   padding: 0 12px;
   font-weight: 700;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+  will-change: transform;
+}
+
+.segments button:hover {
+  border-color: rgba(15, 118, 110, 0.34);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.segments button:active {
+  transform: scale(0.97);
 }
 
 .segments button.active {
   border-color: var(--green);
-  background: #e8f5f2;
+  background:
+    radial-gradient(circle at 18% 50%, rgba(15, 118, 110, 0.2), transparent 22%),
+    #e8f5f2;
   color: var(--green);
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.14);
+  transform: translateX(2px);
+}
+
+.segments button.active::after {
+  position: absolute;
+  inset: 5px auto 5px 7px;
+  width: 4px;
+  border-radius: 999px;
+  background: var(--green);
+  content: "";
+  opacity: 0.95;
+}
+
+.segments button.active::before {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+  content: "";
+  transform: translateX(-120%);
+  animation: departmentSweep 420ms ease;
+  pointer-events: none;
 }
 
 .productGrid {
@@ -1077,6 +1126,30 @@ body.themeDark .searchButton {
   color: var(--ink);
 }
 
+html.themeDark .segments button:hover,
+body:has(.themeSwitch input:checked) .segments button:hover,
+body.themeDark .segments button:hover {
+  border-color: rgba(45, 212, 191, 0.44);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+}
+
+html.themeDark .segments button.active,
+body:has(.themeSwitch input:checked) .segments button.active,
+body.themeDark .segments button.active {
+  border-color: #2dd4bf;
+  background:
+    radial-gradient(circle at 18% 50%, rgba(45, 212, 191, 0.26), transparent 24%),
+    #102a2a;
+  color: #8cf3e7;
+  box-shadow: 0 14px 28px rgba(45, 212, 191, 0.12);
+}
+
+html.themeDark .segments button.active::after,
+body:has(.themeSwitch input:checked) .segments button.active::after,
+body.themeDark .segments button.active::after {
+  background: #2dd4bf;
+}
+
 html.themeDark .headerCart,
 html.themeDark .button.primary,
 body:has(.themeSwitch input:checked) .headerCart,
@@ -1293,6 +1366,21 @@ body:has(.themeSwitch input:checked) .authTabs button.active,
 body.themeDark .authTabs button.active {
   background: #2dd4bf;
   color: #071012;
+}
+
+html.themeDark .button.danger,
+body:has(.themeSwitch input:checked) .button.danger,
+body.themeDark .button.danger {
+  border-color: #fb7185;
+  background: #be123c;
+  color: white;
+}
+
+html.themeDark .deleteAccountBox,
+body:has(.themeSwitch input:checked) .deleteAccountBox,
+body.themeDark .deleteAccountBox {
+  border-color: rgba(251, 113, 133, 0.32);
+  background: rgba(190, 18, 60, 0.13);
 }
 
 html.themeDark .cartHero,
@@ -2440,6 +2528,15 @@ body.themeDark .gatewaySteps span.done i {
   }
 }
 
+@keyframes departmentSweep {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(120%);
+  }
+}
+
 .storeFooter {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
@@ -2558,6 +2655,18 @@ body.themeDark .gatewaySteps span.done i {
   font-weight: 900;
 }
 
+.shopSearchBar {
+  display: flex;
+  width: min(1180px, calc(100% - 32px));
+  align-items: center;
+  gap: 12px;
+  margin: 0 auto 16px;
+}
+
+.shopSearchBar .searchForm {
+  margin: 0;
+}
+
 .marketLayout {
   grid-template-columns: 220px minmax(0, 1fr) 340px;
   margin-bottom: 56px;
@@ -2584,6 +2693,7 @@ body.themeDark .gatewaySteps span.done i {
 .segments.vertical button {
   justify-content: flex-start;
   width: 100%;
+  text-align: left;
 }
 
 .serviceNote {
@@ -3545,6 +3655,25 @@ body.themeDark .gatewaySteps span.done i {
   margin-top: 18px;
 }
 
+.deleteAccountBox {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(190, 18, 60, 0.28);
+  border-radius: 8px;
+  background: rgba(190, 18, 60, 0.08);
+  padding: 12px;
+}
+
+.deleteAccountBox strong {
+  color: var(--rose);
+}
+
+.deleteAccountBox span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .modernSignInShell {
   position: relative;
   display: grid;
@@ -4170,6 +4299,29 @@ body.themeDark .gatewaySteps span.done i {
     position: static;
   }
 
+  .segments.vertical {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 4px;
+    scroll-snap-type: x proximity;
+  }
+
+  .segments.vertical button {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 104px;
+    justify-content: center;
+    padding: 0 16px;
+    text-align: center;
+    scroll-snap-align: start;
+  }
+
+  .segments.vertical button.active {
+    transform: translateY(-1px);
+  }
+
   .storeHeroCopy h1,
   .contentHero h1 {
     font-size: 30px;
@@ -4265,6 +4417,7 @@ body.themeDark .gatewaySteps span.done i {
   .storeStats,
   .commerceHero,
   .shopLayout,
+  .shopSearchBar,
   .contentHero,
   .infoGrid,
   .contactLayout,
@@ -4299,10 +4452,10 @@ body.themeDark .gatewaySteps span.done i {
     grid-column: 1 / -1;
     flex-wrap: nowrap;
     justify-content: flex-start;
-    gap: 10px;
+    gap: 8px;
     overflow-x: auto;
     padding: 2px 0 4px;
-    font-size: 12px;
+    font-size: 11px;
     scrollbar-width: none;
     scroll-snap-type: x proximity;
   }
@@ -4440,6 +4593,33 @@ body.themeDark .gatewaySteps span.done i {
 
   .cartPaymentMethods {
     grid-template-columns: 1fr;
+  }
+
+  .shopSearchBar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .shopSearchBar .searchForm {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 82px;
+    min-width: 0;
+  }
+
+  .shopSearchBar .searchForm input {
+    min-width: 0;
+  }
+
+  .shopSearchBar .searchButton {
+    padding: 0 10px;
+  }
+
+  .shopSearchBar .resultCount {
+    justify-content: center;
+    min-height: 36px;
+    font-size: 12px;
   }
 
   .storeHeroCopy p:not(.eyebrow),

@@ -59,6 +59,7 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
   const [user, setUser] = useState<AccountUser | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [message, setMessage] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState("");
   const { showToast, ToastViewport } = useToast();
 
   useEffect(() => {
@@ -186,6 +187,34 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
     broadcastAuthChange();
   }
 
+  function deleteAccount() {
+    if (!user || deleteConfirm.trim().toUpperCase() !== "DELETE") {
+      setMessage("Type DELETE to permanently delete this SealCart account.");
+      showToast("Type DELETE to confirm account deletion.", "danger");
+      return;
+    }
+
+    const currentEmail = user.email.toLowerCase();
+    const remainingUsers = readStoredUsers().filter((item) => item.email.toLowerCase() !== currentEmail);
+    window.localStorage.setItem("sealcart-users", JSON.stringify(remainingUsers));
+    [
+      "sealcart-user",
+      "sealcart-cart",
+      "sealcart-address",
+      "sealcart-orders",
+      "sealcart-support-tickets",
+      "sealcart-sample-order-overrides"
+    ].forEach((key) => window.localStorage.removeItem(key));
+
+    fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    setUser(null);
+    setOrders([]);
+    setDeleteConfirm("");
+    setMessage("Account deleted permanently from SealCart.");
+    showToast("Account deleted permanently.", "danger");
+    broadcastAuthChange();
+  }
+
   if (user) {
     const signedInDate = new Intl.DateTimeFormat("en-IN", {
       day: "2-digit",
@@ -217,6 +246,23 @@ export function AccountClient({ initialMode = "login" }: { initialMode?: Mode })
           <button className="button secondary full" onClick={logout} type="button">
             Logout
           </button>
+
+          <div className="deleteAccountBox">
+            <strong>Delete account</strong>
+            <span>This permanently clears this SealCart profile, saved cart, address, support tickets, and order history from this browser.</span>
+            <label>
+              Type DELETE to confirm
+              <input
+                aria-label="Type DELETE to confirm account deletion"
+                value={deleteConfirm}
+                onChange={(event) => setDeleteConfirm(event.target.value)}
+                placeholder="DELETE"
+              />
+            </label>
+            <button className="button danger full" onClick={deleteAccount} type="button">
+              Delete account permanently
+            </button>
+          </div>
         </aside>
 
         <div className="accountPanel">
