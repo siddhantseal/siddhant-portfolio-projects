@@ -158,7 +158,7 @@ export default function Home() {
         <AnimatedCommerceShowcase />
       </div>
 
-      <CollectionSurfer items={surferItems} />
+      <CollectionSurfer items={surferItems} variant="uplift" />
 
       <section className="storeBand" data-scroll-reveal>
         <div className="storeFeature"><strong>Free delivery</strong><span>On orders above Rs 5,000</span></div>

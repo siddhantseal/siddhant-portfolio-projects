@@ -4,20 +4,21 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-export type CollectionSurferItem = {
+export type CollectionItem = {
   id: string;
   image: string;
   title: string;
-  category: string;
-  price: number;
-  href: string;
+  category?: string;
+  price?: number;
+  href?: string;
 };
 
 type CollectionSurferProps = {
-  items: CollectionSurferItem[];
+  items: CollectionItem[];
+  variant?: "magnetic" | "uplift" | "simple";
 };
 
-export function CollectionSurfer({ items }: CollectionSurferProps) {
+export function CollectionSurfer({ items, variant = "uplift" }: CollectionSurferProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [progress, setProgress] = useState(0);
 
@@ -56,7 +57,7 @@ export function CollectionSurfer({ items }: CollectionSurferProps) {
   }, []);
 
   return (
-    <section className="collectionSurferSection" ref={sectionRef} data-scroll-reveal>
+    <section className={`collectionSurferSection ${variant}`} ref={sectionRef} data-scroll-reveal>
       <div className="collectionSurferCopy">
         <p className="eyebrow">Trending collections</p>
         <h2>Surf through popular picks before you open the shop.</h2>
@@ -77,7 +78,7 @@ export function CollectionSurfer({ items }: CollectionSurferProps) {
             return (
               <Link
                 className="collectionSurferCard"
-                href={item.href}
+                href={item.href ?? "/commerce"}
                 key={item.id}
                 style={
                   {
@@ -90,9 +91,9 @@ export function CollectionSurfer({ items }: CollectionSurferProps) {
                 }
               >
                 <img alt={item.title} src={item.image} />
-                <span>{item.category}</span>
+                {item.category ? <span>{item.category}</span> : null}
                 <strong>{item.title}</strong>
-                <small>Rs {item.price.toLocaleString("en-IN")}</small>
+                {typeof item.price === "number" ? <small>Rs {item.price.toLocaleString("en-IN")}</small> : null}
               </Link>
             );
           })}

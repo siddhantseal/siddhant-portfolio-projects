@@ -105,7 +105,7 @@ main > :not(.siteShader) {
     conic-gradient(from 180deg at 50% 50%, oklch(70% 0.12 188 / 0.07), oklch(84% 0.19 80.46 / 0.08), transparent, oklch(70% 0.12 188 / 0.07));
   filter: blur(44px) saturate(1.08);
   opacity: 0.8;
-  animation: shaderFlow 22s ease-in-out infinite alternate;
+  animation: none;
 }
 
 .siteShader::after {
@@ -122,6 +122,8 @@ main > :not(.siteShader) {
 .motionCursor,
 .motionCursorDot {
   position: fixed;
+  top: 0;
+  left: 0;
   z-index: 9999;
   display: none;
   pointer-events: none;
@@ -350,7 +352,8 @@ p {
 }
 
 .button:hover {
-  transform: translateY(-1px);
+  box-shadow: 0 14px 34px oklch(84% 0.19 80.46 / 0.2);
+  transform: none;
 }
 
 .button.full {
@@ -441,7 +444,7 @@ p {
 }
 
 .projectCard:hover {
-  transform: translateY(-3px);
+  border-color: oklch(70% 0.12 188 / 0.28);
   box-shadow: var(--shadow);
 }
 
@@ -564,11 +567,11 @@ p {
 .segments button:hover {
   border-color: oklch(70% 0.12 188 / 0.42);
   box-shadow: 0 10px 24px oklch(18% 0.022 95 / 0.08);
-  transform: translateY(-1px);
+  transform: none;
 }
 
 .segments button:active {
-  transform: scale(0.97);
+  transform: none;
 }
 
 .segments button.active {
@@ -1737,7 +1740,7 @@ body.themeDark .gatewaySteps span.done i {
 }
 
 .motionProductCard:hover {
-  transform: translateY(-4px) rotate(0deg) !important;
+  border-color: oklch(84% 0.19 80.46 / 0.45);
   box-shadow: 0 28px 68px rgba(33, 42, 50, 0.22);
 }
 
@@ -2096,7 +2099,8 @@ body.themeDark .gatewaySteps span.done i {
 }
 
 .categoryTile:hover img {
-  transform: scale(1.08);
+  filter: saturate(1.06) contrast(1.02);
+  transform: none;
 }
 
 .quickShopGrid {
@@ -2177,8 +2181,7 @@ body.themeDark .gatewaySteps span.done i {
   pointer-events: none;
   background: radial-gradient(circle at 50% 50%, rgba(45, 212, 191, 0.18), transparent 34%);
   opacity: 0;
-  transform: scale(0.98);
-  transition: opacity 180ms ease, transform 220ms ease;
+  transition: opacity 180ms ease;
 }
 
 .dealShowcase:active,
@@ -2198,7 +2201,6 @@ body.themeDark .gatewaySteps span.done i {
 .dealCard:active::after,
 .videoCard:active::after {
   opacity: 1;
-  transform: scale(1);
 }
 
 .dealShowcase:focus-visible,
@@ -2251,8 +2253,7 @@ body.themeDark .gatewaySteps span.done i {
   width: 100%;
   aspect-ratio: 16 / 11;
   object-fit: cover;
-  transform: scale(1.01);
-  transition: transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 700ms ease;
+  transition: filter 300ms ease;
 }
 
 .experienceCard:first-child .experienceMedia img {
@@ -2262,7 +2263,7 @@ body.themeDark .gatewaySteps span.done i {
 
 .experienceCard:hover .experienceMedia img {
   filter: saturate(1.05) contrast(1.02);
-  transform: scale(1.07);
+  transform: none;
 }
 
 .experienceMedia span {
@@ -2440,7 +2441,6 @@ body.themeDark .gatewaySteps span.done i {
 }
 
 .testimonialCard:hover {
-  transform: translateY(-3px);
   box-shadow: var(--shadow);
 }
 
@@ -2605,7 +2605,7 @@ body.themeDark .gatewaySteps span.done i {
   top: 42px;
   left: 12%;
   background: rgba(255, 255, 255, 0.22);
-  animation: productFloat 5s ease-in-out infinite;
+  animation: none;
 }
 
 .videoMock i {
@@ -3494,7 +3494,7 @@ body.themeDark .gatewaySteps span.done i {
 
 .orderItem:hover {
   border-color: rgba(15, 118, 110, 0.34);
-  transform: translateY(-1px);
+  transform: none;
 }
 
 .orderItem img {
@@ -3804,7 +3804,6 @@ body.themeDark .gatewaySteps span.done i {
 }
 
 .accountOrder:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow);
 }
 
@@ -4014,7 +4013,6 @@ body.themeDark .gatewaySteps span.done i {
 
 .modernPrimaryAction:hover,
 .modernGoogleAction:hover {
-  transform: translateY(-1px);
   filter: brightness(1.1);
 }
 
@@ -4486,7 +4484,7 @@ body.themeDark .gatewaySteps span.done i {
   }
 
   .segments.vertical button.active {
-    transform: translateY(-1px);
+    transform: none;
   }
 
   .storeHeroCopy h1,
