@@ -1944,6 +1944,27 @@ body.themeDark .gatewaySteps span.done i {
   box-shadow: 0 26px 64px rgba(33, 42, 50, 0.22);
 }
 
+.collectionSurferHitArea {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  z-index: 140;
+  width: clamp(158px, 13.5vw, 210px);
+  height: clamp(212px, 18vw, 264px);
+  border-radius: 8px;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.collectionSurferSection.uplift .collectionSurferHitArea {
+  transform: translate(-50%, calc(-50% - 34px));
+}
+
+.collectionSurferHitArea:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 5px;
+}
+
 .collectionSurferCard img {
   width: 100%;
   aspect-ratio: 4 / 3;
@@ -4932,7 +4953,8 @@ body.themeDark .gatewaySteps span.done i {
   }
 
   .collectionSurferRail,
-  .collectionSurferCaption {
+  .collectionSurferCaption,
+  .collectionSurferHitArea {
     display: none;
   }
 

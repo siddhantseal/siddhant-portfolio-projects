@@ -24,6 +24,7 @@ export function CollectionSurfer({ items, variant = "uplift" }: CollectionSurfer
 
   const visibleItems = useMemo(() => items.slice(0, 7), [items]);
   const activeIndex = Math.round(progress * Math.max(visibleItems.length - 1, 1));
+  const activeItem = visibleItems[activeIndex];
 
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -113,9 +114,17 @@ export function CollectionSurfer({ items, variant = "uplift" }: CollectionSurfer
             );
           })}
         </div>
+        {activeItem ? (
+          <Link
+            aria-label={`Open ${activeItem.title}`}
+            className="collectionSurferHitArea"
+            href={activeItem.href ?? "/commerce"}
+            title={activeItem.title}
+          />
+        ) : null}
         <div className="collectionSurferCaption" aria-live="polite">
-          <span>{visibleItems[activeIndex]?.category ?? "Featured"}</span>
-          <strong>{visibleItems[activeIndex]?.title}</strong>
+          <span>{activeItem?.category ?? "Featured"}</span>
+          <strong>{activeItem?.title}</strong>
         </div>
       </div>
     </section>
