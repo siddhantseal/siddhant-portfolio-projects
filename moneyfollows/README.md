@@ -35,6 +35,16 @@ In Firebase Console:
 4. Add your local and production domains to Authentication > Settings > Authorized domains.
 5. Add the values from your Firebase Web App config to Vercel environment variables.
 
+For this Vercel project, add these authorized domains in Firebase:
+
+```text
+money-manager-pro-plum.vercel.app
+money-manager-pro-siddhantprojects.vercel.app
+money-manager-e1bptt2r8-siddhantprojects.vercel.app
+```
+
+If Firebase still shows an unauthorized-domain error, copy the exact hostname from the app error or browser address bar and add that exact domain too. Do not include `https://` or a trailing `/`.
+
 Required Vite variables:
 
 ```text

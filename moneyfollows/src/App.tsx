@@ -345,6 +345,7 @@ const loadOpeningBalance = () => {
 
 const getAuthMessage = (error: unknown) => {
   const item = error as { code?: string; message?: string };
+  const currentHost = typeof window === "undefined" ? "this domain" : window.location.hostname;
 
   switch (item.code) {
     case "auth/email-already-in-use":
@@ -360,7 +361,7 @@ const getAuthMessage = (error: unknown) => {
     case "auth/operation-not-allowed":
       return "This sign-in method is not enabled in Firebase yet.";
     case "auth/unauthorized-domain":
-      return "This domain is not authorized in Firebase Authentication settings.";
+      return `Firebase is blocking ${currentHost}. Add exactly this domain in Firebase Authentication > Settings > Authorized domains.`;
     default:
       return item.message || "Sign-in failed. Please try again.";
   }
