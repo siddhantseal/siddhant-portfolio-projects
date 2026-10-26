@@ -1877,26 +1877,46 @@ body.themeDark .gatewaySteps span.done i {
 
 .collectionSurferStage {
   --surfer-progress: 0;
-  min-height: 380px;
+  position: relative;
+  min-height: 430px;
   overflow: hidden;
-  perspective: 1100px;
+  perspective: 1200px;
   perspective-origin: 50% 42%;
+}
+
+.collectionSurferRail {
+  position: absolute;
+  right: 8%;
+  bottom: 30px;
+  left: 8%;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: oklch(70% 0.12 188 / 0.16);
+}
+
+.collectionSurferRail span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--verdigris-patina), var(--kinpaku-gold));
+  transition: transform 120ms linear;
 }
 
 .collectionSurferTrack {
   position: relative;
-  height: 380px;
+  height: 430px;
   transform-style: preserve-3d;
 }
 
 .collectionSurferCard {
-  --surfer-travel: calc((var(--surfer-progress) - 0.5) * -220px);
   position: absolute;
-  top: 50%;
+  top: 48%;
   left: 50%;
   display: grid;
   z-index: var(--surfer-layer);
-  width: clamp(158px, 14vw, 200px);
+  width: clamp(158px, 13.5vw, 210px);
   gap: 7px;
   overflow: hidden;
   border: 1px solid oklch(84% 0.19 80.46 / 0.22);
@@ -1904,11 +1924,19 @@ body.themeDark .gatewaySteps span.done i {
   background: color-mix(in oklch, var(--panel) 88%, transparent);
   padding: 10px;
   box-shadow: 0 22px 54px rgba(33, 42, 50, 0.16);
+  opacity: var(--surfer-opacity);
+  filter: blur(var(--surfer-blur));
   transform:
-    translate3d(calc(-50% + var(--surfer-x) + var(--surfer-travel)), -50%, var(--surfer-z))
-    rotateY(var(--surfer-rotate));
-  transition: box-shadow 180ms ease, border-color 180ms ease;
+    translate3d(calc(-50% + var(--surfer-x)), calc(-50% + var(--surfer-y)), var(--surfer-z))
+    rotateY(var(--surfer-rotate))
+    scale(var(--surfer-scale));
+  transition: box-shadow 180ms ease, border-color 180ms ease, filter 180ms ease;
   backface-visibility: hidden;
+}
+
+.collectionSurferCard.active {
+  border-color: oklch(84% 0.19 80.46 / 0.5);
+  box-shadow: 0 28px 76px rgba(33, 42, 50, 0.24);
 }
 
 .collectionSurferCard:hover {
@@ -1941,6 +1969,29 @@ body.themeDark .gatewaySteps span.done i {
   color: var(--muted);
   font-size: 12px;
   font-weight: 900;
+}
+
+.collectionSurferCaption {
+  position: absolute;
+  right: 8%;
+  bottom: 48px;
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  max-width: min(360px, 50%);
+  text-align: right;
+}
+
+.collectionSurferCaption span {
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.collectionSurferCaption strong {
+  font-size: 18px;
+  line-height: 1.05;
 }
 
 .storeBand {
@@ -4880,6 +4931,11 @@ body.themeDark .gatewaySteps span.done i {
     perspective: 820px;
   }
 
+  .collectionSurferRail,
+  .collectionSurferCaption {
+    display: none;
+  }
+
   .collectionSurferTrack {
     display: flex;
     height: auto;
@@ -4899,6 +4955,8 @@ body.themeDark .gatewaySteps span.done i {
     left: auto;
     flex: 0 0 148px;
     width: 148px;
+    opacity: 1;
+    filter: none;
     padding: 8px;
     transform: none;
   }

@@ -22,7 +22,8 @@ export function CollectionSurfer({ items, variant = "uplift" }: CollectionSurfer
   const sectionRef = useRef<HTMLElement | null>(null);
   const [progress, setProgress] = useState(0);
 
-  const visibleItems = useMemo(() => items.slice(0, 5), [items]);
+  const visibleItems = useMemo(() => items.slice(0, 7), [items]);
+  const activeIndex = Math.round(progress * Math.max(visibleItems.length - 1, 1));
 
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -35,8 +36,9 @@ export function CollectionSurfer({ items, variant = "uplift" }: CollectionSurfer
       if (!section) return;
 
       const rect = section.getBoundingClientRect();
-      const distance = window.innerHeight + rect.height;
-      const raw = (window.innerHeight - rect.top) / distance;
+      const start = window.innerHeight * 0.82;
+      const end = -rect.height * 0.24;
+      const raw = (start - rect.top) / (start - end);
       setProgress(Math.min(1, Math.max(0, raw)));
     };
 
@@ -67,26 +69,39 @@ export function CollectionSurfer({ items, variant = "uplift" }: CollectionSurfer
         </p>
       </div>
       <div className="collectionSurferStage" style={{ "--surfer-progress": progress } as CSSProperties}>
+        <div className="collectionSurferRail" aria-hidden="true">
+          <span style={{ transform: `scaleX(${Math.max(0.06, progress)})` }} />
+        </div>
         <div className="collectionSurferTrack" aria-label="Featured product collection">
           {visibleItems.map((item, index) => {
-            const offset = index - (visibleItems.length - 1) / 2;
-            const depth = Math.abs(offset);
-            const x = offset * 142;
-            const z = depth * -48;
-            const rotate = offset * -6;
-            const layer = Math.round(100 - depth * 10);
+            const position = index - progress * Math.max(visibleItems.length - 1, 1);
+            const distance = Math.abs(position);
+            const direction = position < 0 ? -1 : 1;
+            const x = position * 176;
+            const y = variant === "uplift" ? -Math.max(0, 34 - distance * 18) : 0;
+            const z = -distance * 92;
+            const rotate = position * -12;
+            const scale = Math.max(0.72, 1 - distance * 0.08);
+            const opacity = Math.max(0.36, 1 - distance * 0.16);
+            const blur = Math.min(2.4, distance * 0.55);
+            const layer = Math.round(100 - distance * 10);
             return (
               <Link
-                className="collectionSurferCard"
+                className={`collectionSurferCard ${index === activeIndex ? "active" : ""}`}
                 href={item.href ?? "/commerce"}
                 key={item.id}
                 style={
                   {
                     "--surfer-index": index,
                     "--surfer-x": `${x}px`,
+                    "--surfer-y": `${y}px`,
                     "--surfer-z": `${z}px`,
                     "--surfer-rotate": `${rotate}deg`,
-                    "--surfer-layer": layer
+                    "--surfer-scale": scale,
+                    "--surfer-opacity": opacity,
+                    "--surfer-blur": `${blur}px`,
+                    "--surfer-layer": layer,
+                    "--surfer-direction": direction
                   } as CSSProperties
                 }
               >
@@ -97,6 +112,10 @@ export function CollectionSurfer({ items, variant = "uplift" }: CollectionSurfer
               </Link>
             );
           })}
+        </div>
+        <div className="collectionSurferCaption" aria-live="polite">
+          <span>{visibleItems[activeIndex]?.category ?? "Featured"}</span>
+          <strong>{visibleItems[activeIndex]?.title}</strong>
         </div>
       </div>
     </section>
