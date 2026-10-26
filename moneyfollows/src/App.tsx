@@ -50,7 +50,7 @@ type BottomTab = "trans" | "stats" | "accounts" | "more";
 type FilterTab = "income" | "expenses" | "account";
 type CurrencyCode = string;
 type CurrencyOption = { code: CurrencyCode; label: string; symbol: string };
-type AuthProvider = "Google" | "Email";
+type AuthProvider = "Google" | "Email" | "Local";
 
 type UserProfile = {
   name: string;
@@ -108,6 +108,7 @@ const CURRENCY_STORAGE_KEY = "moneyfollows-currency";
 const BALANCE_STORAGE_KEY = "moneyfollows-opening-balance";
 const REMINDERS_STORAGE_KEY = "moneyfollows-reminders";
 const THEME_KEY = "moneyfollows-theme";
+const LAST_AUTHED_PROFILE_KEY = "moneyfollows-last-authed-profile";
 
 const incomeCategories: Category[] = [
   { emoji: "💸", name: "Allowance", tone: "#48c78e" },
@@ -174,6 +175,32 @@ const prepareAuthPersistence = async () => {
   }
 
   await setPersistence(auth, browserLocalPersistence);
+};
+
+const saveLastAuthedProfile = (user: User) => {
+  window.localStorage.setItem(LAST_AUTHED_PROFILE_KEY, JSON.stringify({
+    email: user.email,
+    name: user.displayName || user.email?.split("@")[0] || "MoneyFollows user",
+    provider: user.providerData[0]?.providerId === "google.com" ? "Google" : "Email",
+    uid: user.uid
+  }));
+};
+
+const loadLastAuthedProfile = (): UserProfile | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(LAST_AUTHED_PROFILE_KEY) || "null") as Partial<UserProfile> | null;
+    return parsed?.name ? {
+      email: typeof parsed.email === "string" ? parsed.email : undefined,
+      name: parsed.name,
+      provider: parsed.provider === "Google" ? "Google" : "Email"
+    } : null;
+  } catch {
+    return null;
+  }
 };
 const currencyOptions: CurrencyOption[] = [...new Set(["INR", "USD", "EUR", ...supportedCurrencyCodes, ...fallbackCurrencyCodes])]
   .map((code) => ({
@@ -422,6 +449,8 @@ function App() {
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(Boolean(auth));
   const [authError, setAuthError] = useState("");
+  const [fallbackProfile, setFallbackProfile] = useState<UserProfile | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
   const [currencyCode, setCurrencyCode] = useState<CurrencyCode>(loadCurrency);
   const [openingBalance, setOpeningBalance] = useState(loadOpeningBalance);
   const [activeView, setActiveView] = useState<ViewTab>("daily");
@@ -487,8 +516,12 @@ function App() {
     void getRedirectResult(auth)
       .then(async (credential) => {
         const pendingName = sessionStorage.getItem("moneyfollows-pending-display-name");
-        if (credential?.user && pendingName && credential.user.displayName !== pendingName) {
-          await updateProfile(credential.user, { displayName: pendingName });
+        if (credential?.user) {
+          if (pendingName && credential.user.displayName !== pendingName) {
+            await updateProfile(credential.user, { displayName: pendingName });
+          }
+          saveLastAuthedProfile(credential.user);
+          setFallbackProfile(null);
           setAuthUser(credential.user);
         }
         sessionStorage.removeItem("moneyfollows-pending-display-name");
@@ -500,6 +533,10 @@ function App() {
 
     return onAuthStateChanged(auth, (nextUser) => {
       setAuthUser(nextUser);
+      if (nextUser) {
+        saveLastAuthedProfile(nextUser);
+        setFallbackProfile(null);
+      }
       setAuthLoading(false);
       setAuthError("");
     });
@@ -511,6 +548,7 @@ function App() {
     }
 
     const timer = window.setTimeout(() => {
+      setFallbackProfile(loadLastAuthedProfile());
       setAuthLoading(false);
       setAuthError("MoneyFollows could not restore the login session. Refresh once, then log in again if needed.");
     }, 8000);
@@ -520,7 +558,7 @@ function App() {
 
   const userProfile = useMemo<UserProfile | null>(() => {
     if (!authUser) {
-      return null;
+      return fallbackProfile;
     }
 
     const providerId = authUser.providerData[0]?.providerId;
@@ -533,7 +571,8 @@ function App() {
       name: authUser.displayName || authUser.email?.split("@")[0] || "MoneyFollows user",
       provider
     };
-  }, [authUser]);
+  }, [authUser, fallbackProfile]);
+  const effectiveProfile = userProfile ?? { name: "Guest", provider: "Local" as const };
 
   const monthEntries = useMemo(
     () => entries.filter((entry) => sameMonth(entry.date, selectedDate)),
@@ -768,14 +807,16 @@ function App() {
 
       if (name.trim() && credential.user.displayName !== name.trim()) {
         await updateProfile(credential.user, { displayName: name.trim() });
-        setAuthUser(credential.user);
       }
+      saveLastAuthedProfile(credential.user);
+      setFallbackProfile(null);
+      setAuthUser(credential.user);
     } catch (error) {
       setAuthError(getAuthMessage(error));
     }
   };
 
-  const handleProviderAuth = async (providerName: Exclude<AuthProvider, "Email">, name: string) => {
+  const handleProviderAuth = async (providerName: Exclude<AuthProvider, "Email" | "Local">, name: string) => {
     if (!auth) {
       setAuthError("Firebase is not configured yet. Add the Vercel environment variables first.");
       return;
@@ -787,8 +828,11 @@ function App() {
       const credential = await signInWithPopup(auth, authProviders[providerName]());
       if (name.trim() && credential.user.displayName !== name.trim()) {
         await updateProfile(credential.user, { displayName: name.trim() });
-        setAuthUser(credential.user);
       }
+      saveLastAuthedProfile(credential.user);
+      setFallbackProfile(null);
+      setAuthUser(credential.user);
+      setShowAuth(false);
     } catch (error) {
       const code = (error as { code?: string }).code;
       if (code === "auth/popup-blocked" || code === "auth/cancelled-popup-request") {
@@ -805,25 +849,20 @@ function App() {
   const handleSignOut = async () => {
     if (!auth) {
       setAuthUser(null);
+      setFallbackProfile(null);
+      window.localStorage.removeItem(LAST_AUTHED_PROFILE_KEY);
+      setShowAuth(false);
       return;
     }
 
     await signOut(auth);
+    setFallbackProfile(null);
+    window.localStorage.removeItem(LAST_AUTHED_PROFILE_KEY);
+    setShowAuth(false);
   };
 
   return (
     <MoneyContext.Provider value={money}>
-    {authLoading ? (
-      <AuthStatusScreen />
-    ) : !userProfile ? (
-      <WelcomeGate
-        authError={authError}
-        authLoading={authLoading}
-        isConfigured={isFirebaseConfigured}
-        onEmailAuth={handleEmailAuth}
-        onProviderAuth={handleProviderAuth}
-      />
-    ) : (
     <main className="app-page">
       <section className="money-workspace" aria-label="MoneyFollows money management app">
         <nav className="bottom-nav" aria-label="Main app sections">
@@ -853,9 +892,11 @@ function App() {
           <div className="brand-row">
             <div>
               <span>MoneyFollows</span>
-              <strong>{totals.total >= 0 ? `Hi ${userProfile.name}, your money is behaving.` : `Hi ${userProfile.name}, your money needs direction.`}</strong>
+              <strong>{totals.total >= 0 ? `Hi ${effectiveProfile.name}, your money is behaving.` : `Hi ${effectiveProfile.name}, your money needs direction.`}</strong>
             </div>
-            <button type="button" aria-label="Open filters" onClick={() => setShowFilter(true)}><Settings2 size={22} /></button>
+            <button type="button" aria-label={userProfile ? "Open filters" : "Sign in"} onClick={() => userProfile ? setShowFilter(true) : setShowAuth(true)}>
+              {userProfile ? <Settings2 size={22} /> : <UserRound size={22} />}
+            </button>
           </div>
           <div className="month-row">
             <button type="button" aria-label="Previous month" onClick={() => changeMonth(-1)}>
@@ -966,10 +1007,11 @@ function App() {
                 onCurrencyChange={setCurrencyCode}
                 onDeleteReminder={(id) => setReminders((current) => current.filter((reminder) => reminder.id !== id))}
                 onOpeningBalanceChange={setOpeningBalance}
+                onSignIn={() => setShowAuth(true)}
                 onSignOut={handleSignOut}
                 onTheme={() => setIsDark((current) => !current)}
                 reminders={reminders}
-                userProfile={userProfile}
+                userProfile={effectiveProfile}
               />
             )}
           </motion.section>
@@ -989,6 +1031,16 @@ function App() {
       </section>
 
       <AnimatePresence>
+        {showAuth && (
+          <WelcomeGate
+            authError={authError}
+            authLoading={authLoading}
+            isConfigured={isFirebaseConfigured}
+            onClose={() => setShowAuth(false)}
+            onEmailAuth={handleEmailAuth}
+            onProviderAuth={handleProviderAuth}
+          />
+        )}
         {showComposer && (
           <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.section
@@ -1180,21 +1232,7 @@ function App() {
         )}
       </AnimatePresence>
     </main>
-    )}
     </MoneyContext.Provider>
-  );
-}
-
-function AuthStatusScreen() {
-  return (
-    <main className="auth-status-screen">
-      <motion.section animate={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: 12 }} transition={spring}>
-        <WalletCards size={34} />
-        <strong>Opening MoneyFollows</strong>
-        <p>Restoring your secure session and loading the dashboard.</p>
-        <button type="button" onClick={() => window.location.reload()}>Refresh app</button>
-      </motion.section>
-    </main>
   );
 }
 
@@ -1202,14 +1240,16 @@ function WelcomeGate({
   authError,
   authLoading,
   isConfigured,
+  onClose,
   onEmailAuth,
   onProviderAuth
 }: {
   authError: string;
   authLoading: boolean;
   isConfigured: boolean;
+  onClose: () => void;
   onEmailAuth: (mode: "login" | "signup", name: string, email: string, password: string) => Promise<void>;
-  onProviderAuth: (provider: Exclude<AuthProvider, "Email">, name: string) => Promise<void>;
+  onProviderAuth: (provider: Exclude<AuthProvider, "Email" | "Local">, name: string) => Promise<void>;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -1238,7 +1278,7 @@ function WelcomeGate({
     setBusyProvider(null);
   };
 
-  const runProviderAuth = async (provider: Exclude<AuthProvider, "Email">) => {
+  const runProviderAuth = async (provider: Exclude<AuthProvider, "Email" | "Local">) => {
     const cleanName = name.trim();
     if (!cleanName) {
       setError("Add your name first so MoneyFollows can personalize the app.");
@@ -1253,6 +1293,7 @@ function WelcomeGate({
 
   return (
     <main className="welcome-gate">
+      <button className="auth-close" type="button" onClick={onClose} aria-label="Close sign in"><X size={22} /></button>
       <motion.section
         animate={{ opacity: 1, y: 0 }}
         className="welcome-panel"
@@ -1349,7 +1390,7 @@ function WelcomeGate({
           </label>
 
           <div className="auth-grid" aria-label="Login and signup options">
-            {(["Google"] as Array<Exclude<AuthProvider, "Email">>).map((provider) => (
+            {(["Google"] as Array<Exclude<AuthProvider, "Email" | "Local">>).map((provider) => (
               <motion.button
                 className={busyProvider === provider ? "active" : ""}
                 disabled={Boolean(busyProvider) || authLoading || !isConfigured}
@@ -1729,6 +1770,7 @@ function MoreView({
   onCurrencyChange,
   onDeleteReminder,
   onOpeningBalanceChange,
+  onSignIn,
   onSignOut,
   onTheme,
   openingBalance,
@@ -1742,6 +1784,7 @@ function MoreView({
   onCurrencyChange: (currency: CurrencyCode) => void;
   onDeleteReminder: (id: number) => void;
   onOpeningBalanceChange: (amount: number) => void;
+  onSignIn: () => void;
   onSignOut: () => void;
   onTheme: () => void;
   openingBalance: number;
@@ -1749,6 +1792,7 @@ function MoreView({
   userProfile: UserProfile;
 }) {
   const money = useMoney();
+  const isLocalProfile = userProfile.provider === "Local";
   const [reminderKind, setReminderKind] = useState<Exclude<EntryKind, "transfer">>("expense");
   const [reminderName, setReminderName] = useState("");
   const [reminderAmount, setReminderAmount] = useState("");
@@ -1788,11 +1832,11 @@ function MoreView({
         <div>
           <span>{userProfile.name.slice(0, 1).toUpperCase()}</span>
           <div>
-            <small>Signed in with {userProfile.provider}</small>
+            <small>{isLocalProfile ? "Local mode" : `Signed in with ${userProfile.provider}`}</small>
             <strong>{userProfile.name}</strong>
           </div>
         </div>
-        <button type="button" onClick={onSignOut}>Change profile</button>
+        <button type="button" onClick={isLocalProfile ? onSignIn : onSignOut}>{isLocalProfile ? "Sign in" : "Sign out"}</button>
       </section>
 
       <section className="setup-card">
