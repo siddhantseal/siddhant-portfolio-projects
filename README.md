@@ -4,6 +4,7 @@ This repository contains deployable full-stack projects for Siddhant Seal:
 
 - Full-Stack E-Commerce Web Application
 - Real-Time Collaborative Task Manager
+- MoneyFollows personal finance dashboard in `moneyfollows/`
 
 Live site: https://siddhant-portfolio-iota.vercel.app
 
