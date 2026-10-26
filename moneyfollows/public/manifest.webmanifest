@@ -1,0 +1,44 @@
+{
+  "name": "MoneyFollows",
+  "short_name": "MoneyFollows",
+  "description": "Track income, expenses, wallets, reminders, notes, and money habits across every device.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "orientation": "any",
+  "background_color": "#121519",
+  "theme_color": "#202328",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/moneyfollows-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/moneyfollows-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Log money",
+      "short_name": "Log",
+      "description": "Open MoneyFollows and add an income, expense, or transfer.",
+      "url": "/?action=log",
+      "icons": [{ "src": "/moneyfollows-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Notes",
+      "short_name": "Notes",
+      "description": "Open your MoneyFollows notes.",
+      "url": "/?view=notes",
+      "icons": [{ "src": "/moneyfollows-icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
