@@ -4,7 +4,7 @@ MoneyFollows is a responsive personal finance app for tracking real income, expe
 
 ## Features
 
-- Real Firebase Authentication with email/password, Google, Facebook, and Apple provider buttons
+- Real Firebase Authentication with email/password and Google sign-in
 - First-run name capture for personalized greetings
 - Income, expense, and transfer logging
 - Food and grocery merchant details
@@ -31,7 +31,7 @@ In Firebase Console:
 
 1. Create a Web App.
 2. Enable Authentication.
-3. Enable Email/Password, Google, Facebook, and Apple providers as needed.
+3. Enable Email/Password and Google providers.
 4. Add your local and production domains to Authentication > Settings > Authorized domains.
 5. Add the values from your Firebase Web App config to Vercel environment variables.
 

@@ -1,9 +1,7 @@
 import { initializeApp, type FirebaseOptions } from "firebase/app";
 import {
-  FacebookAuthProvider,
   getAuth,
   GoogleAuthProvider,
-  OAuthProvider,
   type Auth
 } from "firebase/auth";
 
@@ -28,17 +26,6 @@ const app = isFirebaseConfigured ? initializeApp(firebaseConfig) : null;
 export const auth: Auth | null = app ? getAuth(app) : null;
 
 export const authProviders = {
-  Apple: () => {
-    const provider = new OAuthProvider("apple.com");
-    provider.addScope("email");
-    provider.addScope("name");
-    return provider;
-  },
-  Facebook: () => {
-    const provider = new FacebookAuthProvider();
-    provider.addScope("email");
-    return provider;
-  },
   Google: () => {
     const provider = new GoogleAuthProvider();
     provider.addScope("email");

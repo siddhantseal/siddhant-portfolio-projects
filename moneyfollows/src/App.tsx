@@ -46,7 +46,7 @@ type BottomTab = "trans" | "stats" | "accounts" | "more";
 type FilterTab = "income" | "expenses" | "account";
 type CurrencyCode = string;
 type CurrencyOption = { code: CurrencyCode; label: string; symbol: string };
-type AuthProvider = "Google" | "Facebook" | "Apple" | "Email";
+type AuthProvider = "Google" | "Email";
 
 type UserProfile = {
   name: string;
@@ -484,11 +484,7 @@ function App() {
     const providerId = authUser.providerData[0]?.providerId;
     const provider: AuthProvider = providerId === "google.com"
       ? "Google"
-      : providerId === "facebook.com"
-        ? "Facebook"
-        : providerId === "apple.com"
-          ? "Apple"
-          : "Email";
+      : "Email";
 
     return {
       email: authUser.email ?? undefined,
@@ -1222,7 +1218,7 @@ function WelcomeGate({
           <div className="auth-heading">
             <span>Secure access</span>
             <strong>{mode === "signup" ? "Create your account" : "Log in to MoneyFollows"}</strong>
-            <p>{mode === "signup" ? "Sign up with email or a connected account." : "Use your email or continue with a connected account."}</p>
+            <p>{mode === "signup" ? "Sign up with email or Google." : "Use your email or continue with Google."}</p>
           </div>
           <div className="auth-mode">
             <button className={mode === "signup" ? "active" : ""} type="button" onClick={() => {
@@ -1286,7 +1282,7 @@ function WelcomeGate({
           </label>
 
           <div className="auth-grid" aria-label="Login and signup options">
-            {(["Google", "Facebook", "Apple"] as Array<Exclude<AuthProvider, "Email">>).map((provider) => (
+            {(["Google"] as Array<Exclude<AuthProvider, "Email">>).map((provider) => (
               <motion.button
                 className={busyProvider === provider ? "active" : ""}
                 disabled={Boolean(busyProvider) || authLoading || !isConfigured}
@@ -1298,7 +1294,7 @@ function WelcomeGate({
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.97 }}
               >
-                <b>{provider === "Google" ? "G" : provider === "Facebook" ? "f" : "A"}</b>
+                <b>G</b>
                 <span>{busyProvider === provider ? "Connecting..." : `Continue with ${provider}`}</span>
               </motion.button>
             ))}
