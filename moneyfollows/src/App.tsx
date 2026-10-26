@@ -2,9 +2,11 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import type { CSSProperties } from "react";
 import type { User } from "firebase/auth";
 import {
+  browserLocalPersistence,
   createUserWithEmailAndPassword,
   getRedirectResult,
   onAuthStateChanged,
+  setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
@@ -164,6 +166,14 @@ const getCurrencySymbol = (code: string) => {
   } catch {
     return code;
   }
+};
+
+const prepareAuthPersistence = async () => {
+  if (!auth) {
+    return;
+  }
+
+  await setPersistence(auth, browserLocalPersistence);
 };
 const currencyOptions: CurrencyOption[] = [...new Set(["INR", "USD", "EUR", ...supportedCurrencyCodes, ...fallbackCurrencyCodes])]
   .map((code) => ({
@@ -738,6 +748,7 @@ function App() {
 
     try {
       setAuthError("");
+      await prepareAuthPersistence();
       const credential = mode === "signup"
         ? await createUserWithEmailAndPassword(auth, email, password)
         : await signInWithEmailAndPassword(auth, email, password);
@@ -759,6 +770,7 @@ function App() {
 
     try {
       setAuthError("");
+      await prepareAuthPersistence();
       const credential = await signInWithPopup(auth, authProviders[providerName]());
       if (name.trim() && credential.user.displayName !== name.trim()) {
         await updateProfile(credential.user, { displayName: name.trim() });
@@ -768,6 +780,7 @@ function App() {
       const code = (error as { code?: string }).code;
       if (code === "auth/popup-blocked" || code === "auth/cancelled-popup-request") {
         sessionStorage.setItem("moneyfollows-pending-display-name", name.trim());
+        await prepareAuthPersistence();
         await signInWithRedirect(auth, authProviders[providerName]());
         return;
       }
@@ -787,7 +800,9 @@ function App() {
 
   return (
     <MoneyContext.Provider value={money}>
-    {!userProfile ? (
+    {authLoading ? (
+      <AuthStatusScreen />
+    ) : !userProfile ? (
       <WelcomeGate
         authError={authError}
         authLoading={authLoading}
@@ -1154,6 +1169,18 @@ function App() {
     </main>
     )}
     </MoneyContext.Provider>
+  );
+}
+
+function AuthStatusScreen() {
+  return (
+    <main className="auth-status-screen">
+      <motion.section animate={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: 12 }} transition={spring}>
+        <WalletCards size={34} />
+        <strong>Opening MoneyFollows</strong>
+        <p>Restoring your secure session and loading the dashboard.</p>
+      </motion.section>
+    </main>
   );
 }
 

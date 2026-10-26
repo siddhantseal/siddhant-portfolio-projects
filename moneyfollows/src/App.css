@@ -87,6 +87,43 @@ button {
   padding: 24px;
 }
 
+.auth-status-screen {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--page) 86%, #4fa6ff), transparent 52%),
+    var(--page);
+  color: var(--text);
+  padding: 24px;
+}
+
+.auth-status-screen section {
+  display: grid;
+  width: min(420px, 100%);
+  justify-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: 28px;
+  text-align: center;
+}
+
+.auth-status-screen svg {
+  color: var(--green);
+}
+
+.auth-status-screen strong {
+  font-size: 22px;
+}
+
+.auth-status-screen p {
+  margin: 0;
+  color: var(--muted-2);
+}
+
 .welcome-panel {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
