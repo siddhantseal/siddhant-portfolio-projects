@@ -233,6 +233,29 @@ button {
   color: var(--muted);
 }
 
+.auth-mode {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--phone);
+  padding: 4px;
+}
+
+.auth-mode button {
+  min-height: 38px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.auth-mode button.active {
+  background: var(--panel-soft);
+  color: var(--text);
+}
+
 .welcome-form label {
   display: grid;
   gap: 8px;
@@ -290,6 +313,12 @@ button {
   border-color: color-mix(in srgb, var(--green) 58%, var(--line-strong));
 }
 
+.auth-grid button:disabled,
+.welcome-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .auth-grid b {
   display: grid;
   width: 30px;
@@ -323,11 +352,22 @@ button {
   color: #fff;
 }
 
-.welcome-actions button:last-child {
+.welcome-actions button:not(:first-child) {
   border: 1px solid var(--line-strong);
   background: transparent;
   color: var(--green);
   padding: 0 16px;
+}
+
+.auth-warning {
+  margin: 0;
+  border: 1px solid color-mix(in srgb, #ffcf56 52%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, #ffcf56 12%, var(--panel));
+  color: #ffcf56;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .app-header {

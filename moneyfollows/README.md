@@ -1,74 +1,53 @@
 # MoneyFollows
 
-MoneyFollows is a responsive personal finance app for tracking real income, expenses, transfers, wallets, notes, reminders, and monthly spending patterns. It was built as a separate React + Vite project and is intentionally not connected to the SealCart or portfolio app.
+MoneyFollows is a responsive personal finance app for tracking real income, expenses, transfers, wallets, notes, reminders, and monthly spending patterns.
 
 ## Features
 
-- First-run welcome flow that asks for the user's name before entering the app
-- Login/signup style options for Google, Facebook, Apple, plus local guest mode
+- Real Firebase Authentication with email/password, Google, Facebook, and Apple provider buttons
+- First-run name capture for personalized greetings
+- Income, expense, and transfer logging
+- Food and grocery merchant details
+- Product or bill image attachment
+- Search, filters, reminders, notes, wallets, stats, and CSV export
+- Worldwide currency selection
 - Dark mode and light mode
-- Income, expense, and transfer entries
-- Food and grocery merchant details, including restaurant/store and source app
-- Product or bill image attachment by URL or upload
-- Global search across entries, notes, accounts, merchant details, and descriptions
-- Calendar, daily, monthly, total, stats, wallets, and notes views
-- Dedicated notes section
-- Payment and income reminders
-- Opening balance and worldwide currency selection
-- CSV export for spreadsheet use
-- Money meme gallery and MoneyFollows motivational visuals
-- Local-first data storage with no fake/sample spending added automatically
 - Responsive layout for desktop, laptop, tablet, Android, iOS, and modern browsers
 
-## Tech Stack
-
-- React
-- TypeScript
-- Vite
-- Motion
-- Lucide React
-- CSS custom properties for theming
-
-## Local Development
+## Run Locally
 
 ```bash
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
-Open the local URL printed by Vite.
+Fill `.env.local` with your Firebase Web App config.
 
-## Quality Checks
+## Firebase Setup
+
+In Firebase Console:
+
+1. Create a Web App.
+2. Enable Authentication.
+3. Enable Email/Password, Google, Facebook, and Apple providers as needed.
+4. Add your local and production domains to Authentication > Settings > Authorized domains.
+5. Add the values from your Firebase Web App config to Vercel environment variables.
+
+Required Vite variables:
+
+```text
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+```
+
+## Checks
 
 ```bash
 npm run lint
 npm run build
 ```
-
-## Production Build
-
-```bash
-npm run build
-```
-
-The static output is generated in `dist/`.
-
-## Deploy On Vercel
-
-When deploying this subproject from the repository, set the Vercel root directory to:
-
-```text
-moneyfollows
-```
-
-Use these commands from inside the `moneyfollows` folder:
-
-```bash
-npm install
-npm run build
-npx vercel deploy --prod
-```
-
-## Notes
-
-The social login buttons are prepared as professional UI entry points. Real OAuth requires provider credentials and backend/session handling before connecting them to production authentication.

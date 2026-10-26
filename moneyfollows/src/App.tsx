@@ -1,5 +1,14 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import type { User } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  updateProfile
+} from "firebase/auth";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowLeft,
@@ -29,6 +38,7 @@ import {
   X
 } from "lucide-react";
 import "./App.css";
+import { auth, authProviders, isFirebaseConfigured } from "./firebase";
 
 type EntryKind = "income" | "expense" | "transfer";
 type ViewTab = "daily" | "calendar" | "monthly" | "total" | "note";
@@ -36,12 +46,12 @@ type BottomTab = "trans" | "stats" | "accounts" | "more";
 type FilterTab = "income" | "expenses" | "account";
 type CurrencyCode = string;
 type CurrencyOption = { code: CurrencyCode; label: string; symbol: string };
-type AuthProvider = "Google" | "Facebook" | "Apple" | "Guest";
+type AuthProvider = "Google" | "Facebook" | "Apple" | "Email";
 
 type UserProfile = {
   name: string;
   provider: AuthProvider;
-  createdAt: string;
+  email?: string;
 };
 
 type LedgerEntry = {
@@ -94,7 +104,6 @@ const CURRENCY_STORAGE_KEY = "moneyfollows-currency";
 const BALANCE_STORAGE_KEY = "moneyfollows-opening-balance";
 const REMINDERS_STORAGE_KEY = "moneyfollows-reminders";
 const THEME_KEY = "moneyfollows-theme";
-const PROFILE_STORAGE_KEY = "moneyfollows-profile";
 
 const incomeCategories: Category[] = [
   { emoji: "💸", name: "Allowance", tone: "#48c78e" },
@@ -334,25 +343,26 @@ const loadOpeningBalance = () => {
   return Number.isFinite(saved) ? saved : 0;
 };
 
-const loadProfile = (): UserProfile | null => {
-  if (typeof window === "undefined") {
-    return null;
-  }
+const getAuthMessage = (error: unknown) => {
+  const item = error as { code?: string; message?: string };
 
-  const saved = window.localStorage.getItem(PROFILE_STORAGE_KEY);
-  if (!saved) {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(saved) as Partial<UserProfile>;
-    const provider = parsed.provider === "Google" || parsed.provider === "Facebook" || parsed.provider === "Apple" || parsed.provider === "Guest"
-      ? parsed.provider
-      : "Guest";
-    const name = typeof parsed.name === "string" ? parsed.name.trim() : "";
-    return name ? { createdAt: parsed.createdAt ?? new Date().toISOString(), name, provider } : null;
-  } catch {
-    return null;
+  switch (item.code) {
+    case "auth/email-already-in-use":
+      return "An account already exists with this email. Use Log in instead.";
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Email or password is incorrect.";
+    case "auth/popup-closed-by-user":
+      return "The sign-in window was closed before login finished.";
+    case "auth/weak-password":
+      return "Use a stronger password with at least 6 characters.";
+    case "auth/operation-not-allowed":
+      return "This sign-in method is not enabled in Firebase yet.";
+    case "auth/unauthorized-domain":
+      return "This domain is not authorized in Firebase Authentication settings.";
+    default:
+      return item.message || "Sign-in failed. Please try again.";
   }
 };
 
@@ -394,7 +404,9 @@ function App() {
   const [entries, setEntries] = useState<LedgerEntry[]>(() => loadArray(STORAGE_KEY, normalizeEntry));
   const [notes, setNotes] = useState<MoneyNote[]>(() => loadArray(NOTES_STORAGE_KEY, normalizeNote));
   const [reminders, setReminders] = useState<Reminder[]>(() => loadArray(REMINDERS_STORAGE_KEY, normalizeReminder));
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(loadProfile);
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(Boolean(auth));
+  const [authError, setAuthError] = useState("");
   const [currencyCode, setCurrencyCode] = useState<CurrencyCode>(loadCurrency);
   const [openingBalance, setOpeningBalance] = useState(loadOpeningBalance);
   const [activeView, setActiveView] = useState<ViewTab>("daily");
@@ -453,12 +465,37 @@ function App() {
   }, [isDark]);
 
   useEffect(() => {
-    if (userProfile) {
-      window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(userProfile));
-    } else {
-      window.localStorage.removeItem(PROFILE_STORAGE_KEY);
+    if (!auth) {
+      return undefined;
     }
-  }, [userProfile]);
+
+    return onAuthStateChanged(auth, (nextUser) => {
+      setAuthUser(nextUser);
+      setAuthLoading(false);
+      setAuthError("");
+    });
+  }, []);
+
+  const userProfile = useMemo<UserProfile | null>(() => {
+    if (!authUser) {
+      return null;
+    }
+
+    const providerId = authUser.providerData[0]?.providerId;
+    const provider: AuthProvider = providerId === "google.com"
+      ? "Google"
+      : providerId === "facebook.com"
+        ? "Facebook"
+        : providerId === "apple.com"
+          ? "Apple"
+          : "Email";
+
+    return {
+      email: authUser.email ?? undefined,
+      name: authUser.displayName || authUser.email?.split("@")[0] || "MoneyFollows user",
+      provider
+    };
+  }, [authUser]);
 
   const monthEntries = useMemo(
     () => entries.filter((entry) => sameMonth(entry.date, selectedDate)),
@@ -678,18 +715,64 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
-  const completeWelcome = (name: string, provider: AuthProvider) => {
-    setUserProfile({
-      createdAt: new Date().toISOString(),
-      name,
-      provider
-    });
+  const handleEmailAuth = async (mode: "login" | "signup", name: string, email: string, password: string) => {
+    if (!auth) {
+      setAuthError("Firebase is not configured yet. Add the Vercel environment variables first.");
+      return;
+    }
+
+    try {
+      setAuthError("");
+      const credential = mode === "signup"
+        ? await createUserWithEmailAndPassword(auth, email, password)
+        : await signInWithEmailAndPassword(auth, email, password);
+
+      if (name.trim() && credential.user.displayName !== name.trim()) {
+        await updateProfile(credential.user, { displayName: name.trim() });
+        setAuthUser(credential.user);
+      }
+    } catch (error) {
+      setAuthError(getAuthMessage(error));
+    }
+  };
+
+  const handleProviderAuth = async (providerName: Exclude<AuthProvider, "Email">, name: string) => {
+    if (!auth) {
+      setAuthError("Firebase is not configured yet. Add the Vercel environment variables first.");
+      return;
+    }
+
+    try {
+      setAuthError("");
+      const credential = await signInWithPopup(auth, authProviders[providerName]());
+      if (name.trim() && credential.user.displayName !== name.trim()) {
+        await updateProfile(credential.user, { displayName: name.trim() });
+        setAuthUser(credential.user);
+      }
+    } catch (error) {
+      setAuthError(getAuthMessage(error));
+    }
+  };
+
+  const handleSignOut = async () => {
+    if (!auth) {
+      setAuthUser(null);
+      return;
+    }
+
+    await signOut(auth);
   };
 
   return (
     <MoneyContext.Provider value={money}>
     {!userProfile ? (
-      <WelcomeGate onComplete={completeWelcome} />
+      <WelcomeGate
+        authError={authError}
+        authLoading={authLoading}
+        isConfigured={isFirebaseConfigured}
+        onEmailAuth={handleEmailAuth}
+        onProviderAuth={handleProviderAuth}
+      />
     ) : (
     <main className="app-page">
       <section className="money-workspace" aria-label="MoneyFollows money management app">
@@ -833,7 +916,7 @@ function App() {
                 onCurrencyChange={setCurrencyCode}
                 onDeleteReminder={(id) => setReminders((current) => current.filter((reminder) => reminder.id !== id))}
                 onOpeningBalanceChange={setOpeningBalance}
-                onSignOut={() => setUserProfile(null)}
+                onSignOut={handleSignOut}
                 onTheme={() => setIsDark((current) => !current)}
                 reminders={reminders}
                 userProfile={userProfile}
@@ -1052,19 +1135,57 @@ function App() {
   );
 }
 
-function WelcomeGate({ onComplete }: { onComplete: (name: string, provider: AuthProvider) => void }) {
+function WelcomeGate({
+  authError,
+  authLoading,
+  isConfigured,
+  onEmailAuth,
+  onProviderAuth
+}: {
+  authError: string;
+  authLoading: boolean;
+  isConfigured: boolean;
+  onEmailAuth: (mode: "login" | "signup", name: string, email: string, password: string) => Promise<void>;
+  onProviderAuth: (provider: Exclude<AuthProvider, "Email">, name: string) => Promise<void>;
+}) {
   const [name, setName] = useState("");
-  const [selectedProvider, setSelectedProvider] = useState<AuthProvider>("Google");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState<"login" | "signup">("signup");
+  const [busyProvider, setBusyProvider] = useState<AuthProvider | "form" | null>(null);
   const [error, setError] = useState("");
 
-  const finish = (provider: AuthProvider = selectedProvider) => {
+  const runEmailAuth = async () => {
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+
+    if (!cleanName && mode === "signup") {
+      setError("Add your name first so MoneyFollows can personalize the app.");
+      return;
+    }
+
+    if (!cleanEmail || !password) {
+      setError("Enter your email and password.");
+      return;
+    }
+
+    setError("");
+    setBusyProvider("form");
+    await onEmailAuth(mode, cleanName, cleanEmail, password);
+    setBusyProvider(null);
+  };
+
+  const runProviderAuth = async (provider: Exclude<AuthProvider, "Email">) => {
     const cleanName = name.trim();
     if (!cleanName) {
       setError("Add your name first so MoneyFollows can personalize the app.");
       return;
     }
 
-    onComplete(cleanName, provider);
+    setError("");
+    setBusyProvider(provider);
+    await onProviderAuth(provider, cleanName);
+    setBusyProvider(null);
   };
 
   return (
@@ -1096,12 +1217,22 @@ function WelcomeGate({ onComplete }: { onComplete: (name: string, provider: Auth
 
         <form className="welcome-form" onSubmit={(event) => {
           event.preventDefault();
-          finish();
+          void runEmailAuth();
         }}>
           <div className="auth-heading">
-            <span>Step 1</span>
-            <strong>Create your profile</strong>
-            <p>Enter your name before continuing.</p>
+            <span>Secure access</span>
+            <strong>{mode === "signup" ? "Create your account" : "Log in to MoneyFollows"}</strong>
+            <p>{mode === "signup" ? "Sign up with email or a connected account." : "Use your email or continue with a connected account."}</p>
+          </div>
+          <div className="auth-mode">
+            <button className={mode === "signup" ? "active" : ""} type="button" onClick={() => {
+              setMode("signup");
+              setError("");
+            }}>Sign up</button>
+            <button className={mode === "login" ? "active" : ""} type="button" onClick={() => {
+              setMode("login");
+              setError("");
+            }}>Log in</button>
           </div>
           <label>
             Your name
@@ -1119,34 +1250,70 @@ function WelcomeGate({ onComplete }: { onComplete: (name: string, provider: Auth
               />
             </span>
           </label>
+          <label>
+            Email
+            <span>
+              <ShieldCheck size={18} />
+              <input
+                autoComplete="email"
+                inputMode="email"
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  setError("");
+                }}
+                placeholder="you@example.com"
+                type="email"
+                value={email}
+              />
+            </span>
+          </label>
+          <label>
+            Password
+            <span>
+              <ShieldCheck size={18} />
+              <input
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                minLength={6}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  setError("");
+                }}
+                placeholder="At least 6 characters"
+                type="password"
+                value={password}
+              />
+            </span>
+          </label>
 
           <div className="auth-grid" aria-label="Login and signup options">
-            {(["Google", "Facebook", "Apple"] as AuthProvider[]).map((provider) => (
+            {(["Google", "Facebook", "Apple"] as Array<Exclude<AuthProvider, "Email">>).map((provider) => (
               <motion.button
-                className={selectedProvider === provider ? "active" : ""}
+                className={busyProvider === provider ? "active" : ""}
+                disabled={Boolean(busyProvider) || authLoading || !isConfigured}
                 key={provider}
                 onClick={() => {
-                  setSelectedProvider(provider);
-                  finish(provider);
+                  void runProviderAuth(provider);
                 }}
                 type="button"
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.97 }}
               >
                 <b>{provider === "Google" ? "G" : provider === "Facebook" ? "f" : "A"}</b>
-                <span>Continue with {provider}</span>
+                <span>{busyProvider === provider ? "Connecting..." : `Continue with ${provider}`}</span>
               </motion.button>
             ))}
           </div>
 
-          {error && <p className="form-error">{error}</p>}
+          {!isConfigured && (
+            <p className="auth-warning">Firebase is not configured yet. Add the Vercel environment variables from `.env.example` to make live auth work.</p>
+          )}
+          {(error || authError) && <p className="form-error">{error || authError}</p>}
 
           <div className="welcome-actions">
-            <motion.button type="submit" whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+            <motion.button disabled={Boolean(busyProvider) || authLoading || !isConfigured} type="submit" whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
               <ShieldCheck size={18} />
-              Continue securely
+              {busyProvider === "form" ? "Checking..." : mode === "signup" ? "Create account" : "Log in"}
             </motion.button>
-            <button type="button" onClick={() => finish("Guest")}>Continue without account</button>
           </div>
         </form>
       </motion.section>
