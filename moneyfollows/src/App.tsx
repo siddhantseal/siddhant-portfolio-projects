@@ -4,6 +4,7 @@ import type { User } from "firebase/auth";
 import {
   browserLocalPersistence,
   createUserWithEmailAndPassword,
+  deleteUser,
   getRedirectResult,
   onAuthStateChanged,
   setPersistence,
@@ -24,6 +25,7 @@ import {
   CircleHelp,
   ClipboardList,
   Download,
+  House,
   Landmark,
   Moon,
   MoreHorizontal,
@@ -46,7 +48,7 @@ import { auth, authProviders, isFirebaseConfigured } from "./firebase";
 
 type EntryKind = "income" | "expense" | "transfer";
 type ViewTab = "daily" | "calendar" | "monthly" | "total" | "note";
-type BottomTab = "trans" | "stats" | "accounts" | "more";
+type BottomTab = "home" | "trans" | "stats" | "accounts" | "notes" | "more";
 type FilterTab = "income" | "expenses" | "account";
 type CurrencyCode = string;
 type CurrencyOption = { code: CurrencyCode; label: string; symbol: string };
@@ -56,6 +58,7 @@ type UserProfile = {
   name: string;
   provider: AuthProvider;
   email?: string;
+  photoURL?: string;
 };
 
 type LedgerEntry = {
@@ -181,6 +184,7 @@ const saveLastAuthedProfile = (user: User) => {
   window.localStorage.setItem(LAST_AUTHED_PROFILE_KEY, JSON.stringify({
     email: user.email,
     name: user.displayName || user.email?.split("@")[0] || "MoneyFollows user",
+    photoURL: user.photoURL || undefined,
     provider: user.providerData[0]?.providerId === "google.com" ? "Google" : "Email",
     uid: user.uid
   }));
@@ -196,6 +200,7 @@ const loadLastAuthedProfile = (): UserProfile | null => {
     return parsed?.name ? {
       email: typeof parsed.email === "string" ? parsed.email : undefined,
       name: parsed.name,
+      photoURL: typeof parsed.photoURL === "string" ? parsed.photoURL : undefined,
       provider: parsed.provider === "Google" ? "Google" : "Email"
     } : null;
   } catch {
@@ -223,9 +228,11 @@ const memeLines = [
   "Every receipt has a plot twist."
 ];
 const bottomTabs: Array<{ key: BottomTab; label: string; icon: typeof ReceiptText }> = [
+  { key: "home", label: "Home", icon: House },
   { key: "trans", label: "Ledger", icon: ReceiptText },
   { key: "stats", label: "Insight", icon: BarChart3 },
   { key: "accounts", label: "Wallets", icon: WalletCards },
+  { key: "notes", label: "Notes", icon: ClipboardList },
   { key: "more", label: "Studio", icon: MoreHorizontal }
 ];
 
@@ -451,10 +458,11 @@ function App() {
   const [authError, setAuthError] = useState("");
   const [fallbackProfile, setFallbackProfile] = useState<UserProfile | null>(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
   const [currencyCode, setCurrencyCode] = useState<CurrencyCode>(loadCurrency);
   const [openingBalance, setOpeningBalance] = useState(loadOpeningBalance);
   const [activeView, setActiveView] = useState<ViewTab>("daily");
-  const [bottomTab, setBottomTab] = useState<BottomTab>("trans");
+  const [bottomTab, setBottomTab] = useState<BottomTab>("home");
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [isDark, setIsDark] = useState(() => typeof window === "undefined" ? true : window.localStorage.getItem(THEME_KEY) !== "light");
   const [showComposer, setShowComposer] = useState(false);
@@ -569,6 +577,7 @@ function App() {
     return {
       email: authUser.email ?? undefined,
       name: authUser.displayName || authUser.email?.split("@")[0] || "MoneyFollows user",
+      photoURL: authUser.photoURL ?? undefined,
       provider
     };
   }, [authUser, fallbackProfile]);
@@ -811,6 +820,7 @@ function App() {
       saveLastAuthedProfile(credential.user);
       setFallbackProfile(null);
       setAuthUser(credential.user);
+      setShowAuth(false);
     } catch (error) {
       setAuthError(getAuthMessage(error));
     }
@@ -858,7 +868,48 @@ function App() {
     await signOut(auth);
     setFallbackProfile(null);
     window.localStorage.removeItem(LAST_AUTHED_PROFILE_KEY);
+    setShowAccount(false);
     setShowAuth(false);
+  };
+
+  const handleSaveAccount = async (name: string, photoURL: string) => {
+    const cleanName = name.trim() || "MoneyFollows user";
+    const cleanPhoto = photoURL.trim();
+
+    if (authUser) {
+      await updateProfile(authUser, { displayName: cleanName, photoURL: cleanPhoto || null });
+      window.localStorage.setItem(LAST_AUTHED_PROFILE_KEY, JSON.stringify({
+        email: authUser.email,
+        name: cleanName,
+        photoURL: cleanPhoto || undefined,
+        provider: authUser.providerData[0]?.providerId === "google.com" ? "Google" : "Email",
+        uid: authUser.uid
+      }));
+      setAuthUser({ ...authUser, displayName: cleanName, photoURL: cleanPhoto || null } as User);
+      return;
+    }
+
+    setFallbackProfile({ email: effectiveProfile.email, name: cleanName, photoURL: cleanPhoto || undefined, provider: "Local" });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!authUser) {
+      throw new Error("Sign in first to delete a Firebase account. Guest mode has no online account to delete.");
+    }
+
+    await deleteUser(authUser);
+    setAuthUser(null);
+    setFallbackProfile(null);
+    setEntries([]);
+    setNotes([]);
+    setReminders([]);
+    setOpeningBalance(0);
+    window.localStorage.removeItem(LAST_AUTHED_PROFILE_KEY);
+    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(NOTES_STORAGE_KEY);
+    window.localStorage.removeItem(REMINDERS_STORAGE_KEY);
+    window.localStorage.removeItem(BALANCE_STORAGE_KEY);
+    setShowAccount(false);
   };
 
   return (
@@ -894,8 +945,8 @@ function App() {
               <span>MoneyFollows</span>
               <strong>{totals.total >= 0 ? `Hi ${effectiveProfile.name}, your money is behaving.` : `Hi ${effectiveProfile.name}, your money needs direction.`}</strong>
             </div>
-            <button type="button" aria-label={userProfile ? "Open filters" : "Sign in"} onClick={() => userProfile ? setShowFilter(true) : setShowAuth(true)}>
-              {userProfile ? <Settings2 size={22} /> : <UserRound size={22} />}
+            <button type="button" aria-label="Open account" onClick={() => setShowAccount(true)}>
+              {effectiveProfile.photoURL ? <img alt="" className="mini-avatar" src={effectiveProfile.photoURL} /> : <UserRound size={22} />}
             </button>
           </div>
           <div className="month-row">
@@ -971,6 +1022,15 @@ function App() {
             key={`${bottomTab}-${activeView}-${selectedDate.getFullYear()}-${selectedDate.getMonth()}`}
             transition={{ duration: 0.22 }}
           >
+            {bottomTab === "home" && (
+              <HomeView
+                onAddEntry={() => setShowComposer(true)}
+                onOpenAccount={() => setShowAccount(true)}
+                onOpenNotes={() => setBottomTab("notes")}
+                profile={effectiveProfile}
+                totals={totals}
+              />
+            )}
             {bottomTab === "trans" && activeView === "daily" && (
               <DailyView date={selectedDate} entries={dayEntries} onDelete={(id) => setEntries((current) => current.filter((entry) => entry.id !== id))} />
             )}
@@ -995,6 +1055,18 @@ function App() {
                 title={noteTitle}
               />
             )}
+            {bottomTab === "notes" && (
+              <NoteView
+                body={noteBody}
+                notes={notes}
+                onBodyChange={setNoteBody}
+                onDelete={(id) => setNotes((current) => current.filter((note) => note.id !== id))}
+                onSave={saveNote}
+                onTitleChange={setNoteTitle}
+                query={query}
+                title={noteTitle}
+              />
+            )}
             {bottomTab === "stats" && <StatsView entries={filteredEntries} totals={totals} />}
             {bottomTab === "accounts" && <AccountsView entries={filteredEntries} />}
             {bottomTab === "more" && (
@@ -1007,8 +1079,8 @@ function App() {
                 onCurrencyChange={setCurrencyCode}
                 onDeleteReminder={(id) => setReminders((current) => current.filter((reminder) => reminder.id !== id))}
                 onOpeningBalanceChange={setOpeningBalance}
+                onOpenAccount={() => setShowAccount(true)}
                 onSignIn={() => setShowAuth(true)}
-                onSignOut={handleSignOut}
                 onTheme={() => setIsDark((current) => !current)}
                 reminders={reminders}
                 userProfile={effectiveProfile}
@@ -1039,6 +1111,20 @@ function App() {
             onClose={() => setShowAuth(false)}
             onEmailAuth={handleEmailAuth}
             onProviderAuth={handleProviderAuth}
+          />
+        )}
+        {showAccount && (
+          <AccountPage
+            authUser={authUser}
+            onClose={() => setShowAccount(false)}
+            onDeleteAccount={handleDeleteAccount}
+            onSave={handleSaveAccount}
+            onSignIn={() => {
+              setShowAccount(false);
+              setShowAuth(true);
+            }}
+            onSignOut={handleSignOut}
+            profile={effectiveProfile}
           />
         )}
         {showComposer && (
@@ -1436,6 +1522,210 @@ function Summary({ totals }: { totals: { income: number; expenses: number; total
   );
 }
 
+function HomeView({
+  onAddEntry,
+  onOpenAccount,
+  onOpenNotes,
+  profile,
+  totals
+}: {
+  onAddEntry: () => void;
+  onOpenAccount: () => void;
+  onOpenNotes: () => void;
+  profile: UserProfile;
+  totals: { income: number; expenses: number; total: number };
+}) {
+  const money = useMoney();
+  const features = [
+    { emoji: "💸", label: "Log real income and expenses", text: "No fake entries. Every number appears only when you add it." },
+    { emoji: "🍜", label: "Food and grocery context", text: "Track restaurants, delivery apps, grocery platforms, product photos, and notes." },
+    { emoji: "📝", label: "Separate notes workspace", text: "Keep reminders, wishlists, money thoughts, and payment notes away from transactions." },
+    { emoji: "🔐", label: "Account control", text: "View profile info, update your avatar, sign out, or delete your Firebase account." }
+  ];
+
+  return (
+    <div className="view-stack home-view">
+      <section className="home-hero">
+        <div>
+          <span>Welcome to MoneyFollows</span>
+          <h1>{profile.name === "Guest" ? "A cleaner home for your money." : `${profile.name}, your money dashboard is ready.`}</h1>
+          <p>MoneyFollows combines a daily ledger, visual spending insights, notes, reminders, wallets, and account settings in one responsive app.</p>
+          <div className="home-actions">
+            <button type="button" onClick={onAddEntry}><Plus size={18} /> Log money</button>
+            <button type="button" onClick={onOpenNotes}><ClipboardList size={18} /> Open notes</button>
+            <button type="button" onClick={onOpenAccount}><UserRound size={18} /> Account</button>
+          </div>
+        </div>
+        <motion.figure whileHover={{ y: -4 }} transition={spring}>
+          <img alt="MoneyFollows meme" src="/ravi-kishan-money-follows.png" />
+          <figcaption>Money follows when you track it.</figcaption>
+        </motion.figure>
+      </section>
+
+      <section className="home-total-card">
+        <span>Current month</span>
+        <strong>{money(totals.total)}</strong>
+        <p>{money(totals.income)} income · {money(totals.expenses)} expenses</p>
+      </section>
+
+      <section className="about-section">
+        <div>
+          <span>About</span>
+          <h2>Built for daily money decisions, not spreadsheet guilt.</h2>
+          <p>Use it on desktop, laptop, tablet, Android, iOS, or any modern browser. Start in guest mode, then sign in when you want account backup.</p>
+        </div>
+        <div className="about-grid">
+          {features.map((feature) => (
+            <motion.article key={feature.label} whileHover={{ y: -4 }} transition={spring}>
+              <span>{feature.emoji}</span>
+              <strong>{feature.label}</strong>
+              <p>{feature.text}</p>
+            </motion.article>
+          ))}
+        </div>
+      </section>
+
+      <section className="platform-section">
+        <span>Works everywhere</span>
+        <div>
+          <b>💻 Windows</b>
+          <b>🍎 macOS</b>
+          <b>🤖 Android</b>
+          <b>📱 iOS</b>
+          <b>🌐 Browser</b>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function AccountPage({
+  authUser,
+  onClose,
+  onDeleteAccount,
+  onSave,
+  onSignIn,
+  onSignOut,
+  profile
+}: {
+  authUser: User | null;
+  onClose: () => void;
+  onDeleteAccount: () => Promise<void>;
+  onSave: (name: string, photoURL: string) => Promise<void>;
+  onSignIn: () => void;
+  onSignOut: () => void;
+  profile: UserProfile;
+}) {
+  const [name, setName] = useState(profile.name);
+  const [photoURL, setPhotoURL] = useState(profile.photoURL || "");
+  const [status, setStatus] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const readImage = (file: File) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      setPhotoURL(String(reader.result || ""));
+      setStatus("Preview ready. Save changes to keep this image.");
+    });
+    reader.readAsDataURL(file);
+  };
+
+  const save = async () => {
+    setBusy(true);
+    setStatus("");
+    try {
+      await onSave(name, photoURL);
+      setStatus("Account updated.");
+    } catch (error) {
+      setStatus(getAuthMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    if (!window.confirm("Delete this MoneyFollows account? This also clears local MoneyFollows data on this browser.")) {
+      return;
+    }
+
+    setBusy(true);
+    setStatus("");
+    try {
+      await onDeleteAccount();
+    } catch (error) {
+      setStatus(getAuthMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <motion.div className="account-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.section className="account-page" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} transition={spring}>
+        <header>
+          <div>
+            <span>About account</span>
+            <strong>Your MoneyFollows profile</strong>
+          </div>
+          <button type="button" aria-label="Close account page" onClick={onClose}><X size={22} /></button>
+        </header>
+
+        <div className="account-profile-panel">
+          <div className="account-avatar">
+            {photoURL ? <img alt={`${profile.name} profile`} src={photoURL} /> : <span>{name.slice(0, 1).toUpperCase() || "M"}</span>}
+          </div>
+          <div>
+            <small>{profile.provider === "Local" ? "Guest profile" : `${profile.provider} account`}</small>
+            <strong>{profile.name}</strong>
+            <p>{profile.email || "No email connected yet"}</p>
+          </div>
+        </div>
+
+        <div className="account-info-grid">
+          <span><b>Name</b>{profile.name}</span>
+          <span><b>Email</b>{profile.email || "Not signed in"}</span>
+          <span><b>Provider</b>{profile.provider}</span>
+          <span><b>Created</b>{authUser?.metadata.creationTime || "Local guest session"}</span>
+        </div>
+
+        <div className="account-edit-card">
+          <label>
+            Display name
+            <input value={name} maxLength={36} onChange={(event) => setName(event.target.value)} />
+          </label>
+          <label>
+            Image URL
+            <input value={photoURL} onChange={(event) => setPhotoURL(event.target.value)} placeholder="Paste an image URL or upload below" />
+          </label>
+          <label className="file-picker">
+            <Camera size={18} />
+            Upload image
+            <input accept="image/*" type="file" onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) {
+                readImage(file);
+              }
+            }} />
+          </label>
+          {status && <p className="account-status">{status}</p>}
+          <button type="button" disabled={busy} onClick={save}><ShieldCheck size={18} /> Save account</button>
+        </div>
+
+        <div className="account-danger">
+          {authUser ? (
+            <>
+              <button type="button" disabled={busy} onClick={onSignOut}>Sign out</button>
+              <button type="button" disabled={busy} onClick={deleteAccount}><Trash2 size={18} /> Delete account</button>
+            </>
+          ) : (
+            <button type="button" onClick={onSignIn}><UserRound size={18} /> Sign in to manage online account</button>
+          )}
+        </div>
+      </motion.section>
+    </motion.div>
+  );
+}
+
 function MoneyCoach({
   dailySpend,
   randomSpendCount,
@@ -1770,8 +2060,8 @@ function MoreView({
   onCurrencyChange,
   onDeleteReminder,
   onOpeningBalanceChange,
+  onOpenAccount,
   onSignIn,
-  onSignOut,
   onTheme,
   openingBalance,
   reminders,
@@ -1784,8 +2074,8 @@ function MoreView({
   onCurrencyChange: (currency: CurrencyCode) => void;
   onDeleteReminder: (id: number) => void;
   onOpeningBalanceChange: (amount: number) => void;
+  onOpenAccount: () => void;
   onSignIn: () => void;
-  onSignOut: () => void;
   onTheme: () => void;
   openingBalance: number;
   reminders: Reminder[];
@@ -1836,7 +2126,7 @@ function MoreView({
             <strong>{userProfile.name}</strong>
           </div>
         </div>
-        <button type="button" onClick={isLocalProfile ? onSignIn : onSignOut}>{isLocalProfile ? "Sign in" : "Sign out"}</button>
+        <button type="button" onClick={isLocalProfile ? onSignIn : onOpenAccount}>{isLocalProfile ? "Sign in" : "View account"}</button>
       </section>
 
       <section className="setup-card">

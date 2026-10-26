@@ -487,6 +487,193 @@ button {
   background: var(--panel-soft);
 }
 
+.mini-avatar {
+  width: 25px;
+  height: 25px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.home-view {
+  padding-bottom: 10px;
+}
+
+.home-hero,
+.about-section,
+.platform-section,
+.home-total-card,
+.account-page {
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+  gap: 16px;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 18px;
+}
+
+.home-hero > div {
+  display: grid;
+  align-content: center;
+  gap: 13px;
+}
+
+.home-hero span,
+.about-section span,
+.platform-section span,
+.home-total-card span {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.home-hero h1,
+.about-section h2 {
+  max-width: 740px;
+  margin: 0;
+  font-size: clamp(28px, 3.5vw, 46px);
+  line-height: 1.02;
+}
+
+.home-hero p,
+.about-section p,
+.platform-section,
+.home-total-card p {
+  margin: 0;
+  color: var(--muted-2);
+}
+
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.home-actions button,
+.account-edit-card button,
+.account-danger button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 13px;
+  padding: 0 14px;
+  font-weight: 900;
+}
+
+.home-actions button:first-child,
+.account-edit-card button {
+  background: var(--accent);
+  color: #fff;
+}
+
+.home-actions button:not(:first-child),
+.account-danger button:first-child {
+  border: 1px solid var(--line-strong);
+  background: var(--panel-soft);
+  color: var(--text);
+}
+
+.home-hero figure {
+  display: grid;
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background: var(--phone);
+}
+
+.home-hero img {
+  width: 100%;
+  max-height: 230px;
+  object-fit: contain;
+  background: #8f8681;
+}
+
+.home-hero figcaption {
+  padding: 10px 12px 12px;
+  color: var(--muted-2);
+  font-weight: 800;
+}
+
+.home-total-card {
+  display: grid;
+  gap: 5px;
+  border-radius: 20px;
+  padding: 15px;
+}
+
+.home-total-card strong {
+  font-size: 30px;
+}
+
+.about-section {
+  display: grid;
+  gap: 16px;
+  border-radius: 24px;
+  padding: 18px;
+}
+
+.about-section > div:first-child {
+  display: grid;
+  gap: 9px;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.about-grid article {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--phone);
+  padding: 14px;
+}
+
+.about-grid article span {
+  font-size: 23px;
+  text-transform: none;
+}
+
+.about-grid article strong {
+  font-size: 15px;
+}
+
+.about-grid article p {
+  font-size: 12px;
+}
+
+.platform-section {
+  display: grid;
+  gap: 12px;
+  border-radius: 20px;
+  padding: 15px;
+}
+
+.platform-section div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.platform-section b {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--phone);
+  padding: 9px 12px;
+}
+
 .month-row {
   display: flex;
   grid-column: 2;
@@ -1286,6 +1473,197 @@ button {
   font-weight: 900;
 }
 
+.account-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 58;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.58);
+  padding: 20px;
+}
+
+.account-page {
+  display: grid;
+  gap: 14px;
+  width: min(760px, 100%);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.account-page header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-page header div {
+  display: grid;
+  gap: 4px;
+}
+
+.account-page header span,
+.account-profile-panel small {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.account-page header strong {
+  font-size: 23px;
+}
+
+.account-page header button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--panel-soft);
+}
+
+.account-profile-panel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--phone);
+  padding: 14px;
+}
+
+.account-avatar {
+  display: grid;
+  width: 82px;
+  height: 82px;
+  flex: 0 0 82px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  color: #fff;
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.account-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account-profile-panel > div:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.account-profile-panel strong {
+  overflow: hidden;
+  font-size: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-profile-panel p {
+  margin: 0;
+  color: var(--muted-2);
+}
+
+.account-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.account-info-grid span {
+  display: grid;
+  gap: 5px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--phone);
+  padding: 12px;
+  color: var(--muted-2);
+  text-overflow: ellipsis;
+}
+
+.account-info-grid b {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.account-edit-card {
+  display: grid;
+  gap: 11px;
+}
+
+.account-edit-card label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.account-edit-card input {
+  min-height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--phone);
+  color: var(--text);
+  outline: 0;
+  padding: 0 12px;
+}
+
+.file-picker {
+  position: relative;
+  display: inline-flex !important;
+  width: fit-content;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px !important;
+  border: 1px solid var(--line-strong);
+  border-radius: 13px;
+  background: var(--panel-soft);
+  color: var(--text) !important;
+  padding: 0 13px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.file-picker input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.account-status {
+  margin: 0;
+  color: var(--green);
+  font-weight: 800;
+}
+
+.account-danger {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.account-danger button:last-child {
+  background: color-mix(in srgb, #ff625d 20%, var(--panel-soft));
+  color: #ff8b87;
+}
+
 .setup-card,
 .reminder-card {
   display: grid;
@@ -1602,7 +1980,7 @@ button {
   left: 0;
   z-index: 3;
   display: grid;
-  grid-template-rows: 84px repeat(4, 82px) 1fr;
+  grid-template-rows: 72px repeat(6, minmax(62px, 74px)) 1fr;
   width: 108px;
   border-right: 1px solid var(--line);
   background: color-mix(in srgb, var(--phone) 92%, transparent);
@@ -2229,6 +2607,39 @@ button {
     padding: 8px 10px;
   }
 
+  .home-hero,
+  .about-grid,
+  .account-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-hero,
+  .about-section,
+  .account-page {
+    border-radius: 18px;
+    padding: 12px;
+  }
+
+  .home-hero h1,
+  .about-section h2 {
+    font-size: 28px;
+  }
+
+  .home-actions button,
+  .account-danger button {
+    width: 100%;
+  }
+
+  .account-backdrop {
+    align-items: start;
+    padding: 10px;
+  }
+
+  .account-profile-panel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .brand-row span {
     font-size: 10px;
   }
@@ -2373,7 +2784,7 @@ button {
   .bottom-nav {
     top: auto;
     right: 0;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     grid-template-rows: 1fr;
     width: auto;
     min-height: calc(72px + env(safe-area-inset-bottom));
@@ -2387,7 +2798,8 @@ button {
   }
 
   .bottom-nav button {
-    margin: 6px;
+    margin: 6px 3px;
+    font-size: 10px;
   }
 
   .filter-panel,
