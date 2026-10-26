@@ -100,7 +100,7 @@ export async function POST(request: Request) {
     subject: `New SealCart support message ${ticketId} from ${name}`,
     replyTo: email,
     html: `
-      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#172026">
+      <div style="font-family:'Albert Sans','Avenir Next','Helvetica Neue',sans-serif;line-height:1.6;color:#172026">
         <h2>New support request</h2>
         <p><strong>Ticket ID:</strong> ${ticketId}</p>
         <p><strong>Name:</strong> ${name}</p>
@@ -125,7 +125,7 @@ export async function POST(request: Request) {
     to: email,
     subject: `SealCart support received your message (${ticketId})`,
     html: `
-      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#172026">
+      <div style="font-family:'Albert Sans','Avenir Next','Helvetica Neue',sans-serif;line-height:1.6;color:#172026">
         <h2>Hi ${name},</h2>
         <p>Thanks for contacting SealCart support. We received your message and will get back to you soon.</p>
         <p><strong>Ticket ID:</strong> ${ticketId}</p>

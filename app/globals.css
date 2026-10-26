@@ -1,14 +1,23 @@
 :root {
-  --ink: #172026;
-  --muted: #68727d;
-  --line: #d9e0e6;
-  --paper: #f7f8f5;
-  --panel: #ffffff;
-  --green: #0f766e;
-  --blue: #2563eb;
-  --rose: #be123c;
-  --amber: #b45309;
-  --shadow: 0 20px 60px rgba(33, 42, 50, 0.12);
+  color-scheme: light;
+  --kinpaku-gold: oklch(84% 0.19 80.46);
+  --gold-soft: oklch(93% 0.1 86);
+  --verdigris-patina: oklch(70% 0.12 188);
+  --lacquer-black: oklch(7% 0.006 95);
+  --lacquer-deep: oklch(4% 0.004 95);
+  --raised-lacquer: oklch(11% 0.006 95);
+  --champagne: oklch(97% 0.014 92);
+  --ink: oklch(17% 0.018 95);
+  --muted: oklch(48% 0.016 95);
+  --line: oklch(24% 0.02 95 / 0.16);
+  --paper: oklch(96% 0.014 95);
+  --panel: oklch(99% 0.006 95);
+  --green: var(--verdigris-patina);
+  --blue: var(--kinpaku-gold);
+  --rose: oklch(58% 0.17 31);
+  --amber: oklch(78% 0.16 74);
+  --shadow: 0 20px 58px oklch(18% 0.022 95 / 0.12);
+  --font-mono: "SFMono-Regular", "Cascadia Mono", "Consolas", monospace;
 }
 
 * {
@@ -21,9 +30,20 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-size: 14px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), "Avenir Next", "Helvetica Neue", sans-serif;
   -webkit-text-size-adjust: 100%;
   isolation: isolate;
+}
+
+h1,
+h2,
+h3,
+.brand,
+.storeHeroCopy h1,
+.contentHero h1,
+.motionShowcaseCopy h2 {
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  letter-spacing: 0;
 }
 
 a {
@@ -69,10 +89,11 @@ main > :not(.siteShader) {
   position: absolute;
   inset: -18%;
   background:
-    linear-gradient(115deg, rgba(15, 118, 110, 0.08), transparent 28%, rgba(37, 99, 235, 0.08) 58%, transparent 76%),
-    conic-gradient(from 180deg at 50% 50%, rgba(15, 118, 110, 0.08), rgba(180, 83, 9, 0.06), rgba(37, 99, 235, 0.06), rgba(15, 118, 110, 0.08));
-  filter: blur(42px) saturate(1.04);
-  opacity: 0.78;
+    radial-gradient(circle at 16% 18%, oklch(70% 0.12 188 / 0.17), transparent 34%),
+    radial-gradient(circle at 82% 10%, oklch(84% 0.19 80.46 / 0.14), transparent 32%),
+    conic-gradient(from 180deg at 50% 50%, oklch(70% 0.12 188 / 0.07), oklch(84% 0.19 80.46 / 0.08), transparent, oklch(70% 0.12 188 / 0.07));
+  filter: blur(44px) saturate(1.08);
+  opacity: 0.8;
   animation: shaderFlow 22s ease-in-out infinite alternate;
 }
 
@@ -80,12 +101,11 @@ main > :not(.siteShader) {
   content: "";
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(23, 32, 38, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(23, 32, 38, 0.035) 1px, transparent 1px);
-  background-size: 48px 48px;
+  background:
+    radial-gradient(ellipse at 50% 0%, oklch(84% 0.19 80.46 / 0.1), transparent 46%),
+    linear-gradient(180deg, oklch(99% 0.006 95 / 0.5), transparent 74%);
   mask-image: linear-gradient(180deg, black, transparent 78%);
-  opacity: 0.44;
+  opacity: 0.5;
 }
 
 .motionCursor,
@@ -100,9 +120,9 @@ main > :not(.siteShader) {
 .motionCursor {
   width: 38px;
   height: 38px;
-  border: 1px solid rgba(15, 118, 110, 0.62);
+  border: 1px solid oklch(70% 0.12 188 / 0.62);
   border-radius: 50%;
-  background: rgba(45, 212, 191, 0.08);
+  background: oklch(70% 0.12 188 / 0.08);
   mix-blend-mode: multiply;
   transition: width 160ms ease, height 160ms ease, background 160ms ease, border-color 160ms ease;
 }
@@ -112,7 +132,7 @@ main > :not(.siteShader) {
   height: 7px;
   border-radius: 50%;
   background: var(--green);
-  box-shadow: 0 0 18px rgba(15, 118, 110, 0.5);
+  box-shadow: 0 0 18px oklch(70% 0.12 188 / 0.5);
 }
 
 .hasMotionCursor .motionCursor,
@@ -123,8 +143,8 @@ main > :not(.siteShader) {
 .hasMotionCursor.cursorActive .motionCursor {
   width: 54px;
   height: 54px;
-  border-color: rgba(37, 99, 235, 0.72);
-  background: rgba(37, 99, 235, 0.1);
+  border-color: oklch(84% 0.19 80.46 / 0.72);
+  background: oklch(84% 0.19 80.46 / 0.1);
 }
 
 [data-scroll-reveal] {
@@ -292,26 +312,34 @@ p {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0 14px;
   font-size: 13px;
   font-weight: 800;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
 
 .button.primary {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: white;
+  border-color: var(--kinpaku-gold);
+  background: var(--kinpaku-gold);
+  color: var(--lacquer-deep);
+  box-shadow: 0 14px 30px oklch(84% 0.19 80.46 / 0.18);
 }
 
 .button.secondary {
-  background: rgba(255, 255, 255, 0.7);
+  border-color: oklch(84% 0.19 80.46 / 0.42);
+  background: oklch(99% 0.006 95 / 0.72);
+  color: var(--ink);
 }
 
 .button.danger {
   border-color: var(--rose);
   background: var(--rose);
-  color: white;
+  color: oklch(99% 0.006 95);
+}
+
+.button:hover {
+  transform: translateY(-1px);
 }
 
 .button.full {
@@ -367,7 +395,7 @@ p {
 .miniChart i {
   display: block;
   border-radius: 6px 6px 0 0;
-  background: linear-gradient(#0f766e, #2563eb);
+  background: linear-gradient(var(--verdigris-patina), var(--kinpaku-gold));
 }
 
 .deployStrip {
@@ -478,17 +506,18 @@ p {
   min-width: 180px;
   flex: 1;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0 14px;
-  background: white;
+  background: var(--panel);
+  color: var(--ink);
 }
 
 .searchButton {
   min-height: 44px;
-  border: 1px solid var(--ink);
-  border-radius: 8px;
-  background: var(--ink);
-  color: white;
+  border: 1px solid var(--kinpaku-gold);
+  border-radius: 6px;
+  background: var(--kinpaku-gold);
+  color: var(--lacquer-deep);
   padding: 0 18px;
   font-weight: 900;
 }
@@ -507,8 +536,9 @@ p {
   overflow: hidden;
   min-height: 36px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: white;
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
   padding: 0 12px;
   font-weight: 700;
   transition:
@@ -521,8 +551,8 @@ p {
 }
 
 .segments button:hover {
-  border-color: rgba(15, 118, 110, 0.34);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  border-color: oklch(70% 0.12 188 / 0.42);
+  box-shadow: 0 10px 24px oklch(18% 0.022 95 / 0.08);
   transform: translateY(-1px);
 }
 
@@ -533,10 +563,10 @@ p {
 .segments button.active {
   border-color: var(--green);
   background:
-    radial-gradient(circle at 18% 50%, rgba(15, 118, 110, 0.2), transparent 22%),
-    #e8f5f2;
+    radial-gradient(circle at 18% 50%, oklch(70% 0.12 188 / 0.2), transparent 22%),
+    oklch(94% 0.04 188);
   color: var(--green);
-  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.14);
+  box-shadow: 0 12px 28px oklch(70% 0.12 188 / 0.14);
   transform: translateX(2px);
 }
 
@@ -894,7 +924,7 @@ p {
   top: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: auto minmax(260px, 0.75fr) minmax(280px, 1fr) auto;
+  grid-template-columns: auto minmax(max-content, 0.75fr) minmax(260px, 1fr) auto;
   align-items: center;
   gap: 18px;
   min-height: 72px;
@@ -909,23 +939,28 @@ p {
 }
 
 .brand {
-  color: var(--green);
-  font-size: 22px;
+  color: var(--kinpaku-gold);
+  font-size: 24px;
   font-weight: 900;
+  text-transform: uppercase;
 }
 
 .storeHeader nav {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
-  gap: 18px;
+  gap: 14px;
   color: var(--muted);
   font-size: 12px;
   font-weight: 800;
 }
 
+.storeHeader nav a {
+  white-space: nowrap;
+}
+
 .storeHeader nav a:hover {
-  color: var(--ink);
+  color: var(--kinpaku-gold);
 }
 
 .headerCart {
@@ -933,9 +968,10 @@ p {
   min-height: 32px;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  background: var(--ink);
-  color: white;
+  border: 1px solid var(--kinpaku-gold);
+  border-radius: 6px;
+  background: var(--kinpaku-gold);
+  color: var(--lacquer-deep);
   padding: 0 10px;
   font-size: 12px;
   font-weight: 900;
@@ -949,7 +985,7 @@ p {
   gap: 7px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: white;
+  background: var(--panel);
   color: var(--ink);
   padding: 0 10px;
   font-size: 12px;
@@ -972,19 +1008,19 @@ p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--green);
-  color: white;
+  background: var(--kinpaku-gold);
+  color: var(--lacquer-deep);
   font-size: 11px;
 }
 
 .headerSearch {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  min-width: 260px;
+  min-width: min(360px, 30vw);
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: white;
+  border-radius: 6px;
+  background: var(--panel);
 }
 
 .headerSearch input {
@@ -1000,8 +1036,8 @@ p {
 .headerSearch button {
   min-height: 34px;
   border: 0;
-  background: var(--green);
-  color: white;
+  background: var(--kinpaku-gold);
+  color: var(--lacquer-deep);
   padding: 0 12px;
   font-size: 13px;
   font-weight: 900;
@@ -1021,7 +1057,7 @@ p {
   gap: 6px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: white;
+  background: var(--panel);
   padding: 0 8px;
   color: var(--muted);
   font-size: 12px;
@@ -1031,18 +1067,20 @@ p {
 .themeSwitch input {
   width: 14px;
   height: 14px;
-  accent-color: var(--green);
+  accent-color: var(--kinpaku-gold);
 }
 
 html.themeDark,
 body:has(.themeSwitch input:checked),
 body.themeDark {
-  --ink: #eef6f4;
-  --muted: #aebbc3;
-  --line: #26343a;
-  --paper: #0c1114;
-  --panel: #111a1f;
-  --shadow: 0 20px 60px rgba(0, 0, 0, 0.38);
+  --ink: oklch(91% 0 0);
+  --muted: oklch(72% 0 0);
+  --line: oklch(84% 0.19 80.46 / 0.18);
+  --paper: var(--lacquer-black);
+  --panel: var(--raised-lacquer);
+  --green: var(--verdigris-patina);
+  --blue: var(--kinpaku-gold);
+  --shadow: 0 22px 70px oklch(2% 0 0 / 0.44);
   background: var(--paper);
   color-scheme: dark;
 }
@@ -1065,7 +1103,7 @@ html.themeDark .articleList {
 html.themeDark .storeHeader,
 body:has(.themeSwitch input:checked) .storeHeader,
 body.themeDark .storeHeader {
-  background: rgba(17, 26, 31, 0.94);
+  background: oklch(7% 0.006 95 / 0.94);
 }
 
 html.themeDark .themeSwitch,
@@ -1122,32 +1160,32 @@ body:has(.themeSwitch input:checked) .headerSearch input,
 body.themeDark .headerSearch input,
 body:has(.themeSwitch input:checked) .searchButton,
 body.themeDark .searchButton {
-  background: #111a1f;
+  background: var(--raised-lacquer);
   color: var(--ink);
 }
 
 html.themeDark .segments button:hover,
 body:has(.themeSwitch input:checked) .segments button:hover,
 body.themeDark .segments button:hover {
-  border-color: rgba(45, 212, 191, 0.44);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  border-color: oklch(70% 0.12 188 / 0.44);
+  box-shadow: 0 10px 24px oklch(2% 0 0 / 0.24);
 }
 
 html.themeDark .segments button.active,
 body:has(.themeSwitch input:checked) .segments button.active,
 body.themeDark .segments button.active {
-  border-color: #2dd4bf;
+  border-color: var(--verdigris-patina);
   background:
-    radial-gradient(circle at 18% 50%, rgba(45, 212, 191, 0.26), transparent 24%),
-    #102a2a;
-  color: #8cf3e7;
-  box-shadow: 0 14px 28px rgba(45, 212, 191, 0.12);
+    radial-gradient(circle at 18% 50%, oklch(70% 0.12 188 / 0.26), transparent 24%),
+    oklch(18% 0.04 188);
+  color: oklch(82% 0.1 188);
+  box-shadow: 0 14px 28px oklch(70% 0.12 188 / 0.12);
 }
 
 html.themeDark .segments button.active::after,
 body:has(.themeSwitch input:checked) .segments button.active::after,
 body.themeDark .segments button.active::after {
-  background: #2dd4bf;
+  background: var(--verdigris-patina);
 }
 
 html.themeDark .headerCart,
@@ -1156,9 +1194,9 @@ body:has(.themeSwitch input:checked) .headerCart,
 body.themeDark .headerCart,
 body:has(.themeSwitch input:checked) .button.primary,
 body.themeDark .button.primary {
-  border-color: #2dd4bf;
-  background: #2dd4bf;
-  color: #071012;
+  border-color: var(--kinpaku-gold);
+  background: var(--kinpaku-gold);
+  color: var(--lacquer-deep);
 }
 
 html.themeDark .dealShowcase,
@@ -1500,7 +1538,7 @@ body.themeDark .gatewaySteps span.done i {
   min-height: 470px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #f0f7f5;
+  background: color-mix(in oklch, var(--panel) 88%, var(--verdigris-patina));
   box-shadow: var(--shadow);
   color: inherit;
   text-decoration: none;
@@ -1532,8 +1570,8 @@ body.themeDark .gatewaySteps span.done i {
   top: 18px;
   left: 18px;
   border-radius: 999px;
-  background: var(--ink);
-  color: white;
+  background: var(--kinpaku-gold);
+  color: var(--lacquer-deep);
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 900;
@@ -1547,11 +1585,11 @@ body.themeDark .gatewaySteps span.done i {
   gap: 24px;
   width: min(1180px, calc(100% - 32px));
   overflow: hidden;
-  border: 1px solid rgba(15, 118, 110, 0.16);
+  border: 1px solid oklch(84% 0.19 80.46 / 0.24);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(15, 118, 110, 0.1), transparent 42%),
-    linear-gradient(315deg, rgba(37, 99, 235, 0.12), transparent 48%),
+    radial-gradient(circle at 18% 18%, oklch(70% 0.12 188 / 0.14), transparent 34%),
+    radial-gradient(circle at 84% 20%, oklch(84% 0.19 80.46 / 0.16), transparent 38%),
     var(--panel);
   margin: 14px auto 0;
   padding: 24px;
@@ -1561,11 +1599,10 @@ body.themeDark .gatewaySteps span.done i {
 .motionGrid {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(15, 118, 110, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 118, 110, 0.08) 1px, transparent 1px);
-  background-size: 34px 34px;
-  opacity: 0.48;
+  background:
+    radial-gradient(circle at 16% 24%, oklch(84% 0.19 80.46 / 0.12), transparent 22%),
+    linear-gradient(115deg, transparent 0 48%, oklch(70% 0.12 188 / 0.08) 48% 52%, transparent 52% 100%);
+  opacity: 0.58;
   mask-image: linear-gradient(90deg, transparent, black 16%, black 84%, transparent);
   animation: gridDrift 16s linear infinite;
   pointer-events: none;
@@ -1602,9 +1639,9 @@ body.themeDark .gatewaySteps span.done i {
 }
 
 .motionPillRow span {
-  border: 1px solid rgba(15, 118, 110, 0.18);
+  border: 1px solid oklch(70% 0.12 188 / 0.22);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.56);
+  background: color-mix(in oklch, var(--panel) 78%, transparent);
   color: var(--green);
   padding: 8px 10px;
   font-size: 12px;
@@ -1649,9 +1686,9 @@ body.themeDark .gatewaySteps span.done i {
   width: min(260px, 54%);
   gap: 8px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.58);
+  border: 1px solid oklch(84% 0.19 80.46 / 0.22);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.72);
+  background: color-mix(in oklch, var(--panel) 82%, transparent);
   box-shadow: 0 22px 58px rgba(33, 42, 50, 0.16);
   padding: 10px;
   backdrop-filter: blur(18px);

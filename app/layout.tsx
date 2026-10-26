@@ -1,5 +1,18 @@
 import type { Metadata } from "next";
+import { Albert_Sans, Alumni_Sans } from "next/font/google";
 import "./globals.css";
+
+const bodyFont = Albert_Sans({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap"
+});
+
+const displayFont = Alumni_Sans({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap"
+});
 
 export const metadata: Metadata = {
   title: "SealCart | Online Shopping Store",
@@ -8,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${bodyFont.variable} ${displayFont.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
