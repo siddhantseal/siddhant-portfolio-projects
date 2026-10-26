@@ -502,6 +502,7 @@ button {
 .about-section,
 .platform-section,
 .home-total-card,
+.home-money-lab > *,
 .account-page {
   border: 1px solid var(--line);
   background: var(--panel);
@@ -612,6 +613,181 @@ button {
 
 .home-total-card strong {
   font-size: 30px;
+}
+
+.home-money-lab {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 12px;
+}
+
+.animated-chart-card,
+.savings-target-card {
+  display: grid;
+  gap: 14px;
+  border-radius: 22px;
+  padding: 16px;
+}
+
+.chart-title {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chart-title div,
+.savings-target-card > div:first-child {
+  display: grid;
+  gap: 5px;
+}
+
+.chart-title span,
+.savings-target-card span,
+.target-scale {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.chart-title strong,
+.savings-target-card strong {
+  font-size: 21px;
+}
+
+.chart-title small,
+.savings-target-card p {
+  margin: 0;
+  color: var(--muted-2);
+}
+
+.flow-chart {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  min-height: 190px;
+  align-items: end;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    linear-gradient(to top, color-mix(in srgb, var(--line) 72%, transparent) 1px, transparent 1px) 0 0 / 100% 25%,
+    var(--phone);
+  padding: 14px 12px 10px;
+}
+
+.flow-chart-month {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  align-items: end;
+}
+
+.flow-bars {
+  display: flex;
+  height: 142px;
+  align-items: end;
+  justify-content: center;
+  gap: 4px;
+}
+
+.flow-bars i {
+  width: clamp(8px, 2vw, 16px);
+  min-height: 8px;
+  border-radius: 999px 999px 5px 5px;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+}
+
+.income-bar,
+.income-dot {
+  background: var(--blue);
+}
+
+.expense-bar,
+.expense-dot {
+  background: #ff6c74;
+}
+
+.saving-bar,
+.saving-dot {
+  background: var(--green);
+}
+
+.flow-chart-month b {
+  overflow: hidden;
+  color: var(--muted-2);
+  font-size: 11px;
+  text-align: center;
+  text-overflow: ellipsis;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted-2);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.chart-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.savings-target-card {
+  align-content: start;
+}
+
+.target-ring {
+  display: grid;
+  width: 150px;
+  height: 150px;
+  place-items: center;
+  justify-self: center;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, var(--panel) 58%, transparent 60%),
+    conic-gradient(var(--green) var(--target-progress), color-mix(in srgb, var(--line-strong) 70%, transparent) 0);
+}
+
+.target-ring b {
+  align-self: end;
+  font-size: 30px;
+}
+
+.target-ring small {
+  align-self: start;
+  color: var(--muted);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.savings-target-card label {
+  display: grid;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.savings-target-card input[type="range"] {
+  width: 100%;
+  accent-color: var(--green);
+}
+
+.target-scale {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .about-section {
@@ -2609,6 +2785,7 @@ button {
 
   .home-hero,
   .about-grid,
+  .home-money-lab,
   .account-info-grid {
     grid-template-columns: 1fr;
   }
@@ -2628,6 +2805,22 @@ button {
   .home-actions button,
   .account-danger button {
     width: 100%;
+  }
+
+  .flow-chart {
+    min-height: 160px;
+    gap: 6px;
+    padding: 12px 8px 9px;
+  }
+
+  .flow-bars {
+    height: 112px;
+    gap: 3px;
+  }
+
+  .target-ring {
+    width: 128px;
+    height: 128px;
   }
 
   .account-backdrop {

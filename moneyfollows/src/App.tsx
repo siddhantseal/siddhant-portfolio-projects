@@ -109,6 +109,7 @@ const STORAGE_KEY = "moneyfollows-user-transactions";
 const NOTES_STORAGE_KEY = "moneyfollows-user-notes";
 const CURRENCY_STORAGE_KEY = "moneyfollows-currency";
 const BALANCE_STORAGE_KEY = "moneyfollows-opening-balance";
+const SAVINGS_TARGET_STORAGE_KEY = "moneyfollows-monthly-savings-target";
 const REMINDERS_STORAGE_KEY = "moneyfollows-reminders";
 const THEME_KEY = "moneyfollows-theme";
 const LAST_AUTHED_PROFILE_KEY = "moneyfollows-last-authed-profile";
@@ -389,6 +390,15 @@ const loadOpeningBalance = () => {
   return Number.isFinite(saved) ? saved : 0;
 };
 
+const loadSavingsTarget = () => {
+  if (typeof window === "undefined") {
+    return 10000;
+  }
+
+  const saved = Number(window.localStorage.getItem(SAVINGS_TARGET_STORAGE_KEY));
+  return Number.isFinite(saved) && saved >= 1000 ? saved : 10000;
+};
+
 const getAuthMessage = (error: unknown) => {
   const item = error as { code?: string; message?: string };
   const currentHost = typeof window === "undefined" ? "this domain" : window.location.hostname;
@@ -448,6 +458,22 @@ const buildCalendar = (date: Date) => {
   });
 };
 
+const buildMonthlyChart = (entries: LedgerEntry[]) => {
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+    const inMonth = entries.filter((entry) => sameMonth(entry.date, date));
+    const income = inMonth.filter((entry) => entry.kind === "income").reduce((sum, entry) => sum + entry.amount, 0);
+    const expenses = inMonth.filter((entry) => entry.kind === "expense").reduce((sum, entry) => sum + entry.amount, 0);
+    return {
+      expenses,
+      income,
+      label: new Intl.DateTimeFormat("en-US", { month: "short" }).format(date),
+      savings: income - expenses
+    };
+  });
+};
+
 function App() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [entries, setEntries] = useState<LedgerEntry[]>(() => loadArray(STORAGE_KEY, normalizeEntry));
@@ -461,6 +487,7 @@ function App() {
   const [showAccount, setShowAccount] = useState(false);
   const [currencyCode, setCurrencyCode] = useState<CurrencyCode>(loadCurrency);
   const [openingBalance, setOpeningBalance] = useState(loadOpeningBalance);
+  const [monthlySavingsTarget, setMonthlySavingsTarget] = useState(loadSavingsTarget);
   const [activeView, setActiveView] = useState<ViewTab>("daily");
   const [bottomTab, setBottomTab] = useState<BottomTab>("home");
   const [selectedDate, setSelectedDate] = useState(() => new Date());
@@ -510,6 +537,10 @@ function App() {
   useEffect(() => {
     window.localStorage.setItem(BALANCE_STORAGE_KEY, String(openingBalance));
   }, [openingBalance]);
+
+  useEffect(() => {
+    window.localStorage.setItem(SAVINGS_TARGET_STORAGE_KEY, String(monthlySavingsTarget));
+  }, [monthlySavingsTarget]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = isDark ? "dark" : "light";
@@ -909,6 +940,7 @@ function App() {
     window.localStorage.removeItem(NOTES_STORAGE_KEY);
     window.localStorage.removeItem(REMINDERS_STORAGE_KEY);
     window.localStorage.removeItem(BALANCE_STORAGE_KEY);
+    window.localStorage.removeItem(SAVINGS_TARGET_STORAGE_KEY);
     setShowAccount(false);
   };
 
@@ -1027,6 +1059,9 @@ function App() {
                 onAddEntry={() => setShowComposer(true)}
                 onOpenAccount={() => setShowAccount(true)}
                 onOpenNotes={() => setBottomTab("notes")}
+                onSavingsTargetChange={setMonthlySavingsTarget}
+                entries={entries}
+                savingsTarget={monthlySavingsTarget}
                 profile={effectiveProfile}
                 totals={totals}
               />
@@ -1523,19 +1558,29 @@ function Summary({ totals }: { totals: { income: number; expenses: number; total
 }
 
 function HomeView({
+  entries,
   onAddEntry,
   onOpenAccount,
   onOpenNotes,
+  onSavingsTargetChange,
   profile,
+  savingsTarget,
   totals
 }: {
+  entries: LedgerEntry[];
   onAddEntry: () => void;
   onOpenAccount: () => void;
   onOpenNotes: () => void;
+  onSavingsTargetChange: (value: number) => void;
   profile: UserProfile;
+  savingsTarget: number;
   totals: { income: number; expenses: number; total: number };
 }) {
   const money = useMoney();
+  const chartData = useMemo(() => buildMonthlyChart(entries), [entries]);
+  const maxChartValue = Math.max(...chartData.flatMap((item) => [item.income, item.expenses, Math.max(item.savings, 0)]), savingsTarget, 1);
+  const savingsProgress = savingsTarget > 0 ? Math.min(100, Math.max(0, Math.round((totals.total / savingsTarget) * 100))) : 0;
+  const targetGap = Math.max(0, savingsTarget - totals.total);
   const features = [
     { emoji: "💸", label: "Log real income and expenses", text: "No fake entries. Every number appears only when you add it." },
     { emoji: "🍜", label: "Food and grocery context", text: "Track restaurants, delivery apps, grocery platforms, product photos, and notes." },
@@ -1566,6 +1611,83 @@ function HomeView({
         <span>Current month</span>
         <strong>{money(totals.total)}</strong>
         <p>{money(totals.income)} income · {money(totals.expenses)} expenses</p>
+      </section>
+
+      <section className="home-money-lab">
+        <div className="animated-chart-card">
+          <div className="chart-title">
+            <div>
+              <span>Animated chart</span>
+              <strong>Six-month money flow</strong>
+            </div>
+            <small>Income, expense, saving</small>
+          </div>
+          <div className="flow-chart" aria-label="Animated income expense and savings chart">
+            {chartData.map((item, index) => (
+              <motion.div
+                className="flow-chart-month"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...spring, delay: index * 0.04 }}
+                key={item.label}
+              >
+                <div className="flow-bars">
+                  <motion.i
+                    className="income-bar"
+                    initial={{ height: 8 }}
+                    animate={{ height: `${Math.max(8, (item.income / maxChartValue) * 100)}%` }}
+                    transition={{ ...spring, delay: index * 0.05 }}
+                  />
+                  <motion.i
+                    className="expense-bar"
+                    initial={{ height: 8 }}
+                    animate={{ height: `${Math.max(8, (item.expenses / maxChartValue) * 100)}%` }}
+                    transition={{ ...spring, delay: 0.08 + index * 0.05 }}
+                  />
+                  <motion.i
+                    className="saving-bar"
+                    initial={{ height: 8 }}
+                    animate={{ height: `${Math.max(8, (Math.max(item.savings, 0) / maxChartValue) * 100)}%` }}
+                    transition={{ ...spring, delay: 0.16 + index * 0.05 }}
+                  />
+                </div>
+                <b>{item.label}</b>
+              </motion.div>
+            ))}
+          </div>
+          <div className="chart-legend">
+            <span><i className="income-dot" /> Income</span>
+            <span><i className="expense-dot" /> Expense</span>
+            <span><i className="saving-dot" /> Saving</span>
+          </div>
+        </div>
+
+        <div className="savings-target-card">
+          <div>
+            <span>Monthly saving target</span>
+            <strong>{money(savingsTarget)}</strong>
+            <p>{targetGap > 0 ? `${money(targetGap)} left to reach this month’s target.` : "Target reached. Very MoneyFollows behaviour."}</p>
+          </div>
+          <div className="target-ring" style={{ "--target-progress": `${savingsProgress}%` } as CSSProperties}>
+            <b>{savingsProgress}%</b>
+            <small>saved</small>
+          </div>
+          <label>
+            Set target
+            <input
+              min="1000"
+              max="500000"
+              step="500"
+              type="range"
+              value={savingsTarget}
+              onChange={(event) => onSavingsTargetChange(Number(event.target.value))}
+            />
+          </label>
+          <div className="target-scale">
+            <span>{money(1000)}</span>
+            <span>{money(500000)}</span>
+          </div>
+        </div>
       </section>
 
       <section className="about-section">
