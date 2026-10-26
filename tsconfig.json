@@ -37,6 +37,8 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
+    "moneyfollows",
+    "moneyfollows/**/*",
     "node_modules"
   ]
 }
