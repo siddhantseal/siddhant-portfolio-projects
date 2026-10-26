@@ -3,9 +3,11 @@ import type { CSSProperties } from "react";
 import type { User } from "firebase/auth";
 import {
   createUserWithEmailAndPassword,
+  getRedirectResult,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   updateProfile
 } from "firebase/auth";
@@ -356,6 +358,8 @@ const getAuthMessage = (error: unknown) => {
       return "Email or password is incorrect.";
     case "auth/popup-closed-by-user":
       return "The sign-in window was closed before login finished.";
+    case "auth/popup-blocked":
+      return "The browser blocked the Google sign-in popup. Redirect sign-in is starting instead.";
     case "auth/weak-password":
       return "Use a stronger password with at least 6 characters.";
     case "auth/operation-not-allowed":
@@ -469,6 +473,20 @@ function App() {
     if (!auth) {
       return undefined;
     }
+
+    void getRedirectResult(auth)
+      .then(async (credential) => {
+        const pendingName = sessionStorage.getItem("moneyfollows-pending-display-name");
+        if (credential?.user && pendingName && credential.user.displayName !== pendingName) {
+          await updateProfile(credential.user, { displayName: pendingName });
+          setAuthUser(credential.user);
+        }
+        sessionStorage.removeItem("moneyfollows-pending-display-name");
+      })
+      .catch((error: unknown) => {
+        sessionStorage.removeItem("moneyfollows-pending-display-name");
+        setAuthError(getAuthMessage(error));
+      });
 
     return onAuthStateChanged(auth, (nextUser) => {
       setAuthUser(nextUser);
@@ -747,6 +765,13 @@ function App() {
         setAuthUser(credential.user);
       }
     } catch (error) {
+      const code = (error as { code?: string }).code;
+      if (code === "auth/popup-blocked" || code === "auth/cancelled-popup-request") {
+        sessionStorage.setItem("moneyfollows-pending-display-name", name.trim());
+        await signInWithRedirect(auth, authProviders[providerName]());
+        return;
+      }
+
       setAuthError(getAuthMessage(error));
     }
   };
