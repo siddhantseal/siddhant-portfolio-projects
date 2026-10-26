@@ -124,6 +124,15 @@ button {
   color: var(--muted-2);
 }
 
+.auth-status-screen button {
+  min-height: 42px;
+  border-radius: 13px;
+  background: var(--accent);
+  color: #fff;
+  padding: 0 16px;
+  font-weight: 900;
+}
+
 .welcome-panel {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);

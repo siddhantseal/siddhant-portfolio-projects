@@ -505,6 +505,19 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    if (!authLoading) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setAuthLoading(false);
+      setAuthError("MoneyFollows could not restore the login session. Refresh once, then log in again if needed.");
+    }, 8000);
+
+    return () => window.clearTimeout(timer);
+  }, [authLoading]);
+
   const userProfile = useMemo<UserProfile | null>(() => {
     if (!authUser) {
       return null;
@@ -1179,6 +1192,7 @@ function AuthStatusScreen() {
         <WalletCards size={34} />
         <strong>Opening MoneyFollows</strong>
         <p>Restoring your secure session and loading the dashboard.</p>
+        <button type="button" onClick={() => window.location.reload()}>Refresh app</button>
       </motion.section>
     </main>
   );
