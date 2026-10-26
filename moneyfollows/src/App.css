@@ -1,43 +1,51 @@
 :root {
-  --page: #121519;
-  --phone: #202328;
-  --phone-2: #252930;
-  --panel: #272b32;
-  --panel-soft: #2e333b;
-  --line: rgba(255, 255, 255, 0.09);
-  --line-strong: rgba(255, 255, 255, 0.16);
-  --text: #f7f7f8;
-  --muted: #8f949c;
-  --muted-2: #b5bac2;
-  --accent: #ff625d;
-  --blue: #4fa6ff;
-  --green: #4fd18b;
-  --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+  --kinpaku-gold: oklch(84% 0.19 80.46);
+  --gold-soft: oklch(92% 0.1 86);
+  --verdigris-patina: oklch(70% 0.12 188);
+  --lacquer-black: oklch(7% 0.006 95);
+  --lacquer-deep: oklch(4% 0.004 95);
+  --raised-lacquer: oklch(11% 0.006 95);
+  --champagne: oklch(97% 0.014 95);
+  --expense: oklch(66% 0.18 28);
+  --page: var(--lacquer-black);
+  --phone: var(--lacquer-deep);
+  --phone-2: oklch(9% 0.008 95);
+  --panel: var(--raised-lacquer);
+  --panel-soft: oklch(15% 0.012 95);
+  --line: oklch(84% 0.19 80.46 / 0.12);
+  --line-strong: oklch(84% 0.19 80.46 / 0.2);
+  --text: oklch(91% 0 0);
+  --muted: oklch(66% 0.018 95);
+  --muted-2: oklch(78% 0.014 95);
+  --accent: var(--kinpaku-gold);
+  --blue: var(--kinpaku-gold);
+  --green: var(--verdigris-patina);
+  --shadow: 0 26px 72px oklch(2% 0 0 / 0.42);
+  --radius-control: 8px;
+  --radius-panel: 10px;
+  --font-display: "Alumni Sans", "Avenir Next Condensed", "Arial Narrow", sans-serif;
 }
 
 :root[data-theme="light"] {
-  --page: #dde3ec;
-  --phone: #f8fafc;
-  --phone-2: #eef2f6;
-  --panel: #ffffff;
-  --panel-soft: #f3f6fa;
-  --line: rgba(21, 26, 34, 0.1);
-  --line-strong: rgba(21, 26, 34, 0.18);
-  --text: #151a22;
-  --muted: #69707b;
-  --muted-2: #444b55;
-  --accent: #e94f4a;
-  --blue: #2076ce;
-  --green: #1a9f63;
-  --shadow: 0 24px 70px rgba(44, 54, 70, 0.16);
+  --page: var(--champagne);
+  --phone: oklch(98% 0.01 95);
+  --phone-2: oklch(94% 0.015 95);
+  --panel: oklch(99% 0.006 95);
+  --panel-soft: oklch(94% 0.018 95);
+  --line: oklch(24% 0.02 95 / 0.14);
+  --line-strong: oklch(24% 0.02 95 / 0.22);
+  --text: oklch(17% 0.018 95);
+  --muted: oklch(48% 0.016 95);
+  --muted-2: oklch(36% 0.016 95);
+  --shadow: 0 22px 62px oklch(18% 0.022 95 / 0.13);
 }
 
 .app-page {
   width: 100%;
   min-height: 100dvh;
   background:
-    linear-gradient(135deg, rgba(79, 166, 255, 0.14), transparent 32%),
-    linear-gradient(315deg, rgba(255, 98, 93, 0.14), transparent 28%),
+    radial-gradient(circle at 14% 10%, oklch(70% 0.12 188 / 0.16), transparent 32%),
+    radial-gradient(circle at 88% 0%, oklch(84% 0.19 80.46 / 0.16), transparent 30%),
     var(--page);
   color: var(--text);
   padding: 0;
@@ -55,7 +63,8 @@
   border: 0;
   border-radius: 0;
   background:
-    linear-gradient(140deg, color-mix(in srgb, var(--panel-soft) 74%, transparent), transparent 46%),
+    radial-gradient(circle at 12% 18%, color-mix(in oklch, var(--green) 16%, transparent), transparent 34%),
+    radial-gradient(circle at 84% 8%, color-mix(in oklch, var(--accent) 14%, transparent), transparent 32%),
     var(--phone);
 }
 
@@ -68,6 +77,40 @@ select {
 body {
   font-size: 13px;
   line-height: 1.45;
+}
+
+h1,
+h2,
+h3,
+.brand-row strong,
+.hero-ledger strong,
+.home-hero h1,
+.about-section h2,
+.auth-heading strong,
+.welcome-copy h1 {
+  font-family: var(--font-display);
+  letter-spacing: 0;
+}
+
+* {
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--accent) 52%, transparent);
+  background-clip: padding-box;
 }
 
 button {
@@ -84,8 +127,8 @@ button {
   place-items: center;
   overflow: auto;
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--page) 86%, #4fa6ff), transparent 52%),
-    linear-gradient(315deg, color-mix(in srgb, var(--page) 88%, #4fd18b), transparent 44%),
+    radial-gradient(circle at 16% 10%, color-mix(in oklch, var(--green) 18%, transparent), transparent 38%),
+    radial-gradient(circle at 90% 12%, color-mix(in oklch, var(--accent) 18%, transparent), transparent 34%),
     var(--page);
   color: var(--text);
   padding: 24px;
@@ -101,7 +144,7 @@ button {
   height: 42px;
   place-items: center;
   border: 1px solid var(--line-strong);
-  border-radius: 14px;
+  border-radius: var(--radius-control);
   background: color-mix(in srgb, var(--panel) 92%, transparent);
   color: var(--text);
   box-shadow: var(--shadow);
@@ -112,7 +155,7 @@ button {
   min-height: 100dvh;
   place-items: center;
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--page) 86%, #4fa6ff), transparent 52%),
+    radial-gradient(circle at 20% 8%, color-mix(in oklch, var(--green) 18%, transparent), transparent 42%),
     var(--page);
   color: var(--text);
   padding: 24px;
@@ -124,7 +167,7 @@ button {
   justify-items: center;
   gap: 10px;
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: var(--radius-panel);
   background: var(--panel);
   box-shadow: var(--shadow);
   padding: 28px;
@@ -146,9 +189,9 @@ button {
 
 .auth-status-screen button {
   min-height: 42px;
-  border-radius: 13px;
+  border-radius: var(--radius-control);
   background: var(--accent);
-  color: #fff;
+  color: var(--lacquer-deep);
   padding: 0 16px;
   font-weight: 900;
 }
@@ -159,9 +202,9 @@ button {
   gap: 16px;
   width: min(1180px, 100%);
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: var(--radius-panel);
   background:
-    linear-gradient(140deg, color-mix(in srgb, var(--panel-soft) 42%, transparent), transparent 46%),
+    radial-gradient(circle at 16% 18%, color-mix(in oklch, var(--green) 12%, transparent), transparent 36%),
     var(--phone);
   box-shadow: var(--shadow);
   padding: 16px;
@@ -170,7 +213,7 @@ button {
 .welcome-copy,
 .welcome-form {
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: color-mix(in srgb, var(--panel) 82%, transparent);
 }
 
@@ -191,7 +234,7 @@ button {
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: var(--panel-soft);
-  color: var(--green);
+  color: var(--accent);
   padding: 7px 11px;
   font-size: 11px;
   font-weight: 900;
@@ -223,7 +266,7 @@ button {
   display: grid;
   gap: 4px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius-panel);
   background: var(--phone);
   padding: 12px;
   color: var(--muted);
@@ -244,7 +287,7 @@ button {
   grid-row: 2;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--panel);
 }
 
@@ -284,7 +327,7 @@ button {
 }
 
 .auth-heading span {
-  color: var(--green);
+  color: var(--accent);
   font-size: 11px;
   font-weight: 900;
   text-transform: uppercase;
@@ -304,14 +347,14 @@ button {
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius-panel);
   background: var(--phone);
   padding: 4px;
 }
 
 .auth-mode button {
   min-height: 38px;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: var(--muted);
   font-weight: 900;
@@ -337,7 +380,7 @@ button {
   align-items: center;
   gap: 10px;
   border: 1px solid var(--line-strong);
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   background: var(--phone);
   padding: 0 13px;
 }
@@ -359,7 +402,7 @@ button {
 .auth-grid button,
 .welcome-actions button {
   min-height: 46px;
-  border-radius: 15px;
+  border-radius: var(--radius-control);
   font-weight: 900;
 }
 
@@ -390,7 +433,7 @@ button {
   width: 30px;
   height: 30px;
   place-items: center;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--panel-soft);
   color: var(--accent);
   font-size: 15px;
@@ -415,13 +458,13 @@ button {
   justify-content: center;
   gap: 8px;
   background: var(--accent);
-  color: #fff;
+  color: var(--lacquer-deep);
 }
 
 .welcome-actions button:not(:first-child) {
   border: 1px solid var(--line-strong);
   background: transparent;
-  color: var(--green);
+  color: var(--accent);
   padding: 0 16px;
 }
 
@@ -455,7 +498,7 @@ button {
   justify-content: space-between;
   gap: 16px;
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: var(--radius-panel);
   background: color-mix(in srgb, var(--panel) 82%, transparent);
   padding: 16px;
 }
@@ -483,7 +526,7 @@ button {
   width: 44px;
   height: 44px;
   place-items: center;
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   background: var(--panel-soft);
 }
 
@@ -514,7 +557,7 @@ button {
   gap: 16px;
   align-items: stretch;
   overflow: hidden;
-  border-radius: 24px;
+  border-radius: var(--radius-panel);
   padding: 18px;
 }
 
@@ -564,7 +607,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 13px;
+  border-radius: var(--radius-control);
   padding: 0 14px;
   font-weight: 900;
 }
@@ -572,7 +615,7 @@ button {
 .home-actions button:first-child,
 .account-edit-card button {
   background: var(--accent);
-  color: #fff;
+  color: var(--lacquer-deep);
 }
 
 .home-actions button:not(:first-child),
@@ -587,7 +630,7 @@ button {
   overflow: hidden;
   margin: 0;
   border: 1px solid var(--line-strong);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--phone);
 }
 
@@ -607,7 +650,7 @@ button {
 .home-total-card {
   display: grid;
   gap: 5px;
-  border-radius: 20px;
+  border-radius: var(--radius-panel);
   padding: 15px;
 }
 
@@ -625,7 +668,7 @@ button {
 .savings-target-card {
   display: grid;
   gap: 14px;
-  border-radius: 22px;
+  border-radius: var(--radius-panel);
   padding: 16px;
 }
 
@@ -669,9 +712,9 @@ button {
   min-height: 190px;
   align-items: end;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background:
-    linear-gradient(to top, color-mix(in srgb, var(--line) 72%, transparent) 1px, transparent 1px) 0 0 / 100% 25%,
+    linear-gradient(to top, color-mix(in oklch, var(--line) 72%, transparent) 1px, transparent 1px) 0 0 / 100% 25%,
     var(--phone);
   padding: 14px 12px 10px;
 }
@@ -793,7 +836,7 @@ button {
 .about-section {
   display: grid;
   gap: 16px;
-  border-radius: 24px;
+  border-radius: var(--radius-panel);
   padding: 18px;
 }
 
@@ -812,7 +855,7 @@ button {
   display: grid;
   gap: 8px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--phone);
   padding: 14px;
 }
@@ -833,7 +876,7 @@ button {
 .platform-section {
   display: grid;
   gap: 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-panel);
   padding: 15px;
 }
 
@@ -857,7 +900,7 @@ button {
   gap: 8px;
   min-height: 0;
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: var(--radius-panel);
   background: color-mix(in srgb, var(--panel) 82%, transparent);
   padding: 14px;
 }
@@ -869,7 +912,7 @@ button {
 .entry-row button {
   display: inline-grid;
   place-items: center;
-  border-radius: 14px;
+  border-radius: var(--radius-control);
   background: transparent;
 }
 
@@ -899,7 +942,7 @@ button {
   gap: 8px;
   margin: 0;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--panel);
   padding: 10px 12px;
 }
@@ -913,10 +956,10 @@ button {
   gap: 18px;
   min-height: 148px;
   border: 1px solid var(--line);
-  border-radius: 28px;
+  border-radius: var(--radius-panel);
   background:
-    linear-gradient(135deg, rgba(79, 166, 255, 0.17), transparent 38%),
-    linear-gradient(315deg, rgba(255, 98, 93, 0.2), transparent 42%),
+    radial-gradient(circle at 18% 18%, color-mix(in oklch, var(--green) 18%, transparent), transparent 40%),
+    radial-gradient(circle at 90% 12%, color-mix(in oklch, var(--accent) 18%, transparent), transparent 34%),
     var(--panel);
   padding: 20px;
 }
@@ -948,9 +991,9 @@ button {
   align-items: center;
   gap: 9px;
   min-height: 52px;
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   background: var(--accent);
-  color: #fff;
+  color: var(--lacquer-deep);
   padding: 0 16px;
   font-weight: 900;
   white-space: nowrap;
@@ -975,7 +1018,7 @@ button {
   grid-template-columns: repeat(5, 1fr);
   gap: 7px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--panel);
   padding: 6px;
 }
@@ -984,7 +1027,7 @@ button {
 .filter-tabs button {
   position: relative;
   min-height: 40px;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: var(--muted);
   font-size: 12px;
@@ -1013,7 +1056,7 @@ button {
   z-index: -1;
   border-radius: inherit;
   background:
-    linear-gradient(135deg, rgba(255, 98, 93, 0.2), rgba(79, 166, 255, 0.12)),
+    radial-gradient(circle at 24% 18%, color-mix(in oklch, var(--accent) 24%, transparent), transparent 42%),
     var(--panel-soft);
 }
 
@@ -1035,7 +1078,7 @@ button {
   min-height: 58px;
   align-content: center;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: var(--radius-panel);
   background: color-mix(in srgb, var(--panel) 82%, transparent);
   padding: 10px 14px;
   color: var(--text);
@@ -1067,9 +1110,9 @@ button {
   gap: 6px;
   min-height: 76px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.04), transparent 62%),
+    linear-gradient(145deg, color-mix(in oklch, var(--accent) 8%, transparent), transparent 62%),
     color-mix(in srgb, var(--panel) 84%, transparent);
   padding: 12px;
 }
@@ -1098,7 +1141,7 @@ button {
 }
 
 .expense-text {
-  color: #ff6c74 !important;
+  color: var(--expense) !important;
 }
 
 .content-panel {
@@ -1140,7 +1183,7 @@ button {
 .empty-state {
   min-height: 148px;
   border: 1px dashed var(--line-strong);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: color-mix(in srgb, var(--panel) 54%, transparent);
   padding: 20px;
 }
@@ -1173,7 +1216,7 @@ button {
   align-items: center;
   gap: 10px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: var(--radius-panel);
   background: var(--panel);
   padding: 11px;
 }
@@ -1187,9 +1230,9 @@ button {
   height: 44px;
   place-items: center;
   border: 1px solid var(--line-strong);
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   background:
-    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.28), transparent 34%),
+    radial-gradient(circle at 28% 20%, color-mix(in oklch, var(--accent) 18%, transparent), transparent 34%),
     color-mix(in srgb, var(--tone, var(--accent)) 28%, var(--panel-soft));
   font-size: 22px;
 }
@@ -1235,7 +1278,7 @@ button {
 }
 
 .weekday-row span:first-child {
-  color: #ff6c74;
+  color: var(--expense);
 }
 
 .weekday-row span:last-child {
@@ -1272,7 +1315,7 @@ button {
   place-items: center;
   border-radius: 999px;
   background: var(--accent);
-  color: #fff;
+  color: var(--lacquer-deep);
   font-weight: 800;
 }
 
@@ -1331,7 +1374,7 @@ button {
 .meme-gallery,
 .meme-card {
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--panel);
 }
 
@@ -1361,7 +1404,7 @@ button {
 .budget-card button,
 .export-button {
   min-height: 42px;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--panel-soft);
   color: var(--muted-2);
   padding: 0 12px;
@@ -1389,7 +1432,7 @@ button {
   display: grid;
   gap: 12px;
   border: 1px solid var(--line-strong);
-  border-radius: 14px;
+  border-radius: var(--radius-panel);
   padding: 15px;
 }
 
@@ -1424,7 +1467,7 @@ button {
   align-items: center;
   gap: 2px;
   min-height: 56px;
-  border-radius: 20px;
+  border-radius: var(--radius-panel);
   background: var(--panel-soft);
   padding: 0 14px;
 }
@@ -1436,7 +1479,7 @@ button {
 .notes-composer,
 .note-card {
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--panel);
 }
 
@@ -1469,9 +1512,9 @@ button {
   min-height: 42px;
   align-items: center;
   gap: 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--accent);
-  color: #fff;
+  color: var(--lacquer-deep);
   padding: 0 14px;
   font-weight: 900;
 }
@@ -1512,9 +1555,9 @@ button {
   width: 34px;
   height: 34px;
   place-items: center;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--panel-soft);
-  color: #ff6c74;
+  color: var(--expense);
 }
 
 .stats-card {
@@ -1599,7 +1642,7 @@ button {
   justify-content: space-between;
   gap: 14px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--panel);
   padding: 14px;
 }
@@ -1617,9 +1660,9 @@ button {
   height: 44px;
   flex: 0 0 44px;
   place-items: center;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--green), var(--blue));
-  color: #fff;
+  border-radius: var(--radius-control);
+  background: linear-gradient(135deg, var(--green), var(--accent));
+  color: var(--lacquer-deep);
   font-weight: 900;
 }
 
@@ -1879,7 +1922,7 @@ button {
   width: 42px;
   height: 42px;
   place-items: center;
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   background: color-mix(in srgb, var(--green) 22%, var(--panel-soft));
   font-size: 22px;
 }
@@ -1900,7 +1943,7 @@ button {
   min-height: 44px;
   width: 100%;
   border: 1px solid var(--line-strong);
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--phone);
   color: var(--text);
   padding: 0 12px;
@@ -1915,7 +1958,7 @@ button {
 
 .reminder-kind button {
   min-height: 42px;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--panel-soft);
   color: var(--muted-2);
   font-weight: 900;
@@ -1939,7 +1982,7 @@ button {
   gap: 8px;
   min-height: 44px;
   border: 1px solid var(--line-strong);
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--phone);
   color: var(--muted-2);
   padding: 0 12px;
@@ -1953,9 +1996,9 @@ button {
 
 .create-reminder {
   min-height: 44px;
-  border-radius: 14px;
+  border-radius: var(--radius-control);
   background: var(--accent);
-  color: #fff;
+  color: var(--lacquer-deep);
   font-weight: 900;
 }
 
@@ -1970,7 +2013,7 @@ button {
   align-items: center;
   gap: 10px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius-panel);
   background: var(--phone);
   padding: 10px;
 }
@@ -1980,7 +2023,7 @@ button {
   width: 42px;
   height: 42px;
   place-items: center;
-  border-radius: 14px;
+  border-radius: var(--radius-control);
   background: var(--panel-soft);
   font-size: 22px;
 }
@@ -1999,9 +2042,9 @@ button {
   width: 34px;
   height: 34px;
   place-items: center;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--panel-soft);
-  color: #ff6c74;
+  color: var(--expense);
 }
 
 .settings-card strong {
@@ -2016,7 +2059,7 @@ button {
 }
 
 .danger-row {
-  color: #ff6c74;
+  color: var(--expense);
 }
 
 .meme-card {
@@ -2059,7 +2102,7 @@ button {
   max-height: 360px;
   object-fit: contain;
   border: 1px solid var(--line-strong);
-  border-radius: 16px;
+  border-radius: var(--radius-panel);
   background: var(--phone);
 }
 
@@ -2102,7 +2145,7 @@ button {
   align-items: center;
   gap: 9px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius-panel);
   background: var(--panel);
   color: var(--muted-2);
   padding: 10px 12px;
@@ -2123,7 +2166,7 @@ button {
   place-items: center;
   border-radius: 999px;
   background: var(--accent);
-  color: #fff;
+  color: var(--lacquer-deep);
   font-size: 12px;
 }
 
@@ -2137,12 +2180,12 @@ button {
   height: 52px;
   align-items: center;
   gap: 9px;
-  border-radius: 18px;
+  border-radius: var(--radius-control);
   background: var(--accent);
-  color: #fff;
+  color: var(--lacquer-deep);
   padding: 0 20px;
   font-weight: 900;
-  box-shadow: 0 16px 32px rgba(255, 98, 93, 0.28);
+  box-shadow: 0 16px 32px color-mix(in oklch, var(--accent) 28%, transparent);
 }
 
 .fab span {
@@ -2173,8 +2216,8 @@ button {
   width: 48px;
   height: 48px;
   border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #fff;
+  border-radius: var(--radius-panel);
+  background: var(--champagne);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
   object-fit: contain;
   padding: 4px;
@@ -2185,7 +2228,7 @@ button {
   gap: 4px;
   color: var(--muted);
   font-size: 11px;
-  border-radius: 18px;
+  border-radius: var(--radius-control);
   margin: 6px 10px;
 }
 
@@ -2208,7 +2251,7 @@ button {
   max-height: min(94vh, 860px);
   overflow: auto;
   border: 1px solid var(--line-strong);
-  border-radius: 28px 28px 0 0;
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
   background: var(--phone);
   color: var(--text);
   box-shadow: var(--shadow);
@@ -2237,7 +2280,7 @@ button {
   position: relative;
   min-height: 48px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: var(--muted);
   font-weight: 800;
@@ -2335,7 +2378,7 @@ button {
   gap: 8px;
   min-height: 42px;
   border: 1px solid var(--line-strong);
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--panel);
   color: var(--text);
   padding: 0 12px;
@@ -2349,7 +2392,7 @@ button {
 }
 
 .image-tools button {
-  color: #ff8e95;
+  color: var(--expense);
 }
 
 .image-preview {
@@ -2358,15 +2401,15 @@ button {
   max-height: 160px;
   object-fit: cover;
   border: 1px solid var(--line-strong);
-  border-radius: 16px;
+  border-radius: var(--radius-panel);
 }
 
 .form-error {
   margin: 0 16px 12px;
-  border: 1px solid rgba(255, 108, 116, 0.35);
-  border-radius: 12px;
-  background: rgba(255, 108, 116, 0.1);
-  color: #ff8e95;
+  border: 1px solid color-mix(in oklch, var(--expense) 40%, var(--line));
+  border-radius: var(--radius-control);
+  background: color-mix(in oklch, var(--expense) 12%, var(--panel));
+  color: var(--expense);
   padding: 10px 12px;
 }
 
@@ -2379,9 +2422,9 @@ button {
 
 .sheet-actions button {
   min-height: 54px;
-  border-radius: 12px;
-  background: #4fa6ff;
-  color: #fff;
+  border-radius: var(--radius-control);
+  background: var(--accent);
+  color: var(--lacquer-deep);
   font-size: 15px;
   font-weight: 800;
 }
@@ -2400,7 +2443,7 @@ button {
   width: min(340px, calc(100vw - 40px));
   transform: translate(-50%, -50%) !important;
   border: 1px solid var(--line-strong);
-  border-radius: 22px;
+  border-radius: var(--radius-panel);
   background: var(--panel);
   box-shadow: var(--shadow);
   padding: 20px;
@@ -2419,9 +2462,9 @@ button {
 .help-card button {
   width: 100%;
   min-height: 48px;
-  border-radius: 12px;
-  background: #4fa6ff;
-  color: #fff;
+  border-radius: var(--radius-control);
+  background: var(--accent);
+  color: var(--lacquer-deep);
   font-weight: 800;
 }
 
