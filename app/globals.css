@@ -18,15 +18,23 @@
   --amber: oklch(78% 0.16 74);
   --shadow: 0 20px 58px oklch(18% 0.022 95 / 0.12);
   --font-mono: "SFMono-Regular", "Cascadia Mono", "Consolas", monospace;
+  --store-max: 1760px;
+  --store-gutter: clamp(24px, 4vw, 56px);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
-  overflow-x: hidden;
+  min-height: 100svh;
+  overflow-x: clip;
   background: var(--paper);
   color: var(--ink);
   font-size: 14px;
@@ -69,6 +77,9 @@ button {
 
 main {
   position: relative;
+  width: 100%;
+  min-height: 100svh;
+  overflow-x: clip;
 }
 
 main > :not(.siteShader) {
@@ -141,24 +152,24 @@ main > :not(.siteShader) {
 }
 
 .hasMotionCursor.cursorActive .motionCursor {
-  width: 54px;
-  height: 54px;
+  width: 42px;
+  height: 42px;
   border-color: oklch(84% 0.19 80.46 / 0.72);
   background: oklch(84% 0.19 80.46 / 0.1);
 }
 
 [data-scroll-reveal] {
-  opacity: 0;
-  transform: translateY(22px) scale(0.985);
+  opacity: 1;
+  transform: none;
   transition:
-    opacity 620ms ease var(--reveal-delay, 0ms),
-    transform 620ms ease var(--reveal-delay, 0ms);
+    opacity 360ms ease var(--reveal-delay, 0ms),
+    filter 360ms ease var(--reveal-delay, 0ms);
   will-change: opacity, transform;
 }
 
 [data-scroll-reveal].isVisible {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: none;
 }
 
 button:disabled {
@@ -221,7 +232,7 @@ button:disabled {
 }
 
 .shell {
-  width: min(1180px, calc(100% - 32px));
+  width: min(var(--store-max), calc(100% - var(--store-gutter)));
   margin: 0 auto;
   padding: 28px 0 56px;
 }
@@ -743,7 +754,7 @@ p {
 
 .cartHero,
 .cartPageLayout {
-  width: min(1180px, calc(100% - 32px));
+  width: min(var(--store-max), calc(100% - var(--store-gutter)));
   margin-right: auto;
   margin-left: auto;
 }
@@ -930,7 +941,7 @@ p {
   min-height: 72px;
   border-bottom: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.94);
-  padding: 0 max(20px, calc((100vw - 1180px) / 2));
+  padding: 0 max(20px, calc((100vw - var(--store-max)) / 2));
   backdrop-filter: blur(16px);
 }
 
@@ -1504,18 +1515,18 @@ body.themeDark .gatewaySteps span.done i {
 .articleList,
 .ordersLayout,
 .storeFooter {
-  width: min(1180px, calc(100% - 32px));
+  width: min(var(--store-max), calc(100% - var(--store-gutter)));
   margin-right: auto;
   margin-left: auto;
 }
 
 .storeHero {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-  gap: 28px;
-  align-items: center;
-  min-height: 560px;
-  padding: 42px 0 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 0.92fr);
+  gap: clamp(28px, 4vw, 64px);
+  align-items: start;
+  min-height: 0;
+  padding: 46px 0 28px;
 }
 
 .storeHeroCopy h1,
@@ -1529,6 +1540,36 @@ body.themeDark .gatewaySteps span.done i {
 .contentHero p {
   max-width: 680px;
   font-size: 13px;
+}
+
+.heroTrustGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 680px;
+  margin-top: 24px;
+}
+
+.heroTrustGrid span {
+  display: grid;
+  gap: 4px;
+  min-height: 76px;
+  align-content: center;
+  border: 1px solid oklch(70% 0.12 188 / 0.18);
+  border-radius: 8px;
+  background: color-mix(in oklch, var(--panel) 74%, transparent);
+  padding: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  box-shadow: 0 14px 34px rgba(33, 42, 50, 0.06);
+}
+
+.heroTrustGrid strong {
+  display: block;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
 }
 
 .dealShowcase {
@@ -1583,7 +1624,7 @@ body.themeDark .gatewaySteps span.done i {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
   gap: 24px;
-  width: min(1180px, calc(100% - 32px));
+  width: min(var(--store-max), calc(100% - var(--store-gutter)));
   overflow: hidden;
   border: 1px solid oklch(84% 0.19 80.46 / 0.24);
   border-radius: 8px;
@@ -1727,21 +1768,21 @@ body.themeDark .gatewaySteps span.done i {
   top: 8px;
   left: 8%;
   transform: rotate(-4deg);
-  animation: cardFloat 6s ease-in-out infinite;
+  animation: none;
 }
 
 .motionProductCard.card2 {
   top: 70px;
   right: 4%;
   transform: rotate(4deg);
-  animation: cardFloat 6s ease-in-out infinite 900ms;
+  animation: none;
 }
 
 .motionProductCard.card3 {
   right: 24%;
   bottom: 0;
   transform: rotate(-1deg);
-  animation: cardFloat 6s ease-in-out infinite 1.8s;
+  animation: none;
 }
 
 .productMarquee {
@@ -1795,6 +1836,108 @@ body.themeDark .gatewaySteps span.done i {
   color: var(--green);
   font-size: 12px;
   white-space: nowrap;
+}
+
+.collectionSurferSection {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.34fr) minmax(0, 0.66fr);
+  gap: clamp(20px, 3vw, 42px);
+  width: min(var(--store-max), calc(100% - var(--store-gutter)));
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid oklch(70% 0.12 188 / 0.18);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 16% 18%, oklch(84% 0.19 80.46 / 0.16), transparent 32%),
+    linear-gradient(135deg, oklch(70% 0.12 188 / 0.08), transparent 42%),
+    var(--panel);
+  margin: 18px auto 0;
+  padding: clamp(18px, 3vw, 30px);
+  box-shadow: 0 18px 54px rgba(33, 42, 50, 0.08);
+}
+
+.collectionSurferCopy {
+  display: grid;
+  align-content: center;
+}
+
+.collectionSurferCopy h2 {
+  max-width: 520px;
+  font-size: clamp(23px, 2.7vw, 34px);
+  line-height: 1;
+}
+
+.collectionSurferCopy p:not(.eyebrow) {
+  max-width: 500px;
+  margin-bottom: 0;
+}
+
+.collectionSurferStage {
+  --surfer-progress: 0;
+  min-height: 380px;
+  overflow: hidden;
+  perspective: 1100px;
+  perspective-origin: 50% 42%;
+}
+
+.collectionSurferTrack {
+  position: relative;
+  height: 380px;
+  transform-style: preserve-3d;
+}
+
+.collectionSurferCard {
+  --surfer-travel: calc((var(--surfer-progress) - 0.5) * -220px);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  z-index: var(--surfer-layer);
+  width: clamp(158px, 14vw, 200px);
+  gap: 7px;
+  overflow: hidden;
+  border: 1px solid oklch(84% 0.19 80.46 / 0.22);
+  border-radius: 8px;
+  background: color-mix(in oklch, var(--panel) 88%, transparent);
+  padding: 10px;
+  box-shadow: 0 22px 54px rgba(33, 42, 50, 0.16);
+  transform:
+    translate3d(calc(-50% + var(--surfer-x) + var(--surfer-travel)), -50%, var(--surfer-z))
+    rotateY(var(--surfer-rotate));
+  transition: box-shadow 180ms ease, border-color 180ms ease;
+  backface-visibility: hidden;
+}
+
+.collectionSurferCard:hover {
+  border-color: oklch(84% 0.19 80.46 / 0.5);
+  box-shadow: 0 26px 64px rgba(33, 42, 50, 0.22);
+}
+
+.collectionSurferCard img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.collectionSurferCard span {
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.collectionSurferCard strong {
+  min-height: 34px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.collectionSurferCard small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .storeBand {
@@ -2018,7 +2161,7 @@ body.themeDark .gatewaySteps span.done i {
 .experienceCard:hover,
 .dealCard:hover,
 .videoCard:hover {
-  transform: translateY(-3px);
+  border-color: oklch(70% 0.12 188 / 0.28);
   box-shadow: var(--shadow);
 }
 
@@ -2044,7 +2187,7 @@ body.themeDark .gatewaySteps span.done i {
 .experienceCard:active,
 .dealCard:active,
 .videoCard:active {
-  transform: translateY(0) scale(0.985);
+  transform: none;
   box-shadow: 0 12px 30px rgba(33, 42, 50, 0.14);
 }
 
@@ -2208,7 +2351,7 @@ body.themeDark .gatewaySteps span.done i {
 }
 
 .shopperLoveSection {
-  width: min(1180px, calc(100% - 32px));
+  width: min(var(--store-max), calc(100% - var(--store-gutter)));
   margin: 38px auto 0;
   border: 1px solid rgba(15, 118, 110, 0.14);
   border-radius: 8px;
@@ -2535,16 +2678,6 @@ body.themeDark .gatewaySteps span.done i {
   }
 }
 
-@keyframes cardFloat {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  50% {
-    translate: 0 -10px;
-  }
-}
-
 @keyframes marqueeSlide {
   from {
     transform: translateX(0);
@@ -2694,7 +2827,7 @@ body.themeDark .gatewaySteps span.done i {
 
 .shopSearchBar {
   display: flex;
-  width: min(1180px, calc(100% - 32px));
+  width: min(var(--store-max), calc(100% - var(--store-gutter)));
   align-items: center;
   gap: 12px;
   margin: 0 auto 16px;
@@ -2934,7 +3067,7 @@ body.themeDark .gatewaySteps span.done i {
 
 .productDetail,
 .productMediaSection {
-  width: min(1180px, calc(100% - 32px));
+  width: min(var(--store-max), calc(100% - var(--store-gutter)));
   margin-right: auto;
   margin-left: auto;
 }
@@ -3451,7 +3584,7 @@ body.themeDark .gatewaySteps span.done i {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
   gap: 18px;
-  width: min(1180px, calc(100% - 32px));
+  width: min(var(--store-max), calc(100% - var(--store-gutter)));
   margin: 0 auto 58px;
 }
 
@@ -3715,7 +3848,7 @@ body.themeDark .gatewaySteps span.done i {
   position: relative;
   display: grid;
   min-height: 620px;
-  width: min(1180px, calc(100% - 32px));
+  width: min(var(--store-max), calc(100% - var(--store-gutter)));
   place-items: center;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -4380,6 +4513,10 @@ body.themeDark .gatewaySteps span.done i {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .collectionSurferSection {
+    grid-template-columns: 1fr;
+  }
+
   .commerceMotionShowcase {
     grid-template-columns: 1fr;
   }
@@ -4401,6 +4538,7 @@ body.themeDark .gatewaySteps span.done i {
   .experienceCard:hover,
   .dealCard:hover,
   .videoCard:hover,
+  .collectionSurferCard:hover,
   .motionProductCard:hover {
     transform: none !important;
   }
@@ -4459,6 +4597,7 @@ body.themeDark .gatewaySteps span.done i {
   .ordersLayout,
   .storeFooter,
   .commerceMotionShowcase,
+  .collectionSurferSection,
   .shopperLoveSection {
     width: min(100% - 24px, 1180px);
   }
@@ -4666,6 +4805,21 @@ body.themeDark .gatewaySteps span.done i {
     grid-template-columns: 1fr;
   }
 
+  .heroTrustGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .heroTrustGrid span {
+    min-height: 0;
+    padding: 10px 12px;
+  }
+
+  .heroTrustGrid strong {
+    font-size: 15px;
+  }
+
   .button {
     width: 100%;
   }
@@ -4704,6 +4858,56 @@ body.themeDark .gatewaySteps span.done i {
     margin-top: 12px;
     overflow: visible;
     padding: 14px;
+  }
+
+  .collectionSurferSection {
+    gap: 14px;
+    margin-top: 12px;
+    padding: 14px;
+  }
+
+  .collectionSurferCopy h2 {
+    font-size: 20px;
+    line-height: 1.08;
+  }
+
+  .collectionSurferCopy p:not(.eyebrow) {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .collectionSurferStage {
+    min-height: 0;
+    overflow: hidden;
+    perspective: 820px;
+  }
+
+  .collectionSurferTrack {
+    display: flex;
+    height: auto;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .collectionSurferTrack::-webkit-scrollbar {
+    display: none;
+  }
+
+  .collectionSurferCard {
+    position: relative;
+    top: auto;
+    left: auto;
+    flex: 0 0 148px;
+    width: 148px;
+    padding: 8px;
+    transform: none;
+  }
+
+  .collectionSurferCard strong {
+    min-height: 34px;
+    font-size: 12px;
   }
 
   .motionShowcaseCopy h2 {

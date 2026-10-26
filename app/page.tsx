@@ -4,6 +4,7 @@ import { AuthStatus } from "@/components/AuthStatus";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AnimatedCommerceShowcase } from "@/components/ui/animated-commerce-showcase";
+import { CollectionSurfer } from "@/components/ui/collection-surfer";
 import { MotionEffects } from "@/components/ui/motion-effects";
 
 const categories = [
@@ -92,6 +93,14 @@ const shopperAvatars = customerReviews.map((review) => review.avatar);
 export default function Home() {
   const topDeals = products.slice(0, 4);
   const productStories = [products[0], products[1], products[10]];
+  const surferItems = products.slice(0, 12).map((product) => ({
+    id: product.id,
+    image: product.image,
+    title: product.name,
+    category: product.category,
+    price: product.price,
+    href: `/commerce/${product.id}`
+  }));
 
   return (
     <main>
@@ -129,6 +138,11 @@ export default function Home() {
             <Link className="button primary" href="/commerce">Start shopping</Link>
             <Link className="button secondary" href="/about">Why SealCart</Link>
           </div>
+          <div className="heroTrustGrid" aria-label="SealCart shopping benefits">
+            <span><strong>Free</strong> delivery above Rs 5,000</span>
+            <span><strong>7-day</strong> replacement flow</span>
+            <span><strong>Secure</strong> checkout and orders</span>
+          </div>
         </div>
         <Link className="dealShowcase" href={`/commerce/${products[0].id}`} aria-label={`Open ${products[0].name}`}>
           <span className="saleTag">Today only</span>
@@ -143,6 +157,8 @@ export default function Home() {
       <div data-scroll-reveal>
         <AnimatedCommerceShowcase />
       </div>
+
+      <CollectionSurfer items={surferItems} />
 
       <section className="storeBand" data-scroll-reveal>
         <div className="storeFeature"><strong>Free delivery</strong><span>On orders above Rs 5,000</span></div>
