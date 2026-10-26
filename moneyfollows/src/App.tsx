@@ -671,29 +671,6 @@ function App() {
     }
   };
 
-  const appendAmountKey = (key: string) => {
-    setFormError("");
-    setAmount((current) => {
-      if (key === "backspace") {
-        return current.slice(0, -1);
-      }
-
-      if (key === "clear") {
-        return "";
-      }
-
-      if (key === ".") {
-        return current.includes(".") ? current : `${current || "0"}.`;
-      }
-
-      if (key === "-") {
-        return current.startsWith("-") ? current.slice(1) : `-${current}`;
-      }
-
-      return current === "0" ? key : `${current}${key}`;
-    });
-  };
-
   const resetComposer = () => {
     setAmount("");
     setCategory(kind === "income" ? "Salary" : kind === "expense" ? "Food" : "Transfer");
@@ -950,7 +927,7 @@ function App() {
       <section className="money-workspace" aria-label="MoneyFollows money management app">
         <nav className="bottom-nav" aria-label="Main app sections">
           <div className="rail-logo">
-            <WalletCards size={24} />
+            <img alt="MoneyFollows" src="/moneyfollows-icon-192.png" />
           </div>
           {bottomTabs.map((tab) => {
             const Icon = tab.icon;
@@ -1193,7 +1170,15 @@ function App() {
                 </label>
                 <label>
                   Amount
-                  <output>{amount || "0"}</output>
+                  <input
+                    inputMode="decimal"
+                    value={amount}
+                    onChange={(event) => {
+                      setAmount(event.target.value);
+                      setFormError("");
+                    }}
+                    placeholder="Type amount"
+                  />
                 </label>
 
                 {kind !== "transfer" ? (
@@ -1285,18 +1270,6 @@ function App() {
                 <button type="button" onClick={() => saveEntry(true)}>Continue</button>
               </div>
 
-              <div className="keypad" aria-label="Amount keypad">
-                {["1", "2", "3", "backspace", "4", "5", "6", "-", "7", "8", "9", "clear", "0", ".", "done"].map((key) => (
-                  <button
-                    className={key === "done" ? "done-key" : ""}
-                    key={key}
-                    type="button"
-                    onClick={() => key === "done" ? saveEntry(false) : appendAmountKey(key)}
-                  >
-                    {key === "backspace" ? "⌫" : key === "clear" ? "C" : key === "done" ? "Done" : key}
-                  </button>
-                ))}
-              </div>
             </motion.section>
 
             <AnimatePresence>
