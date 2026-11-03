@@ -3065,7 +3065,7 @@ function CoachPanel({
         const data = await response.json().catch(() => null) as { error?: string; detail?: string } | null;
         text = data?.error === "Gemini is not configured."
           ? "Real Gemini AI is not connected yet. Add `GEMINI_API_KEY` in Vercel Environment Variables for the MoneyFollows project, then redeploy. I will not fake an AI answer."
-          : `Gemini did not answer from the selected model. ${data?.error || "Try another model or check the API key."}`;
+          : `Gemini could not answer right now. ${data?.error || "Try again in a minute or choose the Lite model."}`;
       }
     } catch {
       text = "Gemini could not be reached from this browser session. Check the Vercel function, API key, and network, then try again.";

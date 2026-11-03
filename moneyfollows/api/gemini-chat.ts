@@ -18,7 +18,8 @@ const modelChoices = {
   smart: process.env.GEMINI_FLASH38_MODEL || process.env.GEMINI_MODEL || process.env.GEMINI_SMART_MODEL || "gemini-3.8-flash"
 } as const;
 
-const fallbackModel = modelChoices.flash38;
+const fallbackModels = [modelChoices.flash38, modelChoices.flash36, modelChoices.lite];
+const retryableStatuses = new Set([400, 404, 408, 409, 429, 500, 502, 503, 504]);
 
 function toGeminiHistory(history: GeminiRequest["history"], question: string) {
   const priorMessages = (history || [])
@@ -85,27 +86,51 @@ export default async function handler(req: any, res: any) {
       }
     });
 
-  const callGemini = (modelName: string) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
-    body: requestBody,
-    headers: { "Content-Type": "application/json" },
-    method: "POST"
-  });
+  const callGemini = async (modelName: string) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    try {
+      return await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+        body: requestBody,
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
 
-  let usedModel = selectedModel;
-  let response = await callGemini(selectedModel);
+  const modelQueue = Array.from(new Set([selectedModel, ...fallbackModels]));
+  let data: any = null;
+  let usedModel = "";
+  const failures: string[] = [];
 
-  if (!response.ok && selectedModel !== fallbackModel && [400, 404, 429, 503].includes(response.status)) {
-    usedModel = fallbackModel;
-    response = await callGemini(fallbackModel);
+  for (const modelName of modelQueue) {
+    try {
+      const response = await callGemini(modelName);
+      if (response.ok) {
+        data = await response.json();
+        usedModel = modelName;
+        break;
+      }
+
+      const detail = await response.text();
+      failures.push(`${modelName}: ${response.status}`);
+      if (!retryableStatuses.has(response.status)) {
+        res.status(response.status).json({ error: "Gemini request failed.", detail });
+        return;
+      }
+    } catch (error) {
+      failures.push(`${modelName}: ${error instanceof Error && error.name === "AbortError" ? "timeout" : "network"}`);
+    }
   }
 
-  if (!response.ok) {
-    const detail = await response.text();
-    res.status(response.status).json({ error: "Gemini request failed.", detail });
+  if (!data) {
+    res.status(503).json({ error: "Gemini request failed across all available MoneyFollows models.", detail: failures.join(" | ") });
     return;
   }
 
-  const data = await response.json();
   const text = data?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("").trim();
   res.status(200).json({ model: usedModel, text: text || "I could not produce a useful answer for that. Try asking in a simpler way." });
 }
