@@ -62,9 +62,12 @@ Optional server variable for the AI coach:
 ```text
 GEMINI_API_KEY
 GEMINI_MODEL
+GEMINI_LITE_MODEL
+GEMINI_SMART_MODEL
+GEMINI_DEEP_MODEL
 ```
 
-`GEMINI_MODEL` can be omitted; MoneyFollows uses the default model configured in the API route.
+Only `GEMINI_API_KEY` is required for live AI replies. The model variables are optional overrides for the Lite, Flash, and Deep chat options.
 
 ## Checks
 

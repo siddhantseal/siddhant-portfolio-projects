@@ -121,6 +121,7 @@ type DebtItem = {
 };
 
 type CoachMode = "fast" | "balanced" | "deep";
+type CoachModel = "deep" | "lite" | "smart";
 type CoachAction =
   | { label: string; payload: Omit<GoalItem, "createdAt" | "id">; type: "goal" }
   | { label: string; payload: Omit<BudgetItem, "createdAt" | "id">; type: "budget" }
@@ -146,6 +147,7 @@ const REMINDERS_STORAGE_KEY = "moneyfollows-reminders";
 const BUDGETS_STORAGE_KEY = "moneyfollows-budgets";
 const GOALS_STORAGE_KEY = "moneyfollows-goals";
 const DEBTS_STORAGE_KEY = "moneyfollows-debts";
+const COACH_CHAT_STORAGE_KEY = "moneyfollows-ai-chat-history";
 const THEME_KEY = "moneyfollows-theme";
 const LAST_AUTHED_PROFILE_KEY = "moneyfollows-last-authed-profile";
 const SETUP_STORAGE_KEY = "moneyfollows-setup-complete";
@@ -466,6 +468,31 @@ const loadArray = <T,>(key: string, normalize: (value: unknown) => T | null): T[
   } catch {
     return [];
   }
+};
+
+const starterCoachMessage: CoachMessage = {
+  id: 1,
+  role: "assistant",
+  text: "Ask me about saving money, setting a monthly target, creating a budget, recurring payments, or what to cut first. I will use your MoneyFollows data and keep it practical."
+};
+
+const normalizeCoachMessage = (value: unknown): CoachMessage | null => {
+  const item = value as Partial<CoachMessage>;
+
+  if ((item.role !== "assistant" && item.role !== "user") || typeof item.text !== "string" || !item.text.trim()) {
+    return null;
+  }
+
+  return {
+    id: typeof item.id === "number" ? item.id : Date.now(),
+    role: item.role,
+    text: item.text
+  };
+};
+
+const loadCoachMessages = () => {
+  const saved = loadArray(COACH_CHAT_STORAGE_KEY, normalizeCoachMessage);
+  return saved.length ? saved : [starterCoachMessage];
 };
 
 const loadCurrency = (): CurrencyCode => {
@@ -2839,15 +2866,10 @@ function CoachPanel({
     };
   });
   const [mode, setMode] = useState<CoachMode>("balanced");
+  const [chatModel, setChatModel] = useState<CoachModel>("smart");
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [messages, setMessages] = useState<CoachMessage[]>([
-    {
-      id: 1,
-      role: "assistant",
-      text: "Ask me about saving money, setting a monthly target, creating a budget, recurring payments, or what to cut first. I will use your MoneyFollows data and keep it practical."
-    }
-  ]);
+  const [messages, setMessages] = useState<CoachMessage[]>(loadCoachMessages);
   const topExpense = useMemo(() => {
     const totalsByCategory = expenseCategories.map((category) => ({
       ...category,
@@ -2862,6 +2884,17 @@ function CoachPanel({
     "How do I set recurring rent or salary?",
     "What expense should I reduce first?"
   ];
+
+  useEffect(() => {
+    messageId.current = Math.max(messageId.current, ...messages.map((message) => message.id));
+  }, [messages]);
+
+  useEffect(() => {
+    const messagesToSave = messages
+      .filter((message) => message.text.trim())
+      .map(({ id, role, text }) => ({ id, role, text }));
+    window.localStorage.setItem(COACH_CHAT_STORAGE_KEY, JSON.stringify(messagesToSave));
+  }, [messages]);
 
   const contextSummary = () => ({
     activeBudgets: budgets.length,
@@ -2951,6 +2984,9 @@ function CoachPanel({
     }
 
     const userMessage: CoachMessage = { id: ++messageId.current, role: "user", text: question };
+    const history = messages
+      .filter((message) => message.role === "assistant" || message.role === "user")
+      .map(({ role, text }) => ({ role, text }));
     setMessages((current) => [...current, userMessage]);
     setInput("");
     setBusy(true);
@@ -2958,20 +2994,30 @@ function CoachPanel({
     let text = localReply(question);
     try {
       const response = await fetch("/api/gemini-chat", {
-        body: JSON.stringify({ context: contextSummary(), mode, question }),
+        body: JSON.stringify({ context: contextSummary(), history, mode, model: chatModel, question }),
         headers: { "Content-Type": "application/json" },
         method: "POST"
       });
       if (response.ok) {
         const data = await response.json() as { text?: string };
         text = data.text || text;
+      } else {
+        const data = await response.json().catch(() => null) as { error?: string; detail?: string } | null;
+        const reason = data?.error || "Gemini did not answer.";
+        text = `${text}\n\nAI model note: ${reason} I used the built-in MoneyFollows coach for now.`;
       }
     } catch {
-      text = `${text}\n\nGemini is not configured yet, so I used the built-in MoneyFollows coach.`;
+      text = `${text}\n\nAI model note: Gemini could not be reached. I used the built-in MoneyFollows coach for now.`;
     }
 
     setMessages((current) => [...current, { actions: buildActions(question), id: ++messageId.current, role: "assistant", text }]);
     setBusy(false);
+  };
+
+  const clearChat = () => {
+    window.localStorage.removeItem(COACH_CHAT_STORAGE_KEY);
+    messageId.current = 1;
+    setMessages([starterCoachMessage]);
   };
 
   const runAction = (action: CoachAction) => {
@@ -2994,8 +3040,23 @@ function CoachPanel({
             <span><Bot size={17} /> MoneyFollows AI</span>
             <strong>Finance coach</strong>
           </div>
-          <button type="button" aria-label="Close AI chat" onClick={onClose}><X size={22} /></button>
+          <div className="coach-header-actions">
+            <button type="button" aria-label="Delete AI chat history" onClick={clearChat}><Trash2 size={18} /></button>
+            <button type="button" aria-label="Close AI chat" onClick={onClose}><X size={22} /></button>
+          </div>
         </header>
+        <div className="coach-models" aria-label="AI chat model">
+          {([
+            { key: "lite", label: "Lite", text: "Fast replies" },
+            { key: "smart", label: "Flash", text: "Best daily coach" },
+            { key: "deep", label: "Deep", text: "Harder planning" }
+          ] as Array<{ key: CoachModel; label: string; text: string }>).map((item) => (
+            <button className={chatModel === item.key ? "active" : ""} key={item.key} type="button" onClick={() => setChatModel(item.key)}>
+              <strong>{item.label}</strong>
+              <small>{item.text}</small>
+            </button>
+          ))}
+        </div>
         <div className="coach-mode" aria-label="AI response mode">
           {(["fast", "balanced", "deep"] as CoachMode[]).map((item) => (
             <button className={mode === item ? "active" : ""} key={item} type="button" onClick={() => setMode(item)}>{item}</button>

@@ -2,11 +2,37 @@
 
 type GeminiRequest = {
   context?: Record<string, unknown>;
+  history?: Array<{ role?: "assistant" | "user"; text?: string }>;
   mode?: "fast" | "balanced" | "deep";
+  model?: "deep" | "lite" | "smart";
   question?: string;
 };
 
-const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+const modelChoices = {
+  deep: process.env.GEMINI_DEEP_MODEL || "gemini-4-argon",
+  lite: process.env.GEMINI_LITE_MODEL || "gemini-3.5-flash-lite",
+  smart: process.env.GEMINI_MODEL || process.env.GEMINI_SMART_MODEL || "gemini-3.8-flash"
+} as const;
+
+const fallbackModel = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+
+function toGeminiHistory(history: GeminiRequest["history"], question: string) {
+  const priorMessages = (history || [])
+    .filter((message) => message.text && (message.role === "assistant" || message.role === "user"))
+    .slice(-10)
+    .map((message) => ({
+      parts: [{ text: String(message.text).slice(0, 2400) }],
+      role: message.role === "assistant" ? "model" : "user"
+    }));
+
+  return [
+    ...priorMessages,
+    {
+      parts: [{ text: question }],
+      role: "user"
+    }
+  ];
+}
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
@@ -33,26 +59,39 @@ export default async function handler(req: any, res: any) {
       ? "Answer in 3 short bullets."
       : "Give a balanced practical answer in 4-6 bullets.";
 
-  const prompt = [
+  const selectedModel = modelChoices[body.model || "smart"];
+  const systemPrompt = [
     "You are MoneyFollows AI, a practical personal finance coach inside a money management app.",
     "Use the user's app data below. Do not invent transactions. Do not give investment, legal, or tax guarantees.",
+    "If the user asks to add a goal, budget, reminder, income, expense, or borrowed money record, explain the setup and suggest the relevant one-tap action if available.",
+    "Keep answers friendly, direct, and easy for a normal person to follow day to day.",
     "Focus on saving money, setting goals, budgets, reminders, debt/payable/receivable tracking, and daily habits.",
     style,
-    `App data JSON: ${JSON.stringify(body.context || {})}`,
-    `User question: ${question}`
+    `Current MoneyFollows app data JSON: ${JSON.stringify(body.context || {})}`
   ].join("\n\n");
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+  const requestBody = JSON.stringify({
+      contents: toGeminiHistory(body.history, question),
       generationConfig: {
-        maxOutputTokens: body.mode === "deep" ? 700 : 360,
+        maxOutputTokens: body.mode === "deep" ? 850 : 460,
         temperature: 0.45
+      },
+      systemInstruction: {
+        parts: [{ text: systemPrompt }]
       }
-    }),
+    });
+
+  const callGemini = (modelName: string) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+    body: requestBody,
     headers: { "Content-Type": "application/json" },
     method: "POST"
   });
+
+  let response = await callGemini(selectedModel);
+
+  if (!response.ok && selectedModel !== fallbackModel && [400, 404].includes(response.status)) {
+    response = await callGemini(fallbackModel);
+  }
 
   if (!response.ok) {
     const detail = await response.text();
