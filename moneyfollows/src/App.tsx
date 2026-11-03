@@ -1277,7 +1277,7 @@ function App() {
             {bottomTab === "trans" && activeView === "total" && (
               <TotalView date={selectedDate} entries={filteredEntries} totals={totals} onBudgetSetting={() => setShowFilter(true)} onExport={exportCsv} />
             )}
-            {bottomTab === "stats" && <StatsView entries={filteredEntries} totals={totals} />}
+            {bottomTab === "stats" && <StatsView budgets={budgets} debts={debts} entries={filteredEntries} goals={goals} reminders={reminders} totals={totals} />}
             {bottomTab === "accounts" && (
               <>
                 <AccountsView budgets={budgets} debts={debts} entries={filteredEntries} goals={goals} />
@@ -2456,13 +2456,31 @@ function TotalView({
   );
 }
 
-function StatsView({ entries, totals }: { entries: LedgerEntry[]; totals: { income: number; expenses: number; total: number } }) {
+function StatsView({
+  budgets,
+  debts,
+  entries,
+  goals,
+  reminders,
+  totals
+}: {
+  budgets: BudgetItem[];
+  debts: DebtItem[];
+  entries: LedgerEntry[];
+  goals: GoalItem[];
+  reminders: Reminder[];
+  totals: { income: number; expenses: number; total: number };
+}) {
   const money = useMoney();
   const expenseByCategory = expenseCategories.map((category) => ({
     ...category,
     spent: entries.filter((entry) => entry.kind === "expense" && entry.category === category.name).reduce((sum, entry) => sum + entry.amount, 0)
   })).filter((category) => category.spent > 0);
   const max = Math.max(...expenseByCategory.map((category) => category.spent), 1);
+  const receivableTotal = debts.filter((debt) => debt.kind === "receivable").reduce((sum, debt) => sum + debt.amount, 0);
+  const payableTotal = debts.filter((debt) => debt.kind === "payable").reduce((sum, debt) => sum + debt.amount, 0);
+  const topGoal = goals[0];
+  const goalProgress = topGoal ? Math.min(100, Math.max(0, (Math.max(totals.total, 0) / topGoal.amount) * 100)) : 0;
   return (
     <div className="view-stack stats-view">
       <div className="stats-card">
@@ -2470,6 +2488,38 @@ function StatsView({ entries, totals }: { entries: LedgerEntry[]; totals: { inco
         <strong>{money(totals.total)}</strong>
         <p>{money(totals.income)} income · {money(totals.expenses)} expenses</p>
       </div>
+      <section className="insight-planning-card">
+        <header>
+          <div>
+            <span>Planning insight</span>
+            <strong>Goals, budgets and reminders</strong>
+          </div>
+          <small>{goals.length + budgets.length + reminders.length + debts.length} active items</small>
+        </header>
+        <div className="insight-plan-grid">
+          <article>
+            <span>Next goal</span>
+            <strong>{topGoal ? money(topGoal.amount) : money(0)}</strong>
+            <p>{topGoal ? `${topGoal.name} · target ${topGoal.targetDate}` : "Add a saving goal from Wallets or AI Chat."}</p>
+            {topGoal && <i><b style={{ width: `${Math.max(6, goalProgress)}%` }} /></i>}
+          </article>
+          <article>
+            <span>Budgets</span>
+            <strong>{budgets.length}</strong>
+            <p>{budgets[0] ? `${budgets[0].name} · ${money(budgets[0].amount)} ${budgets[0].period.toLowerCase()}` : "No spending limit set yet."}</p>
+          </article>
+          <article>
+            <span>Reminders</span>
+            <strong>{reminders.length}</strong>
+            <p>{reminders[0] ? `${reminders[0].name} · ${reminders[0].frequency}` : "No payment reminder yet."}</p>
+          </article>
+          <article>
+            <span>Borrowed money</span>
+            <strong>{money(receivableTotal - payableTotal)}</strong>
+            <p>Get {money(receivableTotal)} · Give {money(payableTotal)}</p>
+          </article>
+        </div>
+      </section>
       {expenseByCategory.length === 0 ? <EmptyState label="Spend stats are ready when you add expenses." /> : expenseByCategory.map((category) => (
         <div className="category-bar" key={category.name}>
           <span>{category.emoji} {category.name}</span>
@@ -2529,6 +2579,31 @@ function AccountsView({ budgets, debts, entries, goals }: { budgets: BudgetItem[
             <p>Payables you owe.</p>
           </article>
         </div>
+        {(goals.length > 0 || budgets.length > 0 || debts.length > 0) && (
+          <div className="wallet-plan-list">
+            {goals.slice(0, 3).map((goal) => (
+              <article key={`goal-${goal.id}`}>
+                <span>Goal</span>
+                <strong>{goal.name}</strong>
+                <p>{money(goal.amount)} · target {goal.targetDate}</p>
+              </article>
+            ))}
+            {budgets.slice(0, 2).map((budget) => (
+              <article key={`budget-${budget.id}`}>
+                <span>Budget</span>
+                <strong>{budget.name}</strong>
+                <p>{budget.category} · {money(budget.amount)} · {budget.period}</p>
+              </article>
+            ))}
+            {debts.slice(0, 2).map((debt) => (
+              <article key={`debt-${debt.id}`}>
+                <span>{debt.kind === "receivable" ? "You will get" : "You will give"}</span>
+                <strong>{debt.name}</strong>
+                <p>{money(debt.amount)}{debt.description ? ` · ${debt.description}` : ""}</p>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

@@ -91,9 +91,11 @@ export default async function handler(req: any, res: any) {
     method: "POST"
   });
 
+  let usedModel = selectedModel;
   let response = await callGemini(selectedModel);
 
-  if (!response.ok && selectedModel !== fallbackModel && [400, 404].includes(response.status)) {
+  if (!response.ok && selectedModel !== fallbackModel && [400, 404, 429, 503].includes(response.status)) {
+    usedModel = fallbackModel;
     response = await callGemini(fallbackModel);
   }
 
@@ -105,5 +107,5 @@ export default async function handler(req: any, res: any) {
 
   const data = await response.json();
   const text = data?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("").trim();
-  res.status(200).json({ model: selectedModel, text: text || "I could not produce a useful answer for that. Try asking in a simpler way." });
+  res.status(200).json({ model: usedModel, text: text || "I could not produce a useful answer for that. Try asking in a simpler way." });
 }
