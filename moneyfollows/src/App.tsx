@@ -48,11 +48,12 @@ import { auth, authProviders, isFirebaseConfigured } from "./firebase";
 
 type EntryKind = "income" | "expense" | "transfer";
 type ViewTab = "daily" | "calendar" | "monthly" | "total";
-type BottomTab = "home" | "trans" | "stats" | "accounts";
+type BottomTab = "home" | "trans" | "stats" | "accounts" | "settings";
 type FilterTab = "income" | "expenses" | "account";
 type CurrencyCode = string;
 type CurrencyOption = { code: CurrencyCode; label: string; symbol: string };
 type AuthProvider = "Google" | "Email" | "Local";
+type ReminderFrequency = "One time" | "Daily" | "Weekly" | "Monthly" | "Yearly";
 
 type UserProfile = {
   name: string;
@@ -85,11 +86,12 @@ type Reminder = {
   kind: Exclude<EntryKind, "transfer">;
   name: string;
   amount: number;
-  frequency: "Weekly" | "Monthly" | "Yearly";
+  frequency: ReminderFrequency;
   account: string;
   category: string;
   autoAdd: boolean;
   date: string;
+  time: string;
   createdAt: string;
 };
 
@@ -143,6 +145,7 @@ const STORAGE_KEY = "moneyfollows-user-transactions";
 const CURRENCY_STORAGE_KEY = "moneyfollows-currency";
 const BALANCE_STORAGE_KEY = "moneyfollows-opening-balance";
 const SAVINGS_TARGET_STORAGE_KEY = "moneyfollows-monthly-savings-target";
+const FINANCIAL_AGE_STORAGE_KEY = "moneyfollows-financial-age";
 const REMINDERS_STORAGE_KEY = "moneyfollows-reminders";
 const BUDGETS_STORAGE_KEY = "moneyfollows-budgets";
 const GOALS_STORAGE_KEY = "moneyfollows-goals";
@@ -283,7 +286,8 @@ const bottomTabs: Array<{ key: BottomTab; label: string; icon: typeof ReceiptTex
   { key: "home", label: "Home", icon: House },
   { key: "trans", label: "Ledger", icon: ReceiptText },
   { key: "stats", label: "Insight", icon: BarChart3 },
-  { key: "accounts", label: "Wallets", icon: WalletCards }
+  { key: "accounts", label: "Wallets", icon: WalletCards },
+  { key: "settings", label: "Settings", icon: Settings2 }
 ];
 const coachModelOptions: Array<{ key: CoachModel; label: string; text: string }> = [
   { key: "lite", label: "3.5 Lite", text: "Fastest, low cost" },
@@ -376,6 +380,15 @@ const normalizeReminder = (raw: unknown): Reminder | null => {
     return null;
   }
 
+  const frequency: ReminderFrequency =
+    item.frequency === "One time" ||
+    item.frequency === "Daily" ||
+    item.frequency === "Weekly" ||
+    item.frequency === "Yearly"
+      ? item.frequency
+      : "Monthly";
+  const time = typeof item.time === "string" && /^\d{2}:\d{2}$/.test(item.time) ? item.time : "21:00";
+
   return {
     account: typeof item.account === "string" ? item.account : "UPI",
     amount,
@@ -383,10 +396,11 @@ const normalizeReminder = (raw: unknown): Reminder | null => {
     category: typeof item.category === "string" ? item.category : kind === "income" ? "Salary" : "Food",
     createdAt: typeof item.createdAt === "string" ? item.createdAt : new Date().toISOString(),
     date: typeof item.date === "string" ? item.date : toDateKey(new Date()),
-    frequency: item.frequency === "Weekly" || item.frequency === "Yearly" ? item.frequency : "Monthly",
+    frequency,
     id: typeof item.id === "number" ? item.id : Date.now(),
     kind,
-    name: item.name
+    name: item.name,
+    time
   };
 };
 
@@ -529,6 +543,15 @@ const loadSavingsTarget = () => {
   return Number.isFinite(saved) && saved >= 1000 ? saved : 10000;
 };
 
+const loadFinancialAge = () => {
+  if (typeof window === "undefined") {
+    return 30;
+  }
+
+  const saved = Number(window.localStorage.getItem(FINANCIAL_AGE_STORAGE_KEY));
+  return Number.isFinite(saved) && saved >= 18 && saved <= 75 ? saved : 30;
+};
+
 const getAuthMessage = (error: unknown) => {
   const item = error as { code?: string; message?: string };
   const currentHost = typeof window === "undefined" ? "this domain" : window.location.hostname;
@@ -621,6 +644,7 @@ function App() {
   const [currencyCode, setCurrencyCode] = useState<CurrencyCode>(loadCurrency);
   const [openingBalance, setOpeningBalance] = useState(loadOpeningBalance);
   const [monthlySavingsTarget, setMonthlySavingsTarget] = useState(loadSavingsTarget);
+  const [financialAge, setFinancialAge] = useState(loadFinancialAge);
   const [activeView, setActiveView] = useState<ViewTab>("daily");
   const [bottomTab, setBottomTab] = useState<BottomTab>("home");
   const [selectedDate, setSelectedDate] = useState(() => new Date());
@@ -684,6 +708,10 @@ function App() {
   useEffect(() => {
     window.localStorage.setItem(SAVINGS_TARGET_STORAGE_KEY, String(monthlySavingsTarget));
   }, [monthlySavingsTarget]);
+
+  useEffect(() => {
+    window.localStorage.setItem(FINANCIAL_AGE_STORAGE_KEY, String(financialAge));
+  }, [financialAge]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = isDark ? "dark" : "light";
@@ -957,11 +985,32 @@ function App() {
     reader.readAsText(file);
   };
 
-  const completeSetup = (name: string, currency: CurrencyCode, balance: number) => {
-    const localProfile: UserProfile = { name: name.trim() || "MoneyFollows user", provider: "Local" };
-    setFallbackProfile(localProfile);
+  const applySetupBasics = (name: string, currency: CurrencyCode, balance: number, savingsTarget: number, wantsReminder: boolean) => {
+    const cleanName = name.trim() || "MoneyFollows user";
+    const safeTarget = Number.isFinite(savingsTarget) && savingsTarget > 0 ? savingsTarget : 10000;
     setCurrencyCode(currency);
     setOpeningBalance(Number.isFinite(balance) ? balance : 0);
+    setMonthlySavingsTarget(safeTarget);
+
+    if (wantsReminder && reminders.length === 0) {
+      saveReminder({
+        account: "UPI",
+        amount: Math.max(1, Math.round(safeTarget / 10)),
+        autoAdd: false,
+        category: "Food",
+        date: toDateKey(new Date()),
+        frequency: "Daily",
+        kind: "expense",
+        name: `${cleanName}'s daily money check`,
+        time: "21:00"
+      });
+    }
+  };
+
+  const completeSetup = (name: string, currency: CurrencyCode, balance: number, savingsTarget: number, wantsReminder: boolean) => {
+    const localProfile: UserProfile = { name: name.trim() || "MoneyFollows user", provider: "Local" };
+    setFallbackProfile(localProfile);
+    applySetupBasics(name, currency, balance, savingsTarget, wantsReminder);
     window.localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(localProfile));
     window.localStorage.setItem(SETUP_STORAGE_KEY, "done");
     setShowAuth(false);
@@ -1008,7 +1057,7 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
-  const handleEmailAuth = async (mode: "login" | "signup", name: string, email: string, password: string) => {
+  const handleEmailAuth = async (mode: "login" | "signup", name: string, email: string, password: string, currency: CurrencyCode, balance: number, savingsTarget: number, wantsReminder: boolean) => {
     if (!auth) {
       setAuthError("Firebase is not configured yet. Add the Vercel environment variables first.");
       return;
@@ -1024,6 +1073,7 @@ function App() {
       if (name.trim() && credential.user.displayName !== name.trim()) {
         await updateProfile(credential.user, { displayName: name.trim() });
       }
+      applySetupBasics(name, currency, balance, savingsTarget, wantsReminder);
       saveLastAuthedProfile(credential.user);
       window.localStorage.setItem(SETUP_STORAGE_KEY, "done");
       setFallbackProfile(null);
@@ -1034,7 +1084,7 @@ function App() {
     }
   };
 
-  const handleProviderAuth = async (providerName: Exclude<AuthProvider, "Email" | "Local">, name: string) => {
+  const handleProviderAuth = async (providerName: Exclude<AuthProvider, "Email" | "Local">, name: string, currency: CurrencyCode, balance: number, savingsTarget: number, wantsReminder: boolean) => {
     if (!auth) {
       setAuthError("Firebase is not configured yet. Add the Vercel environment variables first.");
       return;
@@ -1047,6 +1097,7 @@ function App() {
       if (name.trim() && credential.user.displayName !== name.trim()) {
         await updateProfile(credential.user, { displayName: name.trim() });
       }
+      applySetupBasics(name, currency, balance, savingsTarget, wantsReminder);
       saveLastAuthedProfile(credential.user);
       window.localStorage.setItem(SETUP_STORAGE_KEY, "done");
       setFallbackProfile(null);
@@ -1280,7 +1331,20 @@ function App() {
             {bottomTab === "trans" && activeView === "total" && (
               <TotalView date={selectedDate} entries={filteredEntries} totals={totals} onBudgetSetting={() => setShowFilter(true)} onExport={exportCsv} />
             )}
-            {bottomTab === "stats" && <StatsView budgets={budgets} debts={debts} entries={filteredEntries} goals={goals} reminders={reminders} totals={totals} />}
+            {bottomTab === "stats" && (
+              <StatsView
+                budgets={budgets}
+                debts={debts}
+                entries={filteredEntries}
+                financialAge={financialAge}
+                goals={goals}
+                onFinancialAgeChange={setFinancialAge}
+                openingBalance={openingBalance}
+                reminders={reminders}
+                savingsTarget={monthlySavingsTarget}
+                totals={totals}
+              />
+            )}
             {bottomTab === "accounts" && (
               <>
                 <AccountsView budgets={budgets} debts={debts} entries={filteredEntries} goals={goals} />
@@ -1290,25 +1354,33 @@ function App() {
                 debts={debts}
                 goals={goals}
                 openingBalance={openingBalance}
-                isDark={isDark}
                 onAddBudget={saveBudget}
                 onAddDebt={saveDebt}
                 onAddGoal={saveGoal}
                 onAddReminder={saveReminder}
-                onBackup={exportBackup}
-                onClear={() => setEntries([])}
                 onCurrencyChange={setCurrencyCode}
                 onDeleteBudget={(id) => setBudgets((current) => current.filter((budget) => budget.id !== id))}
                 onDeleteDebt={(id) => setDebts((current) => current.filter((debt) => debt.id !== id))}
                 onDeleteGoal={(id) => setGoals((current) => current.filter((goal) => goal.id !== id))}
                 onDeleteReminder={(id) => setReminders((current) => current.filter((reminder) => reminder.id !== id))}
-                onImport={importBackup}
                 onOpeningBalanceChange={setOpeningBalance}
                 onOpenCoach={() => setShowCoach(true)}
-                onTheme={() => setIsDark((current) => !current)}
                 reminders={reminders}
                 />
               </>
+            )}
+            {bottomTab === "settings" && (
+              <SettingsView
+                currencyCode={currencyCode}
+                isDark={isDark}
+                onBackup={exportBackup}
+                onClear={() => setEntries([])}
+                onCurrencyChange={setCurrencyCode}
+                onImport={importBackup}
+                onOpenAccount={() => setShowAccount(true)}
+                onTheme={() => setIsDark((current) => !current)}
+                profile={effectiveProfile}
+              />
             )}
           </motion.section>
         </AnimatePresence>
@@ -1611,12 +1683,12 @@ function WelcomeGate({
   isConfigured: boolean;
   openingBalance: number;
   onClose: () => void;
-  onEmailAuth: (mode: "login" | "signup", name: string, email: string, password: string) => Promise<void>;
-  onProviderAuth: (provider: Exclude<AuthProvider, "Email" | "Local">, name: string) => Promise<void>;
-  onSetupComplete: (name: string, currency: CurrencyCode, openingBalance: number) => void;
+  onEmailAuth: (mode: "login" | "signup", name: string, email: string, password: string, currency: CurrencyCode, openingBalance: number, savingsTarget: number, wantsReminder: boolean) => Promise<void>;
+  onProviderAuth: (provider: Exclude<AuthProvider, "Email" | "Local">, name: string, currency: CurrencyCode, openingBalance: number, savingsTarget: number, wantsReminder: boolean) => Promise<void>;
+  onSetupComplete: (name: string, currency: CurrencyCode, openingBalance: number, savingsTarget: number, wantsReminder: boolean) => void;
 }) {
   const [name, setName] = useState("");
-  const [step, setStep] = useState<0 | 1 | 2>(0);
+  const [step, setStep] = useState(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"login" | "signup">("signup");
@@ -1624,8 +1696,11 @@ function WelcomeGate({
   const [error, setError] = useState("");
   const [setupCurrency, setSetupCurrency] = useState<CurrencyCode>(currencyCode);
   const [setupBalance, setSetupBalance] = useState(openingBalance ? String(openingBalance) : "");
+  const [setupTarget, setSetupTarget] = useState("10000");
+  const [setupReminder, setSetupReminder] = useState(true);
   const cleanName = name.trim();
   const parsedBalance = parseAmount(setupBalance || "0") || 0;
+  const parsedTarget = parseAmount(setupTarget || "0") || 10000;
 
   const continueSetup = () => {
     if (!cleanName) {
@@ -1634,7 +1709,7 @@ function WelcomeGate({
     }
 
     setError("");
-    setStep((current) => current === 0 ? 1 : current === 1 ? 2 : current);
+    setStep((current) => Math.min(current + 1, 4));
   };
 
   const enterDashboard = () => {
@@ -1645,7 +1720,7 @@ function WelcomeGate({
     }
 
     setError("");
-    onSetupComplete(cleanName, setupCurrency, parsedBalance);
+    onSetupComplete(cleanName, setupCurrency, parsedBalance, parsedTarget, setupReminder);
   };
 
   const runEmailAuth = async () => {
@@ -1663,7 +1738,7 @@ function WelcomeGate({
 
     setError("");
     setBusyProvider("form");
-    await onEmailAuth(mode, cleanName, cleanEmail, password);
+    await onEmailAuth(mode, cleanName, cleanEmail, password, setupCurrency, parsedBalance, parsedTarget, setupReminder);
     setBusyProvider(null);
   };
 
@@ -1676,7 +1751,7 @@ function WelcomeGate({
 
     setError("");
     setBusyProvider(provider);
-    await onProviderAuth(provider, cleanName);
+    await onProviderAuth(provider, cleanName, setupCurrency, parsedBalance, parsedTarget, setupReminder);
     setBusyProvider(null);
   };
 
@@ -1698,6 +1773,11 @@ function WelcomeGate({
             <span><b>0</b> fake entries</span>
             <span><b>Private</b> local-first</span>
           </div>
+          <div className="welcome-feature-strip" aria-label="Setup preview">
+            <span><b>01</b> Track real income and expenses</span>
+            <span><b>02</b> Set budgets and saving goals</span>
+            <span><b>03</b> Back up, restore and get reminders</span>
+          </div>
         </div>
 
         <motion.div className="welcome-meme" whileHover={{ y: -3 }} transition={spring}>
@@ -1713,12 +1793,12 @@ function WelcomeGate({
           void runEmailAuth();
         }}>
           <div className="auth-heading">
-            <span>Step {step + 1} of 3</span>
-            <strong>{step === 0 ? "What should we call you?" : step === 1 ? "Set your money basics" : mode === "signup" ? "Save your dashboard" : "Log in to MoneyFollows"}</strong>
-            <p>{step === 0 ? "Your name appears in the dashboard and account page." : step === 1 ? "Choose your default currency and optional opening balance." : "Create an account, log in, or continue locally for now."}</p>
+            <span>Step {step + 1} of 5</span>
+            <strong>{step === 0 ? "What should we call you?" : step === 1 ? "Set your money basics" : step === 2 ? "Pick a savings target" : step === 3 ? "Daily reminder preference" : mode === "signup" ? "Save your dashboard" : "Log in to MoneyFollows"}</strong>
+            <p>{step === 0 ? "Your name appears in the dashboard and account page." : step === 1 ? "Choose your default currency and optional opening balance." : step === 2 ? "This creates the monthly target slider on your home screen." : step === 3 ? "MoneyFollows can prepare a gentle daily check-in reminder." : "Create an account, log in, or continue locally for now."}</p>
           </div>
           <div className="setup-progress" aria-label="Setup progress">
-            {[0, 1, 2].map((item) => <span className={item <= step ? "active" : ""} key={item} />)}
+            {[0, 1, 2, 3, 4].map((item) => <span className={item <= step ? "active" : ""} key={item} />)}
           </div>
           {step === 0 && (
             <div className="setup-step">
@@ -1780,6 +1860,55 @@ function WelcomeGate({
             </div>
           )}
           {step === 2 && (
+            <div className="setup-step">
+              <label>
+                Monthly saving target
+                <span>
+                  <WalletCards size={18} />
+                  <input
+                    inputMode="decimal"
+                    onChange={(event) => setSetupTarget(event.target.value)}
+                    placeholder="10000"
+                    value={setupTarget}
+                  />
+                </span>
+              </label>
+              <p className="setup-hint">You can change this later from the home screen target slider.</p>
+              <div className="welcome-actions">
+                <motion.button type="button" onClick={continueSetup} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+                  Next
+                </motion.button>
+                <button type="button" onClick={() => setStep(1)}>Back</button>
+              </div>
+            </div>
+          )}
+          {step === 3 && (
+            <div className="setup-step">
+              <div className="setup-question-card">
+                <span>⏰</span>
+                <div>
+                  <strong>Ask me to record transactions daily</strong>
+                  <p>A reminder will appear in Wallets. Browser notifications can be allowed later in Settings.</p>
+                </div>
+                <button className={setupReminder ? "active" : ""} type="button" onClick={() => setSetupReminder((current) => !current)}>{setupReminder ? "On" : "Off"}</button>
+              </div>
+              <div className="setup-question-card">
+                <span>🎯</span>
+                <div>
+                  <strong>Show planning widgets</strong>
+                  <p>Your goals, budgets and health score stay visible in Home and Insight.</p>
+                </div>
+                <button className="active" type="button">On</button>
+              </div>
+              <div className="welcome-actions">
+                <motion.button type="button" onClick={continueSetup} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+                  Continue
+                </motion.button>
+                <button type="button" onClick={() => setStep(2)}>Back</button>
+              </div>
+            </div>
+          )}
+          {step === 4 && (
             <>
           <div className="auth-mode">
             <button className={mode === "signup" ? "active" : ""} type="button" onClick={() => {
@@ -1856,11 +1985,11 @@ function WelcomeGate({
               {busyProvider === "form" ? "Checking..." : mode === "signup" ? "Create account" : "Log in"}
             </motion.button>
             <button type="button" onClick={enterDashboard}>Continue locally</button>
-            <button type="button" onClick={() => setStep(1)}>Back</button>
+            <button type="button" onClick={() => setStep(3)}>Back</button>
           </div>
             </>
           )}
-          {step !== 2 && (error || authError) && <p className="form-error">{error || authError}</p>}
+          {step !== 4 && (error || authError) && <p className="form-error">{error || authError}</p>}
         </form>
       </motion.section>
     </main>
@@ -2375,6 +2504,12 @@ function CalendarView({ days, entries, selectedDate, onSelect }: { days: Date[];
           return (
             <button className={`${isCurrentMonth ? "" : "outside"} ${isSelected ? "selected" : ""}`} key={dateKey} type="button" onClick={() => onSelect(day)}>
               <span>{day.getDate()}</span>
+              {(income > 0 || expenses > 0) && (
+                <span className="calendar-dots" aria-hidden="true">
+                  {income > 0 && <b className="income-dot" />}
+                  {expenses > 0 && <b className="expense-dot" />}
+                </span>
+              )}
               {income > 0 && <small className="income-text">+{money(income)}</small>}
               {expenses > 0 && <small className="expense-text">-{money(expenses)}</small>}
             </button>
@@ -2463,18 +2598,27 @@ function StatsView({
   budgets,
   debts,
   entries,
+  financialAge,
   goals,
+  onFinancialAgeChange,
+  openingBalance,
   reminders,
+  savingsTarget,
   totals
 }: {
   budgets: BudgetItem[];
   debts: DebtItem[];
   entries: LedgerEntry[];
+  financialAge: number;
   goals: GoalItem[];
+  onFinancialAgeChange: (age: number) => void;
+  openingBalance: number;
   reminders: Reminder[];
+  savingsTarget: number;
   totals: { income: number; expenses: number; total: number };
 }) {
   const money = useMoney();
+  const [scoreMonth] = useState(() => new Date());
   const expenseByCategory = expenseCategories.map((category) => ({
     ...category,
     spent: entries.filter((entry) => entry.kind === "expense" && entry.category === category.name).reduce((sum, entry) => sum + entry.amount, 0)
@@ -2484,8 +2628,78 @@ function StatsView({
   const payableTotal = debts.filter((debt) => debt.kind === "payable").reduce((sum, debt) => sum + debt.amount, 0);
   const topGoal = goals[0];
   const goalProgress = topGoal ? Math.min(100, Math.max(0, (Math.max(totals.total, 0) / topGoal.amount) * 100)) : 0;
+  const chartData = buildMonthlyChart(entries);
+  const liquidAssets = Math.max(0, openingBalance + totals.total + receivableTotal - payableTotal);
+  const savingsRate = totals.income > 0 ? Math.max(0, ((totals.income - totals.expenses) / totals.income) * 100) : 0;
+  const monthlyBurn = totals.expenses;
+  const runwayMonths = monthlyBurn > 0 ? liquidAssets / monthlyBurn : liquidAssets > 0 ? 12 : 0;
+  const budgetAllocated = budgets.reduce((sum, budget) => sum + budget.amount, 0);
+  const budgetSpent = budgets.reduce((sum, budget) => sum + entries.filter((entry) => entry.kind === "expense" && entry.category === budget.category).reduce((entrySum, entry) => entrySum + entry.amount, 0), 0);
+  const cashScore = entries.length ? Math.min(25, Math.round(savingsRate / 4)) : 0;
+  const budgetScore = budgets.length ? Math.max(0, Math.min(20, Math.round((budgetAllocated > 0 ? Math.max(0, 1 - budgetSpent / budgetAllocated) : 0.2) * 20))) : 0;
+  const debtScore = entries.length || debts.length || openingBalance > 0 ? Math.max(0, Math.min(20, Math.round((1 - Math.min(1, payableTotal / Math.max(liquidAssets + receivableTotal, 1))) * 20))) : 0;
+  const runwayScore = Math.min(20, Math.round((Math.min(runwayMonths, 6) / 6) * 20));
+  const planningScore = Math.min(15, goals.length * 6 + reminders.length * 3 + (savingsTarget > 0 ? 3 : 0));
+  const healthScore = Math.max(0, Math.min(100, cashScore + budgetScore + debtScore + runwayScore + planningScore));
+  const pillars = [
+    { label: "Cash flow and savings", score: cashScore, total: 25, detail: `${money(totals.income)} in · ${money(totals.expenses)} out · ${savingsRate.toFixed(1)}% saved` },
+    { label: "Budget discipline", score: budgetScore, total: 20, detail: `${budgets.length} budgets · ${money(budgetAllocated)} allocated · ${money(budgetSpent)} spent` },
+    { label: "Debt and liabilities", score: debtScore, total: 20, detail: `Get ${money(receivableTotal)} · Give ${money(payableTotal)}` },
+    { label: "Emergency runway", score: runwayScore, total: 20, detail: `${runwayMonths.toFixed(1)} months using current monthly expense` },
+    { label: "Goals and planning", score: planningScore, total: 15, detail: `${goals.length} goals · ${reminders.length} reminders · target ${money(savingsTarget)}` }
+  ];
   return (
     <div className="view-stack stats-view">
+      <section className="financial-health-panel">
+        <header>
+          <div>
+            <span>Financial health score</span>
+            <strong>{monthLabel(scoreMonth)}</strong>
+          </div>
+          <label>
+            Age
+            <select value={financialAge} onChange={(event) => onFinancialAgeChange(Number(event.target.value))}>
+              {Array.from({ length: 58 }, (_, index) => index + 18).map((age) => <option key={age} value={age}>{age} years old</option>)}
+            </select>
+          </label>
+        </header>
+        <div className="score-hero">
+          <i style={{ "--score": `${healthScore}%` } as CSSProperties}><b>{healthScore}</b><span>/100</span></i>
+          <div>
+            <strong>{healthScore > 70 ? "Strong money rhythm" : healthScore > 35 ? "Building a cleaner month" : "Start with real entries"}</strong>
+            <p>{entries.length ? "Score uses your income, expenses, budgets, debts, runway, goals and reminders." : "Record income and 5-10 real expenses to make this score useful."}</p>
+          </div>
+        </div>
+        <div className="health-mini-grid">
+          <article><span>Savings rate</span><strong>{savingsRate.toFixed(1)}%</strong></article>
+          <article><span>Runway</span><strong>{runwayMonths.toFixed(1)} mo</strong></article>
+          <article><span>Net worth</span><strong>{money(liquidAssets)}</strong></article>
+          <article><span>Age</span><strong>{financialAge}</strong></article>
+        </div>
+        <div className="pillar-stack">
+          {pillars.map((pillar) => (
+            <article key={pillar.label}>
+              <div>
+                <strong>{pillar.label}</strong>
+                <span>{pillar.score} / {pillar.total}</span>
+              </div>
+              <p>{pillar.detail}</p>
+              <i><b style={{ width: `${Math.max(5, (pillar.score / pillar.total) * 100)}%` }} /></i>
+            </article>
+          ))}
+        </div>
+        <div className="trajectory-card">
+          <strong>6-month score trajectory</strong>
+          <div>
+            {chartData.map((point) => (
+              <span key={point.label}>
+                <b style={{ height: `${Math.max(8, Math.min(100, (Math.max(point.savings, 0) / Math.max(savingsTarget, 1)) * 100))}%` }} />
+                <small>{point.label}</small>
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
       <div className="stats-card">
         <span>Monthly balance</span>
         <strong>{money(totals.total)}</strong>
@@ -2617,22 +2831,17 @@ function MoreView({
   currencyCode,
   debts,
   goals,
-  isDark,
   onAddBudget,
   onAddDebt,
   onAddGoal,
   onAddReminder,
-  onBackup,
-  onClear,
   onCurrencyChange,
   onDeleteBudget,
   onDeleteDebt,
   onDeleteGoal,
   onDeleteReminder,
-  onImport,
   onOpeningBalanceChange,
   onOpenCoach,
-  onTheme,
   openingBalance,
   reminders
 }: {
@@ -2640,22 +2849,17 @@ function MoreView({
   currencyCode: CurrencyCode;
   debts: DebtItem[];
   goals: GoalItem[];
-  isDark: boolean;
   onAddBudget: (budget: Omit<BudgetItem, "createdAt" | "id">) => void;
   onAddDebt: (debt: Omit<DebtItem, "createdAt" | "id">) => void;
   onAddGoal: (goal: Omit<GoalItem, "createdAt" | "id">) => void;
   onAddReminder: (reminder: Omit<Reminder, "createdAt" | "id">) => void;
-  onBackup: () => void;
-  onClear: () => void;
   onCurrencyChange: (currency: CurrencyCode) => void;
   onDeleteBudget: (id: number) => void;
   onDeleteDebt: (id: number) => void;
   onDeleteGoal: (id: number) => void;
   onDeleteReminder: (id: number) => void;
-  onImport: (file: File | undefined) => void;
   onOpeningBalanceChange: (amount: number) => void;
   onOpenCoach: () => void;
-  onTheme: () => void;
   openingBalance: number;
   reminders: Reminder[];
 }) {
@@ -2664,6 +2868,7 @@ function MoreView({
   const [reminderName, setReminderName] = useState("");
   const [reminderAmount, setReminderAmount] = useState("");
   const [reminderFrequency, setReminderFrequency] = useState<Reminder["frequency"]>("Monthly");
+  const [reminderTime, setReminderTime] = useState("21:00");
   const [reminderAccount, setReminderAccount] = useState("UPI");
   const [reminderCategory, setReminderCategory] = useState("Food");
   const [autoAdd, setAutoAdd] = useState(false);
@@ -2698,11 +2903,22 @@ function MoreView({
       date: toDateKey(new Date()),
       frequency: reminderFrequency,
       kind: reminderKind,
-      name: reminderName.trim()
+      name: reminderName.trim(),
+      time: reminderTime
     });
     setReminderName("");
     setReminderAmount("");
     setReminderError("");
+  };
+
+  const requestNotifications = async () => {
+    if (!("Notification" in window)) {
+      setReminderError("This browser does not support notification permission.");
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    setReminderError(permission === "granted" ? "Notifications are allowed. Your reminders are ready." : "Notifications were not allowed. The reminder is still saved inside Wallets.");
   };
 
   const createBudget = () => {
@@ -2857,10 +3073,13 @@ function MoreView({
           <input value={reminderName} onChange={(event) => setReminderName(event.target.value)} placeholder="Payment name" />
           <input inputMode="decimal" value={reminderAmount} onChange={(event) => setReminderAmount(event.target.value)} placeholder="Amount" />
           <select value={reminderFrequency} onChange={(event) => setReminderFrequency(event.target.value as Reminder["frequency"])}>
+            <option>One time</option>
+            <option>Daily</option>
             <option>Weekly</option>
             <option>Monthly</option>
             <option>Yearly</option>
           </select>
+          <input aria-label="Reminder time" type="time" value={reminderTime} onChange={(event) => setReminderTime(event.target.value)} />
           <select value={reminderAccount} onChange={(event) => setReminderAccount(event.target.value)}>
             {accounts.map((item) => <option key={item}>{item}</option>)}
           </select>
@@ -2872,8 +3091,11 @@ function MoreView({
             Auto-add
           </label>
         </div>
-        {reminderError && <p className="form-error">{reminderError}</p>}
-        <button className="create-reminder" type="button" onClick={createReminder}>Create reminder</button>
+        {reminderError && <p className={reminderError.startsWith("Notifications are allowed") ? "form-success" : "form-error"}>{reminderError}</p>}
+        <div className="reminder-actions">
+          <button className="create-reminder" type="button" onClick={createReminder}>Create reminder</button>
+          <button type="button" onClick={requestNotifications}>Allow notifications</button>
+        </div>
         {reminders.length > 0 && (
           <div className="reminder-list">
             {reminders.map((reminder) => (
@@ -2881,13 +3103,68 @@ function MoreView({
                 <span>{categoryEmoji(reminder.category, reminder.kind)}</span>
                 <div>
                   <strong>{reminder.name}</strong>
-                  <small>{reminder.frequency} · {reminder.account} · {money(reminder.amount)}</small>
+                  <small>{reminder.frequency} · {reminder.time} · {reminder.account} · {money(reminder.amount)}</small>
                 </div>
                 <button type="button" aria-label="Delete reminder" onClick={() => onDeleteReminder(reminder.id)}><Trash2 size={15} /></button>
               </article>
             ))}
           </div>
         )}
+      </section>
+
+    </div>
+  );
+}
+
+function SettingsView({
+  currencyCode,
+  isDark,
+  onBackup,
+  onClear,
+  onCurrencyChange,
+  onImport,
+  onOpenAccount,
+  onTheme,
+  profile
+}: {
+  currencyCode: CurrencyCode;
+  isDark: boolean;
+  onBackup: () => void;
+  onClear: () => void;
+  onCurrencyChange: (currency: CurrencyCode) => void;
+  onImport: (file: File | undefined) => void;
+  onOpenAccount: () => void;
+  onTheme: () => void;
+  profile: UserProfile;
+}) {
+  return (
+    <div className="view-stack settings-view">
+      <section className="settings-hero">
+        <div>
+          <span>Settings</span>
+          <strong>Make MoneyFollows yours</strong>
+          <p>Manage your account, theme, currency, backup, import and privacy controls from one place.</p>
+        </div>
+        <button type="button" onClick={onOpenAccount}>
+          {profile.photoURL ? <img alt="" className="mini-avatar" src={profile.photoURL} /> : <UserRound size={20} />}
+          Account
+        </button>
+      </section>
+
+      <section className="settings-card settings-form-card">
+        <span>Display</span>
+        <strong>Theme and currency</strong>
+        <div className="settings-form-grid">
+          <label>
+            Default currency
+            <select value={currencyCode} onChange={(event) => onCurrencyChange(event.target.value as CurrencyCode)}>
+              {currencyOptions.map((option) => (
+                <option key={option.code} value={option.code}>{option.symbol} {option.label} ({option.code})</option>
+              ))}
+            </select>
+          </label>
+          <button className="settings-row" type="button" onClick={onTheme}>{isDark ? <Sun size={22} /> : <Moon size={22} />} {isDark ? "Switch to light mode" : "Switch to dark mode"}</button>
+        </div>
       </section>
 
       <section className="settings-card backup-card">
@@ -2902,11 +3179,13 @@ function MoreView({
           </label>
         </div>
       </section>
+
       <section className="settings-card">
-        <strong>MoneyFollows</strong>
-        <span>Professional money management without fake sample spending.</span>
+        <span>Privacy</span>
+        <strong>No fake sample spending</strong>
+        <p>MoneyFollows only shows entries you add, import, or create through your own planning actions.</p>
       </section>
-      <button className="settings-row" type="button" onClick={onTheme}>{isDark ? <Sun size={22} /> : <Moon size={22} />} {isDark ? "Switch to light mode" : "Switch to dark mode"}</button>
+
       <button className="settings-row danger-row" type="button" onClick={onClear}><Trash2 size={22} /> Clear all entries</button>
     </div>
   );
@@ -3029,7 +3308,8 @@ function CoachPanel({
           date: coachDates.today,
           frequency: "Monthly",
           kind: normalized.includes("salary") ? "income" : "expense",
-          name: normalized.includes("salary") ? "Salary reminder" : normalized.includes("rent") ? "Rent reminder" : "Monthly payment reminder"
+          name: normalized.includes("salary") ? "Salary reminder" : normalized.includes("rent") ? "Rent reminder" : "Monthly payment reminder",
+          time: "21:00"
         },
         type: "reminder"
       });

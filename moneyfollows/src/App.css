@@ -330,6 +330,29 @@ input:-webkit-autofill:focus {
   font-size: 16px;
 }
 
+.welcome-feature-strip {
+  display: grid;
+  gap: 8px;
+  max-width: 620px;
+}
+
+.welcome-feature-strip span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--panel-soft) 70%, transparent);
+  color: var(--muted-2);
+  padding: 10px 12px;
+  font-weight: 800;
+}
+
+.welcome-feature-strip b {
+  color: var(--accent);
+  font-size: 11px;
+}
+
 .welcome-meme {
   display: grid;
   align-content: start;
@@ -456,7 +479,7 @@ input:-webkit-autofill:focus {
 
 .setup-progress {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 8px;
 }
 
@@ -483,6 +506,56 @@ input:-webkit-autofill:focus {
   color: var(--muted-2);
   padding: 10px 12px;
   font-size: 12px;
+}
+
+.setup-question-card {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  background: var(--phone);
+  padding: 12px;
+}
+
+.setup-question-card > span {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: var(--radius-control);
+  background: var(--panel-soft);
+  font-size: 22px;
+}
+
+.setup-question-card div {
+  display: grid;
+  gap: 4px;
+}
+
+.setup-question-card strong {
+  font-size: 15px;
+}
+
+.setup-question-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.setup-question-card button {
+  min-width: 56px;
+  min-height: 36px;
+  border-radius: var(--radius-control);
+  background: var(--panel-soft);
+  color: var(--muted-2);
+  font-weight: 900;
+}
+
+.setup-question-card button.active {
+  background: var(--accent);
+  color: var(--lacquer-deep);
 }
 
 .auth-grid {
@@ -743,6 +816,7 @@ input:-webkit-autofill:focus {
 
 .home-meme-button {
   display: grid;
+  align-self: stretch;
   overflow: hidden;
   margin: 0;
   border: 1px solid var(--line-strong);
@@ -754,14 +828,16 @@ input:-webkit-autofill:focus {
   text-align: left;
 }
 
-.home-hero img {
+.home-meme-button img {
+  aspect-ratio: 16 / 9;
   width: 100%;
-  max-height: 230px;
-  object-fit: contain;
+  max-height: 170px;
+  object-fit: cover;
+  object-position: center top;
   background: #8f8681;
 }
 
-.home-hero figcaption {
+.home-meme-button figcaption {
   padding: 10px 12px 12px;
   color: var(--muted-2);
   font-weight: 800;
@@ -1600,6 +1676,27 @@ input:-webkit-autofill:focus {
   white-space: nowrap;
 }
 
+.calendar-dots {
+  display: flex;
+  gap: 4px;
+  min-height: 6px;
+  align-items: center;
+}
+
+.calendar-dots b {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.income-dot {
+  background: var(--green);
+}
+
+.expense-dot {
+  background: var(--expense);
+}
+
 .monthly-list {
   display: grid;
   margin: -16px;
@@ -1734,6 +1831,200 @@ input:-webkit-autofill:focus {
   display: grid;
   gap: 4px;
   padding: 15px;
+}
+
+.financial-health-panel,
+.settings-hero {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  background: var(--panel);
+  padding: 15px;
+}
+
+.financial-health-panel header,
+.settings-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.financial-health-panel header > div,
+.settings-hero > div {
+  display: grid;
+  gap: 4px;
+}
+
+.financial-health-panel header span,
+.settings-hero span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.financial-health-panel header strong,
+.settings-hero strong {
+  font-size: 20px;
+}
+
+.financial-health-panel label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.financial-health-panel select,
+.settings-form-grid select {
+  min-height: 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--phone);
+  color: var(--text);
+  padding: 0 10px;
+}
+
+.score-hero {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  background: var(--phone);
+  padding: 14px;
+}
+
+.score-hero i {
+  display: grid;
+  width: 136px;
+  height: 136px;
+  place-items: center;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, var(--phone) 56%, transparent 58%),
+    conic-gradient(var(--accent) var(--score), var(--line) 0);
+  font-style: normal;
+}
+
+.score-hero b {
+  font-size: 38px;
+}
+
+.score-hero span {
+  margin-left: -38px;
+  margin-top: 44px;
+  color: var(--muted);
+}
+
+.score-hero div {
+  display: grid;
+  gap: 7px;
+}
+
+.score-hero p,
+.settings-hero p {
+  margin: 0;
+  color: var(--muted-2);
+}
+
+.health-mini-grid,
+.pillar-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.health-mini-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.health-mini-grid article,
+.pillar-stack article,
+.trajectory-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--phone);
+  padding: 12px;
+}
+
+.health-mini-grid span,
+.pillar-stack span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.health-mini-grid strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 17px;
+}
+
+.pillar-stack article {
+  display: grid;
+  gap: 8px;
+}
+
+.pillar-stack article > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pillar-stack p {
+  margin: 0;
+  color: var(--muted-2);
+  font-size: 12px;
+}
+
+.pillar-stack i {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--panel-soft);
+}
+
+.pillar-stack i b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green), var(--accent));
+}
+
+.trajectory-card {
+  display: grid;
+  gap: 12px;
+}
+
+.trajectory-card > div {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  align-items: end;
+  gap: 8px;
+  min-height: 110px;
+}
+
+.trajectory-card span {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  height: 100%;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.trajectory-card b {
+  align-self: end;
+  width: 18px;
+  min-height: 8px;
+  border-radius: 999px 999px 4px 4px;
+  background: linear-gradient(180deg, var(--accent), var(--green));
 }
 
 .stats-card span,
@@ -1924,6 +2215,43 @@ input:-webkit-autofill:focus {
   display: grid;
   gap: 8px;
   padding: 15px;
+}
+
+.settings-view {
+  max-width: 980px;
+}
+
+.settings-hero button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--phone);
+  color: var(--text);
+  padding: 0 12px;
+  font-weight: 900;
+}
+
+.settings-form-card {
+  gap: 14px;
+}
+
+.settings-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, auto);
+  gap: 12px;
+  align-items: end;
+}
+
+.settings-form-grid label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .profile-card {
@@ -2333,6 +2661,22 @@ input:-webkit-autofill:focus {
   font-weight: 900;
 }
 
+.reminder-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.reminder-actions button:last-child {
+  min-height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--phone);
+  color: var(--text);
+  padding: 0 12px;
+  font-weight: 900;
+}
+
 .reminder-list {
   display: grid;
   gap: 8px;
@@ -2669,7 +3013,7 @@ input:-webkit-autofill:focus {
   left: 0;
   z-index: 3;
   display: grid;
-  grid-template-rows: 72px repeat(4, minmax(62px, 74px)) 1fr;
+  grid-template-rows: 72px repeat(5, minmax(58px, 70px)) 1fr;
   width: 108px;
   border-right: 1px solid var(--line);
   background: color-mix(in srgb, var(--phone) 92%, transparent);
@@ -2910,6 +3254,15 @@ input:-webkit-autofill:focus {
   border-radius: var(--radius-control);
   background: color-mix(in oklch, var(--expense) 12%, var(--panel));
   color: var(--expense);
+  padding: 10px 12px;
+}
+
+.form-success {
+  margin: 0 16px 12px;
+  border: 1px solid color-mix(in oklch, var(--green) 44%, var(--line));
+  border-radius: var(--radius-control);
+  background: color-mix(in oklch, var(--green) 12%, var(--panel));
+  color: var(--green);
   padding: 10px 12px;
 }
 
@@ -3235,6 +3588,14 @@ input:-webkit-autofill:focus {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .home-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .home-meme-button {
+    max-width: 360px;
+  }
+
   .content-panel {
     padding-top: 14px;
   }
@@ -3285,6 +3646,14 @@ input:-webkit-autofill:focus {
 
   .welcome-meme img {
     max-height: 185px;
+  }
+
+  .home-meme-button {
+    max-width: none;
+  }
+
+  .home-meme-button img {
+    max-height: 150px;
   }
 
   .auth-grid {
@@ -3350,13 +3719,32 @@ input:-webkit-autofill:focus {
   .home-brief-grid,
   .widget-grid,
   .coach-models,
+  .health-mini-grid,
   .insight-plan-grid,
   .planning-grid,
   .wallet-plan-list,
   .planning-tools,
+  .settings-form-grid,
   .split-box > div,
   .account-info-grid {
     grid-template-columns: 1fr;
+  }
+
+  .financial-health-panel header,
+  .settings-hero,
+  .score-hero,
+  .reminder-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .financial-health-panel header,
+  .settings-hero {
+    align-items: stretch;
+  }
+
+  .score-hero {
+    justify-items: center;
+    text-align: center;
   }
 
   .health-score-card {
@@ -3549,7 +3937,7 @@ input:-webkit-autofill:focus {
   .bottom-nav {
     top: auto;
     right: 0;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     grid-template-rows: 1fr;
     width: auto;
     min-height: calc(72px + env(safe-area-inset-bottom));
