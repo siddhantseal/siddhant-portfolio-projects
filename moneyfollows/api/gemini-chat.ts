@@ -4,22 +4,28 @@ type GeminiRequest = {
   context?: Record<string, unknown>;
   history?: Array<{ role?: "assistant" | "user"; text?: string }>;
   mode?: "fast" | "balanced" | "deep";
-  model?: "argon" | "deep" | "flash36" | "flash38" | "latest" | "lite" | "smart";
+  model?: "argon" | "deep" | "flash25" | "flash36" | "flash38" | "latest" | "lite" | "smart";
   question?: string;
 };
 
 const modelChoices = {
   argon: process.env.GEMINI_ARGON_MODEL || process.env.GEMINI_DEEP_MODEL || "gemini-4-argon",
   deep: process.env.GEMINI_ARGON_MODEL || process.env.GEMINI_DEEP_MODEL || "gemini-4-argon",
+  flash25: process.env.GEMINI_FLASH25_MODEL || "gemini-2.5-flash",
   flash36: process.env.GEMINI_FLASH36_MODEL || "gemini-3.6-flash",
   flash38: process.env.GEMINI_FLASH38_MODEL || process.env.GEMINI_MODEL || process.env.GEMINI_SMART_MODEL || "gemini-3.8-flash",
   latest: process.env.GEMINI_LATEST_MODEL || "gemini-flash-latest",
-  lite: process.env.GEMINI_LITE_MODEL || "gemini-3.5-flash-lite",
+  lite: process.env.GEMINI_LITE_MODEL || "gemini-2.5-flash-lite",
   smart: process.env.GEMINI_FLASH38_MODEL || process.env.GEMINI_MODEL || process.env.GEMINI_SMART_MODEL || "gemini-3.8-flash"
 } as const;
 
-const fallbackModels = [modelChoices.flash38, modelChoices.flash36, modelChoices.lite];
-const retryableStatuses = new Set([400, 404, 408, 409, 429, 500, 502, 503, 504]);
+const fallbackModels = [
+  modelChoices.flash38,
+  modelChoices.flash36,
+  modelChoices.flash25,
+  modelChoices.lite,
+  "gemini-2.5-flash"
+];
 
 function toGeminiHistory(history: GeminiRequest["history"], question: string) {
   const priorMessages = (history || [])
@@ -70,6 +76,7 @@ export default async function handler(req: any, res: any) {
     "Use the user's app data below. Do not invent transactions. Do not give investment, legal, or tax guarantees.",
     "If the user asks to add a goal, budget, reminder, income, expense, or borrowed money record, explain the setup and suggest the relevant one-tap action if available.",
     "Keep answers friendly, direct, and easy for a normal person to follow day to day.",
+    "Use plain text with short bullets or numbered steps. Do not use markdown tables. Avoid unfinished bold markers.",
     "Focus on saving money, setting goals, budgets, reminders, debt/payable/receivable tracking, and daily habits.",
     style,
     `Current MoneyFollows app data JSON: ${JSON.stringify(body.context || {})}`
@@ -78,7 +85,7 @@ export default async function handler(req: any, res: any) {
   const requestBody = JSON.stringify({
       contents: toGeminiHistory(body.history, question),
       generationConfig: {
-        maxOutputTokens: body.mode === "deep" ? 850 : 460,
+        maxOutputTokens: body.mode === "deep" ? 1600 : body.mode === "fast" ? 520 : 1100,
         temperature: 0.45
       },
       systemInstruction: {
@@ -111,16 +118,22 @@ export default async function handler(req: any, res: any) {
       const response = await callGemini(modelName);
       if (response.ok) {
         data = await response.json();
-        usedModel = modelName;
-        break;
+        const candidateText = data?.candidates?.[0]?.content?.parts
+          ?.map((part: { text?: string }) => part.text || "")
+          .join("")
+          .trim();
+        const finishReason = data?.candidates?.[0]?.finishReason;
+        if (candidateText && finishReason !== "MAX_TOKENS") {
+          usedModel = modelName;
+          break;
+        }
+        failures.push(`${modelName}: ${finishReason === "MAX_TOKENS" ? "truncated" : "empty"}`);
+        data = null;
+        continue;
       }
 
       const detail = await response.text();
-      failures.push(`${modelName}: ${response.status}`);
-      if (!retryableStatuses.has(response.status)) {
-        res.status(response.status).json({ error: "Gemini request failed.", detail });
-        return;
-      }
+      failures.push(`${modelName}: ${response.status} ${detail.slice(0, 220)}`);
     } catch (error) {
       failures.push(`${modelName}: ${error instanceof Error && error.name === "AbortError" ? "timeout" : "network"}`);
     }
@@ -132,5 +145,8 @@ export default async function handler(req: any, res: any) {
   }
 
   const text = data?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("").trim();
-  res.status(200).json({ model: usedModel, text: text || "I could not produce a useful answer for that. Try asking in a simpler way." });
+  res.status(200).json({
+    model: usedModel,
+    text: text || "I could not produce a useful answer for that. Try asking in a simpler way."
+  });
 }
