@@ -45,6 +45,14 @@ function toGeminiHistory(history: GeminiRequest["history"], question: string) {
   ];
 }
 
+function cleanCoachText(value: string) {
+  return value
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/^\s*\*\s+/gm, "- ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
@@ -118,10 +126,10 @@ export default async function handler(req: any, res: any) {
       const response = await callGemini(modelName);
       if (response.ok) {
         data = await response.json();
-        const candidateText = data?.candidates?.[0]?.content?.parts
+        const candidateText = cleanCoachText(data?.candidates?.[0]?.content?.parts
           ?.map((part: { text?: string }) => part.text || "")
           .join("")
-          .trim();
+          .trim() || "");
         const finishReason = data?.candidates?.[0]?.finishReason;
         if (candidateText && finishReason !== "MAX_TOKENS") {
           usedModel = modelName;
@@ -144,7 +152,7 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const text = data?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("").trim();
+  const text = cleanCoachText(data?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("").trim() || "");
   res.status(200).json({
     model: usedModel,
     text: text || "I could not produce a useful answer for that. Try asking in a simpler way."
