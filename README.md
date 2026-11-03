@@ -8,6 +8,8 @@ This repository contains deployable full-stack projects for Siddhant Seal:
 
 Live site: https://siddhant-portfolio-iota.vercel.app
 
+MoneyFollows web app: https://money-manager-pro-plum.vercel.app
+
 The live app is built with Next.js, React, TypeScript, and API routes. A Socket.io backend implementation is included under `backend/socket-server` for the collaborative task manager.
 
 ## Run Locally
