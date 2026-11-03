@@ -103,7 +103,7 @@ export default function Home() {
   }));
 
   return (
-    <main>
+    <main className="homePage">
       <div className="siteShader" aria-hidden="true" />
       <MotionEffects />
       <header className="storeHeader">

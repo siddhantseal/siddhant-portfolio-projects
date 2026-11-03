@@ -87,6 +87,11 @@ main > :not(.siteShader) {
   z-index: 1;
 }
 
+.homePage {
+  --store-max: 3000px;
+  --store-gutter: clamp(20px, 2vw, 44px);
+}
+
 .siteShader {
   position: fixed;
   inset: 0;
