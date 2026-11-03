@@ -1158,13 +1158,19 @@ function App() {
 
         <motion.header className="app-header" initial={{ opacity: 0, y: -18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
           <div className="brand-row">
-            <div>
+            <div className="brand-copy">
               <span>MoneyFollows</span>
               <strong>{totals.total >= 0 ? `Hi ${effectiveProfile.name}, your money is behaving.` : `Hi ${effectiveProfile.name}, your money needs direction.`}</strong>
             </div>
-            <button type="button" aria-label="Open account" onClick={() => setShowAccount(true)}>
-              {effectiveProfile.photoURL ? <img alt="" className="mini-avatar" src={effectiveProfile.photoURL} /> : <UserRound size={22} />}
-            </button>
+            <div className="brand-actions">
+              <button className="theme-toggle" type="button" aria-label="Toggle dark mode" onClick={() => setIsDark((current) => !current)}>
+                {isDark ? <Sun size={19} /> : <Moon size={19} />}
+                <span>{isDark ? "Light mode" : "Dark mode"}</span>
+              </button>
+              <button type="button" aria-label="Open account" onClick={() => setShowAccount(true)}>
+                {effectiveProfile.photoURL ? <img alt="" className="mini-avatar" src={effectiveProfile.photoURL} /> : <UserRound size={22} />}
+              </button>
+            </div>
           </div>
           <div className="month-row">
             <button type="button" aria-label="Previous month" onClick={() => changeMonth(-1)}>
@@ -1179,9 +1185,6 @@ function App() {
             <span className="header-spacer" />
             <button type="button" aria-label="Open AI coach" onClick={() => setShowCoach(true)}><Bot size={25} /></button>
             <button type="button" aria-label="Search" onClick={focusSearch}><Search size={25} /></button>
-            <button type="button" aria-label="Toggle dark mode" onClick={() => setIsDark((current) => !current)}>
-              {isDark ? <Sun size={22} /> : <Moon size={22} />}
-            </button>
           </div>
 
           <div className="search-row">
