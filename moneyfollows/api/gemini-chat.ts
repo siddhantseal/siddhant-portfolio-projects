@@ -15,16 +15,15 @@ const modelChoices = {
   flash36: process.env.GEMINI_FLASH36_MODEL || "gemini-3.6-flash",
   flash38: process.env.GEMINI_FLASH38_MODEL || process.env.GEMINI_MODEL || process.env.GEMINI_SMART_MODEL || "gemini-3.8-flash",
   latest: process.env.GEMINI_LATEST_MODEL || "gemini-flash-latest",
-  lite: process.env.GEMINI_LITE_MODEL || "gemini-2.5-flash-lite",
+  lite: process.env.GEMINI_LITE_MODEL || "gemini-3.5-flash-lite",
   smart: process.env.GEMINI_FLASH38_MODEL || process.env.GEMINI_MODEL || process.env.GEMINI_SMART_MODEL || "gemini-3.8-flash"
 } as const;
 
 const fallbackModels = [
   modelChoices.flash38,
   modelChoices.flash36,
-  modelChoices.flash25,
   modelChoices.lite,
-  "gemini-2.5-flash"
+  modelChoices.latest
 ];
 
 function toGeminiHistory(history: GeminiRequest["history"], question: string) {
@@ -93,7 +92,7 @@ export default async function handler(req: any, res: any) {
   const requestBody = JSON.stringify({
       contents: toGeminiHistory(body.history, question),
       generationConfig: {
-        maxOutputTokens: body.mode === "deep" ? 1600 : body.mode === "fast" ? 520 : 1100,
+        maxOutputTokens: body.mode === "deep" ? 2600 : body.mode === "fast" ? 700 : 1800,
         temperature: 0.45
       },
       systemInstruction: {
@@ -119,6 +118,8 @@ export default async function handler(req: any, res: any) {
   const modelQueue = Array.from(new Set([selectedModel, ...fallbackModels]));
   let data: any = null;
   let usedModel = "";
+  let bestTruncatedData: any = null;
+  let bestTruncatedModel = "";
   const failures: string[] = [];
 
   for (const modelName of modelQueue) {
@@ -135,6 +136,10 @@ export default async function handler(req: any, res: any) {
           usedModel = modelName;
           break;
         }
+        if (candidateText && !bestTruncatedData) {
+          bestTruncatedData = data;
+          bestTruncatedModel = modelName;
+        }
         failures.push(`${modelName}: ${finishReason === "MAX_TOKENS" ? "truncated" : "empty"}`);
         data = null;
         continue;
@@ -145,6 +150,11 @@ export default async function handler(req: any, res: any) {
     } catch (error) {
       failures.push(`${modelName}: ${error instanceof Error && error.name === "AbortError" ? "timeout" : "network"}`);
     }
+  }
+
+  if (!data && bestTruncatedData) {
+    data = bestTruncatedData;
+    usedModel = bestTruncatedModel;
   }
 
   if (!data) {

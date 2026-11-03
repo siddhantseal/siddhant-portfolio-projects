@@ -123,7 +123,7 @@ type DebtItem = {
 };
 
 type CoachMode = "fast" | "balanced" | "deep";
-type CoachModel = "argon" | "flash25" | "flash36" | "flash38" | "latest" | "lite";
+type CoachModel = "argon" | "flash36" | "flash38" | "latest" | "lite";
 type CoachAction =
   | { label: string; payload: Omit<GoalItem, "createdAt" | "id">; type: "goal" }
   | { label: string; payload: Omit<BudgetItem, "createdAt" | "id">; type: "budget" }
@@ -290,8 +290,7 @@ const bottomTabs: Array<{ key: BottomTab; label: string; icon: typeof ReceiptTex
   { key: "settings", label: "Settings", icon: Settings2 }
 ];
 const coachModelOptions: Array<{ key: CoachModel; label: string; text: string }> = [
-  { key: "lite", label: "2.5 Lite", text: "Fastest, low cost" },
-  { key: "flash25", label: "2.5 Flash", text: "Most reliable" },
+  { key: "lite", label: "3.5 Lite", text: "Fastest fallback" },
   { key: "flash36", label: "3.6 Flash", text: "Balanced daily chat" },
   { key: "flash38", label: "3.8 Flash", text: "Smart finance coach" },
   { key: "latest", label: "Flash Latest", text: "Google latest alias" },
@@ -3527,13 +3526,13 @@ function CoachPanel({
         const data = await response.json() as { model?: string; text?: string };
         text = data.text
           ? `${data.text}\n\nAnswered by Gemini model: ${data.model || chatModel}`
-          : `The selected Gemini model (${data.model || chatModel}) did not return text. Try again or choose 2.5 Flash.`;
+          : `The selected Gemini model (${data.model || chatModel}) did not return text. Try again or choose 3.6 Flash / 3.5 Lite.`;
         shouldAttachActions = Boolean(data.text);
       } else {
         const data = await response.json().catch(() => null) as { error?: string; detail?: string } | null;
         text = data?.error === "Gemini is not configured."
           ? "Real Gemini AI is not connected yet. Add `GEMINI_API_KEY` in Vercel Environment Variables for the MoneyFollows project, then redeploy. I will not fake an AI answer."
-          : `Gemini could not answer right now. ${data?.error || "Try again in a minute or choose 2.5 Flash."}${data?.detail ? ` Details: ${data.detail}` : ""}`;
+          : `Gemini could not answer right now. ${data?.error || "Try again in a minute or choose 3.6 Flash / 3.5 Lite."}${data?.detail ? ` Details: ${data.detail}` : ""}`;
       }
     } catch {
       text = "Gemini could not be reached from this browser session. Check the Vercel function, API key, and network, then try again.";
