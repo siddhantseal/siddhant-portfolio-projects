@@ -10,6 +10,7 @@ MoneyFollows is a responsive personal finance app for tracking real income, expe
 - Food and grocery merchant details
 - Product or bill image attachment
 - Search, filters, reminders, wallets, stats, and CSV export
+- AI money coach for savings plans, goals, budgets, and reminders
 - Worldwide currency selection
 - Dark mode and light mode
 - Responsive layout for desktop, laptop, tablet, Android, iOS, and modern browsers
@@ -55,6 +56,15 @@ VITE_FIREBASE_STORAGE_BUCKET
 VITE_FIREBASE_MESSAGING_SENDER_ID
 VITE_FIREBASE_APP_ID
 ```
+
+Optional server variable for the AI coach:
+
+```text
+GEMINI_API_KEY
+GEMINI_MODEL
+```
+
+`GEMINI_MODEL` can be omitted; MoneyFollows uses the default model configured in the API route.
 
 ## Checks
 

@@ -18,6 +18,7 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowLeft,
   BarChart3,
+  Bot,
   BriefcaseBusiness,
   Camera,
   ChevronLeft,
@@ -28,14 +29,13 @@ import {
   House,
   Landmark,
   Moon,
-  MoreHorizontal,
   Plus,
   ReceiptText,
   Search,
+  Send,
   Settings2,
   ShieldCheck,
   Sparkles,
-  Star,
   Sun,
   Tag,
   Trash2,
@@ -48,7 +48,7 @@ import { auth, authProviders, isFirebaseConfigured } from "./firebase";
 
 type EntryKind = "income" | "expense" | "transfer";
 type ViewTab = "daily" | "calendar" | "monthly" | "total";
-type BottomTab = "home" | "trans" | "stats" | "accounts" | "more";
+type BottomTab = "home" | "trans" | "stats" | "accounts";
 type FilterTab = "income" | "expenses" | "account";
 type CurrencyCode = string;
 type CurrencyOption = { code: CurrencyCode; label: string; symbol: string };
@@ -118,6 +118,18 @@ type DebtItem = {
   description: string;
   dueDate: string;
   createdAt: string;
+};
+
+type CoachMode = "fast" | "balanced" | "deep";
+type CoachAction =
+  | { label: string; payload: Omit<GoalItem, "createdAt" | "id">; type: "goal" }
+  | { label: string; payload: Omit<BudgetItem, "createdAt" | "id">; type: "budget" }
+  | { label: string; payload: Omit<Reminder, "createdAt" | "id">; type: "reminder" };
+type CoachMessage = {
+  id: number;
+  actions?: CoachAction[];
+  role: "assistant" | "user";
+  text: string;
 };
 
 type Category = {
@@ -265,17 +277,11 @@ const viewTabs: Array<{ key: ViewTab; label: string }> = [
   { key: "total", label: "Vault" }
 ];
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const memeLines = [
-  "Money follows people who write it down.",
-  "Budget tight? Track first, flex later.",
-  "Every receipt has a plot twist."
-];
 const bottomTabs: Array<{ key: BottomTab; label: string; icon: typeof ReceiptText }> = [
   { key: "home", label: "Home", icon: House },
   { key: "trans", label: "Ledger", icon: ReceiptText },
   { key: "stats", label: "Insight", icon: BarChart3 },
-  { key: "accounts", label: "Wallets", icon: WalletCards },
-  { key: "more", label: "Studio", icon: MoreHorizontal }
+  { key: "accounts", label: "Wallets", icon: WalletCards }
 ];
 
 const spring = { type: "spring", stiffness: 420, damping: 34 } as const;
@@ -577,6 +583,7 @@ function App() {
   const [fallbackProfile, setFallbackProfile] = useState<UserProfile | null>(loadLocalProfile);
   const [showAuth, setShowAuth] = useState(() => typeof window !== "undefined" && window.localStorage.getItem(SETUP_STORAGE_KEY) !== "done");
   const [showAccount, setShowAccount] = useState(false);
+  const [showCoach, setShowCoach] = useState(false);
   const [currencyCode, setCurrencyCode] = useState<CurrencyCode>(loadCurrency);
   const [openingBalance, setOpeningBalance] = useState(loadOpeningBalance);
   const [monthlySavingsTarget, setMonthlySavingsTarget] = useState(loadSavingsTarget);
@@ -1136,7 +1143,7 @@ function App() {
               <ChevronRight size={25} />
             </button>
             <span className="header-spacer" />
-            <button type="button" aria-label="Money follows motivation" onClick={() => setBottomTab("more")}><Star size={25} /></button>
+            <button type="button" aria-label="Open AI coach" onClick={() => setShowCoach(true)}><Bot size={25} /></button>
             <button type="button" aria-label="Search" onClick={focusSearch}><Search size={25} /></button>
             <button type="button" aria-label="Toggle dark mode" onClick={() => setIsDark((current) => !current)}>
               {isDark ? <Sun size={22} /> : <Moon size={22} />}
@@ -1202,12 +1209,23 @@ function App() {
               <HomeView
                 onAddEntry={() => setShowComposer(true)}
                 onOpenAccount={() => setShowAccount(true)}
+                onOpenCalendar={() => {
+                  setBottomTab("trans");
+                  setActiveView("calendar");
+                }}
+                onOpenCoach={() => setShowCoach(true)}
+                onOpenLedger={() => {
+                  setBottomTab("trans");
+                  setActiveView("daily");
+                }}
+                onOpenStats={() => setBottomTab("stats")}
+                onOpenWalletTools={() => setBottomTab("accounts")}
+                onOpenWallets={() => setBottomTab("accounts")}
                 onSavingsTargetChange={setMonthlySavingsTarget}
                 entries={entries}
                 budgets={budgets}
                 debts={debts}
                 goals={goals}
-                reminders={reminders}
                 savingsTarget={monthlySavingsTarget}
                 profile={effectiveProfile}
                 totals={totals}
@@ -1226,9 +1244,10 @@ function App() {
               <TotalView date={selectedDate} entries={filteredEntries} totals={totals} onBudgetSetting={() => setShowFilter(true)} onExport={exportCsv} />
             )}
             {bottomTab === "stats" && <StatsView entries={filteredEntries} totals={totals} />}
-            {bottomTab === "accounts" && <AccountsView budgets={budgets} debts={debts} entries={filteredEntries} goals={goals} />}
-            {bottomTab === "more" && (
-              <MoreView
+            {bottomTab === "accounts" && (
+              <>
+                <AccountsView budgets={budgets} debts={debts} entries={filteredEntries} goals={goals} />
+                <MoreView
                 budgets={budgets}
                 currencyCode={currencyCode}
                 debts={debts}
@@ -1248,12 +1267,11 @@ function App() {
                 onDeleteReminder={(id) => setReminders((current) => current.filter((reminder) => reminder.id !== id))}
                 onImport={importBackup}
                 onOpeningBalanceChange={setOpeningBalance}
-                onOpenAccount={() => setShowAccount(true)}
-                onSignIn={() => setShowAuth(true)}
+                onOpenCoach={() => setShowCoach(true)}
                 onTheme={() => setIsDark((current) => !current)}
                 reminders={reminders}
-                userProfile={effectiveProfile}
-              />
+                />
+              </>
             )}
           </motion.section>
         </AnimatePresence>
@@ -1300,6 +1318,25 @@ function App() {
             }}
             onSignOut={handleSignOut}
             profile={effectiveProfile}
+          />
+        )}
+        {showCoach && (
+          <CoachPanel
+            budgets={budgets}
+            debts={debts}
+            entries={entries}
+            goals={goals}
+            onAddBudget={saveBudget}
+            onAddGoal={saveGoal}
+            onAddReminder={saveReminder}
+            onClose={() => setShowCoach(false)}
+            onOpenWalletTools={() => {
+              setShowCoach(false);
+              setBottomTab("accounts");
+            }}
+            reminders={reminders}
+            savingsTarget={monthlySavingsTarget}
+            totals={totals}
           />
         )}
         {showComposer && (
@@ -1696,7 +1733,7 @@ function WelcomeGate({
                   />
                 </span>
               </label>
-              <p className="setup-hint">This can be zero. You can edit currency and balance later in Studio.</p>
+              <p className="setup-hint">This can be zero. You can edit currency and balance later in Wallets.</p>
               <div className="welcome-actions">
                 <motion.button type="button" onClick={continueSetup} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
                   Next
@@ -1811,9 +1848,14 @@ function HomeView({
   goals,
   onAddEntry,
   onOpenAccount,
+  onOpenCalendar,
+  onOpenCoach,
+  onOpenLedger,
+  onOpenStats,
+  onOpenWalletTools,
+  onOpenWallets,
   onSavingsTargetChange,
   profile,
-  reminders,
   savingsTarget,
   totals
 }: {
@@ -1823,9 +1865,14 @@ function HomeView({
   goals: GoalItem[];
   onAddEntry: () => void;
   onOpenAccount: () => void;
+  onOpenCalendar: () => void;
+  onOpenCoach: () => void;
+  onOpenLedger: () => void;
+  onOpenStats: () => void;
+  onOpenWalletTools: () => void;
+  onOpenWallets: () => void;
   onSavingsTargetChange: (value: number) => void;
   profile: UserProfile;
-  reminders: Reminder[];
   savingsTarget: number;
   totals: { income: number; expenses: number; total: number };
 }) {
@@ -1835,14 +1882,16 @@ function HomeView({
   const savingsProgress = savingsTarget > 0 ? Math.min(100, Math.max(0, Math.round((totals.total / savingsTarget) * 100))) : 0;
   const targetGap = Math.max(0, savingsTarget - totals.total);
   const features = [
-    { emoji: "💸", label: "Log real income and expenses", text: "No fake entries. Every number appears only when you add it." },
-    { emoji: "🍜", label: "Food and grocery context", text: "Track restaurants, delivery apps, grocery platforms, product photos, and memos." },
-    { emoji: "⏰", label: "Reminders", text: "Create recurring reminders for payments, salaries, EMIs, and borrowed money." },
-    { emoji: "🔐", label: "Account control", text: "View profile info, update your avatar, sign out, or delete your Firebase account." }
+    { action: onAddEntry, emoji: "💸", label: "Log real income and expenses", text: "No fake entries. Every number appears only when you add it." },
+    { action: onAddEntry, emoji: "🍜", label: "Food and grocery context", text: "Track restaurants, delivery apps, grocery platforms, product photos, and memos." },
+    { action: onOpenWalletTools, emoji: "⏰", label: "Reminders", text: "Create recurring reminders for payments, salaries, EMIs, and borrowed money." },
+    { action: onOpenAccount, emoji: "🔐", label: "Account control", text: "View profile info, update your avatar, sign out, or delete your Firebase account." }
   ];
   const healthScore = Math.max(0, Math.min(100, Math.round(50 + (totals.income > 0 ? (totals.total / totals.income) * 35 : 0) - (totals.expenses > totals.income && totals.income > 0 ? 18 : 0))));
   const dailyActions = [
     { action: onAddEntry, label: "Record today", meta: "Income, expense or transfer", value: entries.length ? `${entries.length} entries` : "No entries yet" },
+    { action: onOpenLedger, label: "Review ledger", meta: "Today, calendar, flow and vault", value: "Open" },
+    { action: onOpenCalendar, label: "Calendar", meta: "See dates with money activity", value: "Map" },
     { action: onOpenAccount, label: "Account", meta: "Profile and security", value: profile.provider }
   ];
   const receivableTotal = debts.filter((debt) => debt.kind === "receivable").reduce((sum, debt) => sum + debt.amount, 0);
@@ -1852,10 +1901,10 @@ function HomeView({
     ? entries.filter((entry) => entry.kind === "expense" && entry.category === activeBudget.category).reduce((sum, entry) => sum + entry.amount, 0)
     : 0;
   const widgetCards = [
-    { emoji: "🎯", label: "Goals", value: goals.length ? `${goals.length} active` : "No goals", meta: goals[0] ? `${goals[0].name} · ${money(goals[0].amount)}` : "Add a target in Studio" },
-    { emoji: "📊", label: "Budget", value: activeBudget ? money(Math.max(0, activeBudget.amount - activeBudgetSpent)) : "Not set", meta: activeBudget ? `${activeBudget.category} left this ${activeBudget.period.toLowerCase()}` : "Control spending by category" },
-    { emoji: "🔁", label: "Recurring", value: reminders.length ? `${reminders.length} active` : "No reminders", meta: reminders[0] ? `${reminders[0].name} · ${reminders[0].frequency}` : "Set rent, salary, EMIs" },
-    { emoji: "🤝", label: "Give / get", value: money(receivableTotal - payableTotal), meta: `${money(receivableTotal)} to get · ${money(payableTotal)} to give` }
+    { action: onOpenCoach, emoji: "🤖", label: "AI Coach", value: "Ask", meta: "Get saving plans, goal setup and budget ideas" },
+    { action: onOpenWalletTools, emoji: "🎯", label: "Goals", value: goals.length ? `${goals.length} active` : "No goals", meta: goals[0] ? `${goals[0].name} · ${money(goals[0].amount)}` : "Add a target in Wallets" },
+    { action: onOpenWalletTools, emoji: "📊", label: "Budget", value: activeBudget ? money(Math.max(0, activeBudget.amount - activeBudgetSpent)) : "Not set", meta: activeBudget ? `${activeBudget.category} left this ${activeBudget.period.toLowerCase()}` : "Control spending by category" },
+    { action: onOpenWallets, emoji: "🤝", label: "Give / get", value: money(receivableTotal - payableTotal), meta: `${money(receivableTotal)} to get · ${money(payableTotal)} to give` }
   ];
 
   return (
@@ -1867,30 +1916,31 @@ function HomeView({
           <p>MoneyFollows combines a daily ledger, visual spending insights, reminders, wallets, and account settings in one responsive app.</p>
           <div className="home-actions">
             <button type="button" onClick={onAddEntry}><Plus size={18} /> Log money</button>
+            <button type="button" onClick={onOpenCoach}><Bot size={18} /> AI coach</button>
             <button type="button" onClick={onOpenAccount}><UserRound size={18} /> Account</button>
           </div>
         </div>
-        <motion.figure whileHover={{ y: -4 }} transition={spring}>
+        <motion.button className="home-meme-button" type="button" onClick={onOpenWalletTools} whileHover={{ y: -4 }} whileTap={{ scale: 0.99 }} transition={spring}>
           <img alt="MoneyFollows meme" src="/ravi-kishan-money-follows.png" />
           <figcaption>Money follows when you track it.</figcaption>
-        </motion.figure>
+        </motion.button>
       </section>
 
-      <section className="home-total-card">
+      <button className="home-total-card" type="button" onClick={onOpenLedger}>
         <span>Current month</span>
         <strong>{money(totals.total)}</strong>
         <p>{money(totals.income)} income · {money(totals.expenses)} expenses</p>
-      </section>
+      </button>
 
       <section className="home-brief-grid" aria-label="Daily money overview">
-        <article className="health-score-card">
+        <button className="health-score-card" type="button" onClick={onOpenStats}>
           <div>
             <span>Financial health</span>
             <strong>{entries.length ? `${healthScore}/100` : "No score yet"}</strong>
             <p>{entries.length ? "Based on logged income, expenses, and monthly savings." : "Record transactions to generate your score."}</p>
           </div>
           <i style={{ "--score": `${entries.length ? healthScore : 0}%` } as CSSProperties}><b>{entries.length ? healthScore : 0}</b></i>
-        </article>
+        </button>
         <div className="daily-action-list">
           {dailyActions.map((item) => (
             <button key={item.label} type="button" onClick={item.action}>
@@ -1904,19 +1954,19 @@ function HomeView({
 
       <section className="widget-grid" aria-label="Real-use money widgets">
         {widgetCards.map((item) => (
-          <motion.article key={item.label} whileHover={{ y: -3 }} transition={spring}>
+          <motion.button key={item.label} type="button" onClick={item.action} whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} transition={spring}>
             <span>{item.emoji}</span>
             <div>
               <small>{item.label}</small>
               <strong>{item.value}</strong>
               <p>{item.meta}</p>
             </div>
-          </motion.article>
+          </motion.button>
         ))}
       </section>
 
       <section className="home-money-lab">
-        <div className="animated-chart-card">
+        <button className="animated-chart-card" type="button" onClick={onOpenStats}>
           <div className="chart-title">
             <div>
               <span>Animated chart</span>
@@ -1962,7 +2012,7 @@ function HomeView({
             <span><i className="expense-dot" /> Expense</span>
             <span><i className="saving-dot" /> Saving</span>
           </div>
-        </div>
+        </button>
 
         <div className="savings-target-card">
           <div>
@@ -2000,11 +2050,11 @@ function HomeView({
         </div>
         <div className="about-grid">
           {features.map((feature) => (
-            <motion.article key={feature.label} whileHover={{ y: -4 }} transition={spring}>
+            <motion.button key={feature.label} type="button" onClick={feature.action} whileHover={{ y: -4 }} whileTap={{ scale: 0.98 }} transition={spring}>
               <span>{feature.emoji}</span>
               <strong>{feature.label}</strong>
               <p>{feature.text}</p>
-            </motion.article>
+            </motion.button>
           ))}
         </div>
       </section>
@@ -2469,12 +2519,10 @@ function MoreView({
   onDeleteReminder,
   onImport,
   onOpeningBalanceChange,
-  onOpenAccount,
-  onSignIn,
+  onOpenCoach,
   onTheme,
   openingBalance,
-  reminders,
-  userProfile
+  reminders
 }: {
   budgets: BudgetItem[];
   currencyCode: CurrencyCode;
@@ -2494,15 +2542,12 @@ function MoreView({
   onDeleteReminder: (id: number) => void;
   onImport: (file: File | undefined) => void;
   onOpeningBalanceChange: (amount: number) => void;
-  onOpenAccount: () => void;
-  onSignIn: () => void;
+  onOpenCoach: () => void;
   onTheme: () => void;
   openingBalance: number;
   reminders: Reminder[];
-  userProfile: UserProfile;
 }) {
   const money = useMoney();
-  const isLocalProfile = userProfile.provider === "Local";
   const [reminderKind, setReminderKind] = useState<Exclude<EntryKind, "transfer">>("expense");
   const [reminderName, setReminderName] = useState("");
   const [reminderAmount, setReminderAmount] = useState("");
@@ -2596,16 +2641,10 @@ function MoreView({
 
   return (
     <div className="view-stack">
-      <section className="profile-card">
-        <div>
-          <span>{userProfile.name.slice(0, 1).toUpperCase()}</span>
-          <div>
-            <small>{isLocalProfile ? "Local mode" : `Signed in with ${userProfile.provider}`}</small>
-            <strong>{userProfile.name}</strong>
-          </div>
-        </div>
-        <button type="button" onClick={isLocalProfile ? onSignIn : onOpenAccount}>{isLocalProfile ? "Sign in" : "View account"}</button>
-      </section>
+      <button className="settings-row ai-chat-row" type="button" onClick={onOpenCoach}>
+        <Bot size={22} /> AI Chat
+        <small>Ask how to save, create goals, and plan budgets</small>
+      </button>
 
       <section className="setup-card">
         <div>
@@ -2739,26 +2778,6 @@ function MoreView({
         )}
       </section>
 
-      <motion.section className="meme-card" drag dragConstraints={{ left: -14, right: 14, top: -14, bottom: 14 }} whileDrag={{ scale: 1.02, rotate: -1 }}>
-        <img alt="Ravi Kishan Money Follows meme" src="/ravi-kishan-money-follows.png" />
-        <div>
-          <span>Daily motivation</span>
-          <strong>Money follows, my brother.</strong>
-          <p>Track it cleanly, spend it consciously, let the numbers follow you.</p>
-        </div>
-      </motion.section>
-      <MemeStrip />
-      <section className="meme-gallery" aria-label="Money meme gallery">
-        <div>
-          <span>Money moodboard</span>
-          <strong>Spend less boringly.</strong>
-        </div>
-        <div>
-          <img alt="Money flying meme" src="/money-throw-meme.png" />
-          <img alt="Counting happiness money meme" src="/happiness-money-meme.png" />
-          <img alt="Using MoneyFollows and saving money meme" src="/moneyfollows-saving-meme.png" />
-        </div>
-      </section>
       <section className="settings-card backup-card">
         <span>Backup and restore</span>
         <strong>Move your MoneyFollows data safely</strong>
@@ -2781,16 +2800,236 @@ function MoreView({
   );
 }
 
-function MemeStrip({ compact = false }: { compact?: boolean }) {
+function CoachPanel({
+  budgets,
+  debts,
+  entries,
+  goals,
+  onAddBudget,
+  onAddGoal,
+  onAddReminder,
+  onClose,
+  onOpenWalletTools,
+  reminders,
+  savingsTarget,
+  totals
+}: {
+  budgets: BudgetItem[];
+  debts: DebtItem[];
+  entries: LedgerEntry[];
+  goals: GoalItem[];
+  onAddBudget: (budget: Omit<BudgetItem, "createdAt" | "id">) => void;
+  onAddGoal: (goal: Omit<GoalItem, "createdAt" | "id">) => void;
+  onAddReminder: (reminder: Omit<Reminder, "createdAt" | "id">) => void;
+  onClose: () => void;
+  onOpenWalletTools: () => void;
+  reminders: Reminder[];
+  savingsTarget: number;
+  totals: { income: number; expenses: number; total: number };
+}) {
+  const money = useMoney();
+  const messageId = useRef(1);
+  const [coachDates] = useState(() => {
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+
+    return {
+      nextMonth: toDateKey(nextMonth),
+      today: toDateKey(now)
+    };
+  });
+  const [mode, setMode] = useState<CoachMode>("balanced");
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [messages, setMessages] = useState<CoachMessage[]>([
+    {
+      id: 1,
+      role: "assistant",
+      text: "Ask me about saving money, setting a monthly target, creating a budget, recurring payments, or what to cut first. I will use your MoneyFollows data and keep it practical."
+    }
+  ]);
+  const topExpense = useMemo(() => {
+    const totalsByCategory = expenseCategories.map((category) => ({
+      ...category,
+      amount: entries.filter((entry) => entry.kind === "expense" && entry.category === category.name).reduce((sum, entry) => sum + entry.amount, 0)
+    })).sort((first, second) => second.amount - first.amount);
+    return totalsByCategory[0]?.amount ? totalsByCategory[0] : null;
+  }, [entries]);
+  const quickPrompts = [
+    "How can I save more money this month?",
+    "Create a goal to save 5000",
+    "Make a food budget for this month",
+    "How do I set recurring rent or salary?",
+    "What expense should I reduce first?"
+  ];
+
+  const contextSummary = () => ({
+    activeBudgets: budgets.length,
+    activeGoals: goals.length,
+    activeReminders: reminders.length,
+    borrowedRecords: debts.length,
+    income: totals.income,
+    expenses: totals.expenses,
+    net: totals.total,
+    savingsTarget,
+    topExpense: topExpense ? `${topExpense.name}: ${topExpense.amount}` : "none",
+    transactionCount: entries.length
+  });
+
+  const buildActions = (question: string): CoachAction[] => {
+    const normalized = question.toLowerCase();
+    const amount = parseAmount(question.match(/[\d,.]+/)?.[0] ?? "");
+    const safeAmount = Number.isFinite(amount) && amount > 0 ? amount : Math.max(5000, Math.round(Math.max(savingsTarget, totals.expenses * 0.15, 5000)));
+    const actions: CoachAction[] = [];
+
+    if (normalized.includes("goal") || normalized.includes("save") || normalized.includes("target")) {
+      actions.push({
+        label: `Create goal ${money(safeAmount)}`,
+        payload: { amount: safeAmount, name: normalized.includes("emergency") ? "Emergency fund" : "Monthly savings goal", targetDate: coachDates.nextMonth },
+        type: "goal"
+      });
+    }
+
+    if (normalized.includes("budget") || normalized.includes("food") || normalized.includes("expense") || normalized.includes("cut")) {
+      const category = normalized.includes("food") ? "Food" : topExpense?.name ?? "Food";
+      const budgetAmount = amount > 0 ? amount : Math.max(1000, Math.round((topExpense?.amount ?? totals.expenses * 0.35) * 0.85));
+      actions.push({
+        label: `Create ${category} budget`,
+        payload: { amount: budgetAmount, category, name: `${category} control`, period: "Monthly" },
+        type: "budget"
+      });
+    }
+
+    if (normalized.includes("reminder") || normalized.includes("recurring") || normalized.includes("rent") || normalized.includes("salary") || normalized.includes("emi")) {
+      actions.push({
+        label: "Create monthly reminder",
+        payload: {
+          account: "UPI",
+          amount: safeAmount,
+          autoAdd: false,
+          category: normalized.includes("salary") ? "Salary" : "Bills",
+          date: coachDates.today,
+          frequency: "Monthly",
+          kind: normalized.includes("salary") ? "income" : "expense",
+          name: normalized.includes("salary") ? "Salary reminder" : normalized.includes("rent") ? "Rent reminder" : "Monthly payment reminder"
+        },
+        type: "reminder"
+      });
+    }
+
+    return actions.slice(0, 2);
+  };
+
+  const localReply = (question: string) => {
+    const normalized = question.toLowerCase();
+    const savingRate = totals.income > 0 ? Math.round((totals.total / totals.income) * 100) : 0;
+    const tone = mode === "fast" ? "Short plan:" : mode === "deep" ? "Detailed plan:" : "Balanced plan:";
+
+    if (entries.length === 0) {
+      return `${tone} start by logging income and 5-10 real expenses. Then set one monthly saving target. Without entries, the safest first setup is: income source, food budget, bills reminder, and one emergency fund goal.`;
+    }
+
+    if (normalized.includes("goal") || normalized.includes("save") || normalized.includes("target")) {
+      return `${tone} your current net is ${money(totals.total)} against a target of ${money(savingsTarget)}. Save first on payday, then cap the biggest flexible category${topExpense ? `, currently ${topExpense.name} at ${money(topExpense.amount)}` : ""}. I can create a goal from this chat.`;
+    }
+
+    if (normalized.includes("budget") || normalized.includes("expense") || normalized.includes("cut") || normalized.includes("reduce")) {
+      return `${tone} income is ${money(totals.income)}, expenses are ${money(totals.expenses)}, and saving rate is ${savingRate}%. Start with ${topExpense ? `${topExpense.name} (${money(topExpense.amount)})` : "your largest repeat expense"}, reduce it by 10-15%, then review after 7 days.`;
+    }
+
+    if (normalized.includes("reminder") || normalized.includes("recurring") || normalized.includes("rent") || normalized.includes("salary")) {
+      return `${tone} recurring money should be automated as reminders: salary/income first, then rent, EMI, subscriptions, and bills. Keep auto-add off until you trust the amount.`;
+    }
+
+    return `${tone} based on your MoneyFollows data: income ${money(totals.income)}, expenses ${money(totals.expenses)}, net ${money(totals.total)}. Ask me to create a goal, budget, or reminder and I will give you a one-tap action.`;
+  };
+
+  const askCoach = async (promptText = input) => {
+    const question = promptText.trim();
+    if (!question || busy) {
+      return;
+    }
+
+    const userMessage: CoachMessage = { id: ++messageId.current, role: "user", text: question };
+    setMessages((current) => [...current, userMessage]);
+    setInput("");
+    setBusy(true);
+
+    let text = localReply(question);
+    try {
+      const response = await fetch("/api/gemini-chat", {
+        body: JSON.stringify({ context: contextSummary(), mode, question }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST"
+      });
+      if (response.ok) {
+        const data = await response.json() as { text?: string };
+        text = data.text || text;
+      }
+    } catch {
+      text = `${text}\n\nGemini is not configured yet, so I used the built-in MoneyFollows coach.`;
+    }
+
+    setMessages((current) => [...current, { actions: buildActions(question), id: ++messageId.current, role: "assistant", text }]);
+    setBusy(false);
+  };
+
+  const runAction = (action: CoachAction) => {
+    if (action.type === "goal") {
+      onAddGoal(action.payload);
+    } else if (action.type === "budget") {
+      onAddBudget(action.payload);
+    } else {
+      onAddReminder(action.payload);
+    }
+    setMessages((current) => [...current, { id: ++messageId.current, role: "assistant", text: `${action.label} has been added to Wallets.` }]);
+    onOpenWalletTools();
+  };
+
   return (
-    <div className={compact ? "meme-strip compact" : "meme-strip"}>
-      {memeLines.map((line, index) => (
-        <motion.span key={line} whileHover={{ y: -3, scale: 1.02 }} transition={{ type: "spring", stiffness: 280, damping: 18 }}>
-          <b>{index + 1}</b>
-          {line}
-        </motion.span>
-      ))}
-    </div>
+    <motion.div className="modal-backdrop coach-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.section className="coach-panel" initial={{ y: 28, scale: 0.98 }} animate={{ y: 0, scale: 1 }} exit={{ y: 28, opacity: 0 }} transition={spring}>
+        <header>
+          <div>
+            <span><Bot size={17} /> MoneyFollows AI</span>
+            <strong>Finance coach</strong>
+          </div>
+          <button type="button" aria-label="Close AI chat" onClick={onClose}><X size={22} /></button>
+        </header>
+        <div className="coach-mode" aria-label="AI response mode">
+          {(["fast", "balanced", "deep"] as CoachMode[]).map((item) => (
+            <button className={mode === item ? "active" : ""} key={item} type="button" onClick={() => setMode(item)}>{item}</button>
+          ))}
+        </div>
+        <div className="coach-prompts">
+          {quickPrompts.map((prompt) => (
+            <button key={prompt} type="button" onClick={() => askCoach(prompt)}>{prompt}</button>
+          ))}
+        </div>
+        <div className="coach-messages">
+          {messages.map((message) => (
+            <article className={message.role} key={message.id}>
+              <p>{message.text}</p>
+              {message.actions && message.actions.length > 0 && (
+                <div>
+                  {message.actions.map((action) => (
+                    <button key={`${action.type}-${action.label}`} type="button" onClick={() => runAction(action)}>{action.label}</button>
+                  ))}
+                </div>
+              )}
+            </article>
+          ))}
+          {busy && <article className="assistant"><p>Thinking through your money data...</p></article>}
+        </div>
+        <form className="coach-input" onSubmit={(event) => {
+          event.preventDefault();
+          askCoach();
+        }}>
+          <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask about saving, goals, budgets, rent, salary..." />
+          <button type="submit" disabled={busy || !input.trim()}><Send size={18} /></button>
+        </form>
+      </motion.section>
+    </motion.div>
   );
 }
 
