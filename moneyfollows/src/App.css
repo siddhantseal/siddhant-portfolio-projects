@@ -727,65 +727,182 @@ input:-webkit-autofill:focus {
 }
 
 .home-view {
-  padding-bottom: 10px;
+  display: grid;
+  gap: 14px;
+  padding-bottom: 14px;
 }
 
-.home-hero,
+.home-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  gap: 14px;
+  align-items: start;
+}
+
+.home-main-column,
+.home-side-column {
+  display: grid;
+  min-width: 0;
+  gap: 14px;
+}
+
+.home-command-bar,
+.home-hero-panel,
+.home-metric-card,
+.animated-chart-card,
+.home-cashflow-panel,
+.home-growth-panel,
+.home-history-panel,
+.home-category-panel,
+.wallet-card-preview,
+.health-score-card,
+.home-shortcut-grid button,
+.home-debt-panel,
 .about-section,
-.platform-section,
-.home-total-card,
-.home-money-lab > *,
-.account-page {
+.platform-section {
   border: 1px solid var(--line);
-  background: var(--panel);
-}
-
-.home-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
-  gap: 16px;
-  align-items: stretch;
-  overflow: hidden;
   border-radius: var(--radius-panel);
-  padding: 18px;
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.16);
 }
 
-.home-hero > div {
+.home-command-bar {
   display: grid;
-  align-content: center;
-  gap: 13px;
+  grid-template-columns: minmax(210px, 0.8fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
 }
 
-.home-hero span,
-.about-section span,
-.platform-section span,
-.home-total-card span {
-  color: var(--accent);
-  font-size: 11px;
-  font-weight: 900;
-  text-transform: uppercase;
+.home-brand-lockup {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
 }
 
-.home-hero h1,
-.about-section h2 {
-  max-width: 740px;
-  margin: 0;
-  font-size: clamp(24px, 2.6vw, 36px);
-  line-height: 1.08;
+.home-brand-lockup img {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: #fff8e5;
+  object-fit: cover;
 }
 
-.home-hero p,
-.about-section p,
+.home-brand-lockup div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.home-brand-lockup strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-brand-lockup span,
+.home-hero-panel p,
+.home-metric-card small,
+.chart-title small,
+.home-growth-panel p,
+.home-empty-panel p,
+.home-transaction-list small,
+.category-movement-list small,
+.wallet-card-preview small,
+.health-score-card p,
+.home-shortcut-grid small,
 .platform-section,
-.home-total-card p {
-  margin: 0;
+.about-section p {
   color: var(--muted-2);
+}
+
+.home-command-bar nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--phone);
+  padding: 4px;
+}
+
+.home-command-bar nav button,
+.home-toolbar button,
+.panel-heading-row button,
+.wallet-manage-button {
+  min-height: 38px;
+  border-radius: 999px;
+  color: var(--text);
+  font-weight: 900;
+}
+
+.home-command-bar nav button {
+  padding: 0 14px;
+}
+
+.home-command-bar nav button.active {
+  background: var(--accent);
+  color: var(--lacquer-deep);
+}
+
+.home-toolbar {
+  display: flex;
+  justify-content: end;
+  gap: 8px;
+}
+
+.home-toolbar button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--line);
+  background: var(--phone);
+}
+
+.home-toolbar img {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.home-hero-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+  overflow: hidden;
+  padding: clamp(18px, 2vw, 26px);
+}
+
+.home-hero-panel h1,
+.about-section h2 {
+  max-width: 850px;
+  margin: 0;
+  font-size: clamp(28px, 3vw, 46px);
+  letter-spacing: 0;
+  line-height: 1.02;
+}
+
+.home-hero-panel p,
+.about-section p {
+  max-width: 68ch;
+  margin: 9px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .home-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 9px;
+  justify-content: end;
+  gap: 10px;
 }
 
 .home-actions button,
@@ -796,8 +913,8 @@ input:-webkit-autofill:focus {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: var(--radius-control);
-  padding: 0 14px;
+  border-radius: 999px;
+  padding: 0 15px;
   font-weight: 900;
 }
 
@@ -814,254 +931,126 @@ input:-webkit-autofill:focus {
   color: var(--text);
 }
 
-.home-meme-button {
-  display: grid;
-  align-self: stretch;
-  overflow: hidden;
-  margin: 0;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-panel);
-  background: var(--phone);
-  color: var(--text);
-  cursor: pointer;
-  padding: 0;
-  text-align: left;
-}
-
-.home-meme-button img {
-  aspect-ratio: 16 / 9;
-  width: 100%;
-  max-height: 170px;
-  object-fit: cover;
-  object-position: center top;
-  background: #8f8681;
-}
-
-.home-meme-button figcaption {
-  padding: 10px 12px 12px;
-  color: var(--muted-2);
-  font-weight: 800;
-}
-
-.home-total-card {
-  display: grid;
-  gap: 5px;
-  border-radius: var(--radius-panel);
-  color: var(--text);
-  cursor: pointer;
-  padding: 15px;
-  text-align: left;
-}
-
-.home-total-card strong {
-  font-size: 30px;
-}
-
-.home-brief-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
-  gap: 12px;
-}
-
-.health-score-card,
-.daily-action-list button {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
-  background: var(--panel);
-}
-
-.health-score-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 118px;
-  align-items: center;
-  gap: 16px;
-  color: var(--text);
-  cursor: pointer;
-  padding: 16px;
-  text-align: left;
-}
-
-.health-score-card div {
-  display: grid;
-  gap: 6px;
-}
-
-.health-score-card strong {
-  font-size: 24px;
-}
-
-.health-score-card p {
-  margin: 0;
-  color: var(--muted-2);
-}
-
-.health-score-card i {
-  display: grid;
-  width: 106px;
-  height: 106px;
-  place-items: center;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle, var(--panel) 58%, transparent 60%),
-    conic-gradient(var(--green) var(--score), var(--line) 0);
-  font-style: normal;
-}
-
-.health-score-card b {
-  font-size: 26px;
-}
-
-.daily-action-list {
-  display: grid;
-  gap: 10px;
-}
-
-.daily-action-list button {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2px 12px;
-  min-height: 70px;
-  align-content: center;
-  padding: 12px 14px;
-  text-align: left;
-}
-
-.daily-action-list span {
-  color: var(--accent);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.daily-action-list strong {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
-  font-size: 14px;
-}
-
-.daily-action-list small {
-  color: var(--muted-2);
-}
-
-.widget-grid {
+.home-metric-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
-.widget-grid button {
-  display: flex;
+.home-metric-card {
+  display: grid;
   min-width: 0;
-  gap: 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
-  background: var(--panel);
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px 12px;
   color: var(--text);
   cursor: pointer;
-  padding: 13px;
+  padding: 16px;
   text-align: left;
 }
 
-.widget-grid button > span {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 38px;
-  place-items: center;
-  border-radius: var(--radius-control);
-  background: var(--panel-soft);
-  font-size: 20px;
-}
-
-.widget-grid div {
-  display: grid;
-  min-width: 0;
-  gap: 4px;
-}
-
-.widget-grid small {
+.home-metric-card span,
+.chart-title span,
+.panel-heading-row span,
+.wallet-card-preview span,
+.health-score-card span,
+.home-debt-panel span,
+.about-section > div:first-child > span,
+.platform-section > span {
   color: var(--muted);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 950;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.widget-grid strong,
-.widget-grid p {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.home-metric-card svg {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 44px;
+  height: 44px;
+  place-self: start end;
+  border-radius: 16px;
+  padding: 11px;
+  color: var(--metric-color);
+  background: color-mix(in srgb, var(--metric-color) 16%, transparent);
 }
 
-.widget-grid p {
-  margin: 0;
-  color: var(--muted-2);
-  font-size: 12px;
+.home-metric-card.violet { --metric-color: #7c65ff; }
+.home-metric-card.green { --metric-color: var(--green); }
+.home-metric-card.coral { --metric-color: #ff6c74; }
+.home-metric-card.gold { --metric-color: var(--accent); }
+
+.home-metric-card strong {
+  min-width: 0;
+  font-size: clamp(21px, 2.1vw, 32px);
+  font-weight: 950;
+  line-height: 1;
+  overflow-wrap: anywhere;
 }
 
-.home-money-lab {
+.home-metric-card small {
+  grid-column: 1 / -1;
+  line-height: 1.4;
+}
+
+.home-analytics-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(210px, 0.55fr) minmax(240px, 0.7fr);
   gap: 12px;
 }
 
 .animated-chart-card,
-.savings-target-card {
-  display: grid;
-  gap: 14px;
-  border-radius: var(--radius-panel);
+.home-cashflow-panel,
+.home-growth-panel,
+.home-history-panel,
+.home-category-panel,
+.wallet-card-preview,
+.health-score-card,
+.home-debt-panel,
+.about-section,
+.platform-section {
   padding: 16px;
 }
 
 .animated-chart-card {
+  display: grid;
+  gap: 14px;
   color: var(--text);
   cursor: pointer;
   text-align: left;
 }
 
-.chart-title {
+.chart-title,
+.panel-heading-row {
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
 .chart-title div,
-.savings-target-card > div:first-child {
+.panel-heading-row div {
   display: grid;
+  min-width: 0;
   gap: 5px;
 }
 
-.chart-title span,
-.savings-target-card span,
-.target-scale {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
 .chart-title strong,
-.savings-target-card strong {
-  font-size: 21px;
-}
-
-.chart-title small,
-.savings-target-card p {
-  margin: 0;
-  color: var(--muted-2);
+.panel-heading-row strong {
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1.1;
 }
 
 .flow-chart {
   display: grid;
+  min-height: 222px;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
-  min-height: 190px;
   align-items: end;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
+  border-radius: 18px;
   background:
-    linear-gradient(to top, color-mix(in oklch, var(--line) 72%, transparent) 1px, transparent 1px) 0 0 / 100% 25%,
+    linear-gradient(to top, color-mix(in oklch, var(--line) 70%, transparent) 1px, transparent 1px) 0 0 / 100% 25%,
     var(--phone);
   padding: 14px 12px 10px;
 }
@@ -1075,22 +1064,22 @@ input:-webkit-autofill:focus {
 
 .flow-bars {
   display: flex;
-  height: 142px;
+  height: 164px;
   align-items: end;
   justify-content: center;
   gap: 4px;
 }
 
 .flow-bars i {
-  width: clamp(8px, 2vw, 16px);
+  width: clamp(8px, 1.1vw, 15px);
   min-height: 8px;
   border-radius: 999px 999px 5px 5px;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
 }
 
 .income-bar,
 .income-dot {
-  background: var(--blue);
+  background: var(--green);
 }
 
 .expense-bar,
@@ -1100,7 +1089,7 @@ input:-webkit-autofill:focus {
 
 .saving-bar,
 .saving-dot {
-  background: var(--green);
+  background: var(--accent);
 }
 
 .flow-chart-month b {
@@ -1114,7 +1103,7 @@ input:-webkit-autofill:focus {
 .chart-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
 }
 
 .chart-legend span {
@@ -1123,7 +1112,7 @@ input:-webkit-autofill:focus {
   gap: 6px;
   color: var(--muted-2);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 850;
 }
 
 .chart-legend i {
@@ -1132,64 +1121,352 @@ input:-webkit-autofill:focus {
   border-radius: 999px;
 }
 
-.savings-target-card {
+.home-cashflow-panel,
+.home-growth-panel {
+  display: grid;
+  gap: 12px;
   align-content: start;
 }
 
-.target-ring {
+.home-cashflow-panel button {
   display: grid;
-  width: 150px;
-  height: 150px;
+  gap: 4px;
+  border-radius: 18px;
+  background: var(--phone);
+  color: var(--text);
+  padding: 14px;
+  text-align: left;
+}
+
+.home-cashflow-panel strong {
+  font-size: 24px;
+}
+
+.home-cashflow-panel span {
+  color: var(--muted-2);
+  font-weight: 800;
+}
+
+.growth-track {
+  position: relative;
+  overflow: hidden;
+  height: 54px;
+  border-radius: 18px;
+  background: var(--phone);
+}
+
+.growth-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), #ff6c3d);
+  transition: width 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.growth-track b {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  color: var(--text);
+}
+
+.home-growth-panel label {
+  display: grid;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.home-growth-panel input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.home-growth-panel p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.home-lower-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.85fr);
+  gap: 12px;
+}
+
+.home-history-panel,
+.home-category-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.panel-heading-row button,
+.wallet-manage-button {
+  border: 1px solid var(--line);
+  background: var(--phone);
+  padding: 0 13px;
+}
+
+.home-transaction-list,
+.category-movement-list {
+  display: grid;
+  gap: 8px;
+}
+
+.home-transaction-list button,
+.category-movement-list button {
+  display: grid;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  border-radius: 18px;
+  background: var(--phone);
+  color: var(--text);
+  padding: 11px;
+  text-align: left;
+}
+
+.home-transaction-list button {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.home-transaction-image,
+.home-transaction-icon,
+.category-movement-list i {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 15px;
+}
+
+.home-transaction-image {
+  object-fit: cover;
+}
+
+.home-transaction-icon,
+.category-movement-list i {
+  display: grid;
   place-items: center;
-  justify-self: center;
+  background: var(--tone, var(--panel-soft));
+  color: #111;
+  font-size: 18px;
+  font-style: normal;
+}
+
+.home-transaction-list span,
+.category-movement-list span {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.home-transaction-list strong,
+.home-transaction-list small,
+.category-movement-list b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-transaction-list b {
+  font-size: 15px;
+  text-align: right;
+}
+
+.category-movement-list button {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.category-movement-list small {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff6c74, var(--accent));
+}
+
+.home-empty-panel {
+  display: grid;
+  min-height: 178px;
+  place-items: center;
+  gap: 8px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 18px;
+  background: var(--phone);
+  padding: 18px;
+  text-align: center;
+}
+
+.home-empty-panel.compact {
+  min-height: 150px;
+}
+
+.home-empty-panel button {
+  min-height: 38px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--lacquer-deep);
+  padding: 0 14px;
+  font-weight: 900;
+}
+
+.wallet-card-preview {
+  display: grid;
+  gap: 12px;
+}
+
+.wallet-card-art {
+  display: grid;
+  min-height: 190px;
+  align-content: space-between;
+  overflow: hidden;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 85% 0%, rgba(255, 255, 255, 0.34), transparent 32%),
+    linear-gradient(135deg, #121111, #2f2b25 46%, #f2b735);
+  color: #fff;
+  padding: 18px;
+}
+
+.wallet-card-art span {
+  color: rgba(255, 255, 255, 0.78);
+  letter-spacing: 0.04em;
+}
+
+.wallet-card-art strong {
+  font-size: clamp(28px, 3vw, 40px);
+}
+
+.wallet-card-art small {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.wallet-card-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.wallet-card-mini-grid button {
+  display: grid;
+  gap: 5px;
+  border-radius: 18px;
+  background: var(--phone);
+  color: var(--text);
+  padding: 13px;
+  text-align: left;
+}
+
+.wallet-card-mini-grid span {
+  color: var(--muted-2);
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.wallet-manage-button {
+  width: 100%;
+  color: var(--text);
+}
+
+.health-score-card {
+  padding: 0;
+}
+
+.health-score-card button {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  align-items: center;
+  gap: 14px;
+  color: var(--text);
+  padding: 16px;
+  text-align: left;
+}
+
+.health-score-card div {
+  display: grid;
+  gap: 6px;
+}
+
+.health-score-card strong {
+  font-size: 22px;
+}
+
+.health-score-card i {
+  display: grid;
+  width: 90px;
+  height: 90px;
+  place-items: center;
   border-radius: 999px;
   background:
     radial-gradient(circle, var(--panel) 58%, transparent 60%),
-    conic-gradient(var(--green) var(--target-progress), color-mix(in srgb, var(--line-strong) 70%, transparent) 0);
+    conic-gradient(var(--green) var(--score), var(--line) 0);
+  font-style: normal;
 }
 
-.target-ring b {
-  align-self: end;
-  font-size: 30px;
+.health-score-card b {
+  font-size: 24px;
 }
 
-.target-ring small {
-  align-self: start;
-  color: var(--muted);
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.savings-target-card label {
+.home-shortcut-grid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 900;
-  text-transform: uppercase;
 }
 
-.savings-target-card input[type="range"] {
-  width: 100%;
-  accent-color: var(--green);
+.home-shortcut-grid button {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  color: var(--text);
+  cursor: pointer;
+  padding: 13px;
+  text-align: left;
 }
 
-.target-scale {
-  display: flex;
-  justify-content: space-between;
+.home-shortcut-grid svg {
+  color: var(--accent);
+}
+
+.home-shortcut-grid span,
+.home-shortcut-grid strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-debt-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.home-debt-panel div {
+  display: grid;
+  gap: 6px;
+  border-radius: 18px;
+  background: var(--phone);
+  padding: 13px;
+}
+
+.home-debt-panel strong {
+  overflow: hidden;
+  font-size: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .about-section {
   display: grid;
   gap: 16px;
-  border-radius: var(--radius-panel);
-  padding: 18px;
 }
 
 .about-section > div:first-child {
   display: grid;
-  gap: 9px;
+  gap: 4px;
 }
 
 .about-grid {
@@ -1202,7 +1479,7 @@ input:-webkit-autofill:focus {
   display: grid;
   gap: 8px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
+  border-radius: 18px;
   background: var(--phone);
   color: var(--text);
   cursor: pointer;
@@ -1210,9 +1487,8 @@ input:-webkit-autofill:focus {
   text-align: left;
 }
 
-.about-grid button span {
-  font-size: 23px;
-  text-transform: none;
+.about-grid button svg {
+  color: var(--accent);
 }
 
 .about-grid button strong {
@@ -1220,14 +1496,14 @@ input:-webkit-autofill:focus {
 }
 
 .about-grid button p {
+  margin: 0;
   font-size: 12px;
+  line-height: 1.45;
 }
 
 .platform-section {
   display: grid;
   gap: 12px;
-  border-radius: var(--radius-panel);
-  padding: 15px;
 }
 
 .platform-section div {
@@ -1240,6 +1516,7 @@ input:-webkit-autofill:focus {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--phone);
+  color: var(--text);
   padding: 9px 12px;
 }
 
@@ -3504,6 +3781,18 @@ input:-webkit-autofill:focus {
   font-style: normal;
 }
 
+@media (max-width: 1180px) {
+  .home-shell,
+  .home-analytics-grid,
+  .home-lower-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-side-column {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 900px) and (min-width: 521px) {
   .welcome-panel {
     grid-template-columns: 1fr;
@@ -3581,11 +3870,29 @@ input:-webkit-autofill:focus {
   }
 
   .widget-grid,
+  .home-metric-strip,
+  .home-side-column,
   .insight-plan-grid,
   .planning-grid,
   .wallet-plan-list,
   .planning-tools {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-command-bar,
+  .home-hero-panel,
+  .home-analytics-grid,
+  .home-lower-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-command-bar nav {
+    overflow-x: auto;
+    justify-content: start;
+  }
+
+  .home-actions {
+    justify-content: start;
   }
 
   .home-hero {
@@ -3598,6 +3905,17 @@ input:-webkit-autofill:focus {
 
   .content-panel {
     padding-top: 14px;
+  }
+
+  .fab {
+    width: 54px;
+    justify-content: center;
+    border-radius: 18px;
+    padding: 0;
+  }
+
+  .fab span {
+    display: none;
   }
 }
 
@@ -3714,6 +4032,12 @@ input:-webkit-autofill:focus {
   }
 
   .home-hero,
+  .home-command-bar,
+  .home-hero-panel,
+  .home-metric-strip,
+  .home-analytics-grid,
+  .home-lower-grid,
+  .home-side-column,
   .about-grid,
   .home-money-lab,
   .home-brief-grid,
@@ -3728,6 +4052,33 @@ input:-webkit-autofill:focus {
   .split-box > div,
   .account-info-grid {
     grid-template-columns: 1fr;
+  }
+
+  .home-command-bar {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .home-brand-lockup img {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+  }
+
+  .home-command-bar nav {
+    overflow-x: auto;
+    justify-content: start;
+    width: 100%;
+    padding: 3px;
+  }
+
+  .home-command-bar nav button {
+    min-width: max-content;
+    padding: 0 12px;
+  }
+
+  .home-toolbar {
+    justify-content: start;
   }
 
   .financial-health-panel header,
@@ -3748,8 +4099,12 @@ input:-webkit-autofill:focus {
   }
 
   .health-score-card {
-    grid-template-columns: minmax(0, 1fr) 92px;
     padding: 12px;
+  }
+
+  .health-score-card button {
+    grid-template-columns: minmax(0, 1fr) 92px;
+    padding: 0;
   }
 
   .health-score-card i {
@@ -3758,12 +4113,22 @@ input:-webkit-autofill:focus {
   }
 
   .home-hero,
+  .home-command-bar,
+  .home-hero-panel,
+  .animated-chart-card,
+  .home-cashflow-panel,
+  .home-growth-panel,
+  .home-history-panel,
+  .home-category-panel,
+  .wallet-card-preview,
+  .home-debt-panel,
   .about-section,
   .account-page {
     border-radius: 18px;
     padding: 12px;
   }
 
+  .home-hero-panel h1,
   .home-hero h1,
   .about-section h2 {
     font-size: 28px;
@@ -3772,6 +4137,18 @@ input:-webkit-autofill:focus {
   .home-actions button,
   .account-danger button {
     width: 100%;
+  }
+
+  .home-metric-card {
+    padding: 14px;
+  }
+
+  .home-metric-card strong {
+    font-size: 25px;
+  }
+
+  .wallet-card-art {
+    min-height: 168px;
   }
 
   .flow-chart {
@@ -3932,6 +4309,14 @@ input:-webkit-autofill:focus {
     right: 18px;
     bottom: 86px;
     height: 54px;
+    width: 54px;
+    justify-content: center;
+    border-radius: 18px;
+    padding: 0;
+  }
+
+  .fab span {
+    display: none;
   }
 
   .bottom-nav {

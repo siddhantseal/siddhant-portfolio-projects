@@ -1314,6 +1314,7 @@ function App() {
                 budgets={budgets}
                 debts={debts}
                 goals={goals}
+                openingBalance={openingBalance}
                 savingsTarget={monthlySavingsTarget}
                 profile={effectiveProfile}
                 totals={totals}
@@ -2021,6 +2022,7 @@ function HomeView({
   onOpenWalletTools,
   onOpenWallets,
   onSavingsTargetChange,
+  openingBalance,
   profile,
   savingsTarget,
   totals
@@ -2038,6 +2040,7 @@ function HomeView({
   onOpenWalletTools: () => void;
   onOpenWallets: () => void;
   onSavingsTargetChange: (value: number) => void;
+  openingBalance: number;
   profile: UserProfile;
   savingsTarget: number;
   totals: { income: number; expenses: number; total: number };
@@ -2045,194 +2048,373 @@ function HomeView({
   const money = useMoney();
   const chartData = useMemo(() => buildMonthlyChart(entries), [entries]);
   const maxChartValue = Math.max(...chartData.flatMap((item) => [item.income, item.expenses, Math.max(item.savings, 0)]), savingsTarget, 1);
-  const savingsProgress = savingsTarget > 0 ? Math.min(100, Math.max(0, Math.round((totals.total / savingsTarget) * 100))) : 0;
-  const targetGap = Math.max(0, savingsTarget - totals.total);
-  const features = [
-    { action: onAddEntry, emoji: "💸", label: "Log real income and expenses", text: "No fake entries. Every number appears only when you add it." },
-    { action: onAddEntry, emoji: "🍜", label: "Food and grocery context", text: "Track restaurants, delivery apps, grocery platforms, product photos, and memos." },
-    { action: onOpenWalletTools, emoji: "⏰", label: "Reminders", text: "Create recurring reminders for payments, salaries, EMIs, and borrowed money." },
-    { action: onOpenAccount, emoji: "🔐", label: "Account control", text: "View profile info, update your avatar, sign out, or delete your Firebase account." }
-  ];
-  const healthScore = Math.max(0, Math.min(100, Math.round(50 + (totals.income > 0 ? (totals.total / totals.income) * 35 : 0) - (totals.expenses > totals.income && totals.income > 0 ? 18 : 0))));
-  const dailyActions = [
-    { action: onAddEntry, label: "Record today", meta: "Income, expense or transfer", value: entries.length ? `${entries.length} entries` : "No entries yet" },
-    { action: onOpenLedger, label: "Review ledger", meta: "Today, calendar, flow and vault", value: "Open" },
-    { action: onOpenCalendar, label: "Calendar", meta: "See dates with money activity", value: "Map" },
-    { action: onOpenAccount, label: "Account", meta: "Profile and security", value: profile.provider }
-  ];
+  const totalBalance = openingBalance + totals.total;
+  const realSavings = Math.max(0, totals.income - totals.expenses);
+  const savingsProgress = savingsTarget > 0 ? Math.min(100, Math.max(0, Math.round((realSavings / savingsTarget) * 100))) : 0;
+  const targetGap = Math.max(0, savingsTarget - realSavings);
+  const healthScore = Math.max(0, Math.min(100, Math.round(46 + (totals.income > 0 ? (realSavings / totals.income) * 42 : 0) - (totals.expenses > totals.income && totals.income > 0 ? 20 : 0) + (entries.length > 4 ? 8 : 0))));
+  const recentEntries = useMemo(
+    () => [...entries].sort((first, second) => Date.parse(second.createdAt) - Date.parse(first.createdAt)).slice(0, 5),
+    [entries]
+  );
+  const categoryBreakdown = useMemo(() => {
+    const totalsByCategory = entries
+      .filter((entry) => entry.kind === "expense")
+      .reduce<Record<string, number>>((groups, entry) => {
+        groups[entry.category] = (groups[entry.category] || 0) + entry.amount;
+        return groups;
+      }, {});
+
+    return Object.entries(totalsByCategory)
+      .map(([name, amount]) => ({ amount, name }))
+      .sort((first, second) => second.amount - first.amount)
+      .slice(0, 5);
+  }, [entries]);
+  const maxCategoryAmount = Math.max(...categoryBreakdown.map((category) => category.amount), 1);
   const receivableTotal = debts.filter((debt) => debt.kind === "receivable").reduce((sum, debt) => sum + debt.amount, 0);
   const payableTotal = debts.filter((debt) => debt.kind === "payable").reduce((sum, debt) => sum + debt.amount, 0);
   const activeBudget = budgets[0];
   const activeBudgetSpent = activeBudget
     ? entries.filter((entry) => entry.kind === "expense" && entry.category === activeBudget.category).reduce((sum, entry) => sum + entry.amount, 0)
     : 0;
-  const widgetCards = [
-    { action: onOpenCoach, emoji: "🤖", label: "AI Coach", value: "Ask", meta: "Get saving plans, goal setup and budget ideas" },
-    { action: onOpenWalletTools, emoji: "🎯", label: "Goals", value: goals.length ? `${goals.length} active` : "No goals", meta: goals[0] ? `${goals[0].name} · ${money(goals[0].amount)}` : "Add a target in Wallets" },
-    { action: onOpenWalletTools, emoji: "📊", label: "Budget", value: activeBudget ? money(Math.max(0, activeBudget.amount - activeBudgetSpent)) : "Not set", meta: activeBudget ? `${activeBudget.category} left this ${activeBudget.period.toLowerCase()}` : "Control spending by category" },
-    { action: onOpenWallets, emoji: "🤝", label: "Give / get", value: money(receivableTotal - payableTotal), meta: `${money(receivableTotal)} to get · ${money(payableTotal)} to give` }
+  const budgetLeft = activeBudget ? Math.max(0, activeBudget.amount - activeBudgetSpent) : 0;
+  const goalProgress = goals[0] ? Math.min(100, Math.max(0, Math.round((realSavings / goals[0].amount) * 100))) : 0;
+  const metricCards = [
+    { icon: WalletCards, label: "Total balance", tone: "violet", value: money(totalBalance), detail: `${money(openingBalance)} opening + ${money(totals.total)} net` },
+    { icon: Landmark, label: "Income", tone: "green", value: money(totals.income), detail: entries.length ? "Logged by you this month" : "Add income to begin" },
+    { icon: ReceiptText, label: "Expenses", tone: "coral", value: money(totals.expenses), detail: entries.length ? "Only your real entries" : "No expenses added yet" },
+    { icon: BarChart3, label: "Savings", tone: "gold", value: money(realSavings), detail: savingsTarget ? `${savingsProgress}% of target` : "Set a monthly target" }
   ];
+  const shortcutCards = [
+    { action: onAddEntry, label: "Log money", meta: "Income, expense, transfer", value: "Add", icon: Plus },
+    { action: onOpenLedger, label: "Activity", meta: "Search and review entries", value: `${entries.length}`, icon: ReceiptText },
+    { action: onOpenWalletTools, label: "Wallet tools", meta: "Budgets, goals, reminders", value: `${budgets.length + goals.length}`, icon: WalletCards },
+    { action: onOpenCoach, label: "AI coach", meta: "Ask saving questions", value: "Ask", icon: Bot }
+  ];
+  const features = [
+    { action: onAddEntry, icon: ReceiptText, label: "Fast transaction logging", text: "Record amount, account, category, merchant context, note, and attachment without sample data." },
+    { action: onOpenWalletTools, icon: WalletCards, label: "Wallet planning", text: "Budgets, goals, borrowed money, recurring reminders, and quick setup live together." },
+    { action: onOpenStats, icon: BarChart3, label: "Readable insights", text: "Financial health, category movement, six-month flow, and target progress stay visible." },
+    { action: onOpenAccount, icon: ShieldCheck, label: "Account control", text: "Edit your profile image, review sign-in status, sign out, or manage your account." }
+  ];
+  const entryTitle = (entry: LedgerEntry) => entry.note || entry.foodPlace || entry.foodSource || entry.category;
+  const entryMeta = (entry: LedgerEntry) => {
+    const place = [entry.foodPlace, entry.foodSource].filter(Boolean).join(" via ");
+    return [entry.category, place, entry.account, entry.toAccount ? `to ${entry.toAccount}` : ""].filter(Boolean).join(" · ");
+  };
 
   return (
-    <div className="view-stack home-view">
-      <section className="home-hero">
-        <div>
-          <span>Welcome to MoneyFollows</span>
-          <h1>{profile.name === "Guest" ? "A cleaner home for your money." : `${profile.name}, your money dashboard is ready.`}</h1>
-          <p>MoneyFollows combines a daily ledger, visual spending insights, reminders, wallets, and account settings in one responsive app.</p>
-          <div className="home-actions">
-            <button type="button" onClick={onAddEntry}><Plus size={18} /> Log money</button>
-            <button type="button" onClick={onOpenCoach}><Bot size={18} /> AI coach</button>
-            <button type="button" onClick={onOpenAccount}><UserRound size={18} /> Account</button>
-          </div>
-        </div>
-        <motion.button className="home-meme-button" type="button" onClick={onOpenWalletTools} whileHover={{ y: -4 }} whileTap={{ scale: 0.99 }} transition={spring}>
-          <img alt="MoneyFollows meme" src="/ravi-kishan-money-follows.png" />
-          <figcaption>Money follows when you track it.</figcaption>
-        </motion.button>
-      </section>
-
-      <button className="home-total-card" type="button" onClick={onOpenLedger}>
-        <span>Current month</span>
-        <strong>{money(totals.total)}</strong>
-        <p>{money(totals.income)} income · {money(totals.expenses)} expenses</p>
-      </button>
-
-      <section className="home-brief-grid" aria-label="Daily money overview">
-        <button className="health-score-card" type="button" onClick={onOpenStats}>
-          <div>
-            <span>Financial health</span>
-            <strong>{entries.length ? `${healthScore}/100` : "No score yet"}</strong>
-            <p>{entries.length ? "Based on logged income, expenses, and monthly savings." : "Record transactions to generate your score."}</p>
-          </div>
-          <i style={{ "--score": `${entries.length ? healthScore : 0}%` } as CSSProperties}><b>{entries.length ? healthScore : 0}</b></i>
-        </button>
-        <div className="daily-action-list">
-          {dailyActions.map((item) => (
-            <button key={item.label} type="button" onClick={item.action}>
-              <span>{item.label}</span>
-              <strong>{item.value}</strong>
-              <small>{item.meta}</small>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="widget-grid" aria-label="Real-use money widgets">
-        {widgetCards.map((item) => (
-          <motion.button key={item.label} type="button" onClick={item.action} whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} transition={spring}>
-            <span>{item.emoji}</span>
-            <div>
-              <small>{item.label}</small>
-              <strong>{item.value}</strong>
-              <p>{item.meta}</p>
+    <div className="home-view">
+      <section className="home-shell">
+        <div className="home-main-column">
+          <section className="home-command-bar" aria-label="MoneyFollows home controls">
+            <div className="home-brand-lockup">
+              <img alt="MoneyFollows piggy logo" src="/moneyfollows-piggy-logo.png" />
+              <div>
+                <strong>MoneyFollows</strong>
+                <span>{profile.name === "Guest" ? "Guest workspace" : `Welcome back, ${profile.name}`}</span>
+              </div>
             </div>
-          </motion.button>
-        ))}
-      </section>
-
-      <section className="home-money-lab">
-        <button className="animated-chart-card" type="button" onClick={onOpenStats}>
-          <div className="chart-title">
-            <div>
-              <span>Animated chart</span>
-              <strong>Six-month money flow</strong>
+            <nav aria-label="Dashboard shortcuts">
+              <button type="button" className="active" onClick={onOpenLedger}>Dashboard</button>
+              <button type="button" onClick={onOpenWalletTools}>Wallet</button>
+              <button type="button" onClick={onOpenStats}>Insights</button>
+              <button type="button" onClick={onOpenCoach}>AI Coach</button>
+            </nav>
+            <div className="home-toolbar">
+              <button type="button" aria-label="Open ledger" onClick={onOpenLedger}><Search size={18} /></button>
+              <button type="button" aria-label="Open account" onClick={onOpenAccount}>
+                {profile.photoURL ? <img alt={`${profile.name} profile`} src={profile.photoURL} /> : <UserRound size={18} />}
+              </button>
             </div>
-            <small>Income, expense, saving</small>
-          </div>
-          <div className="flow-chart" aria-label="Animated income expense and savings chart">
-            {chartData.map((item, index) => (
-              <motion.div
-                className="flow-chart-month"
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ ...spring, delay: index * 0.04 }}
-                key={item.label}
-              >
-                <div className="flow-bars">
-                  <motion.i
-                    className="income-bar"
-                    initial={{ height: 8 }}
-                    animate={{ height: `${Math.max(8, (item.income / maxChartValue) * 100)}%` }}
-                    transition={{ ...spring, delay: index * 0.05 }}
-                  />
-                  <motion.i
-                    className="expense-bar"
-                    initial={{ height: 8 }}
-                    animate={{ height: `${Math.max(8, (item.expenses / maxChartValue) * 100)}%` }}
-                    transition={{ ...spring, delay: 0.08 + index * 0.05 }}
-                  />
-                  <motion.i
-                    className="saving-bar"
-                    initial={{ height: 8 }}
-                    animate={{ height: `${Math.max(8, (Math.max(item.savings, 0) / maxChartValue) * 100)}%` }}
-                    transition={{ ...spring, delay: 0.16 + index * 0.05 }}
-                  />
+          </section>
+
+          <section className="home-hero-panel">
+            <div>
+              <h1>{profile.name === "Guest" ? "A real dashboard for the money you actually log." : `${profile.name}, here is your real money picture.`}</h1>
+              <p>Track income, expenses, goals, reminders, and borrowed money without sample transactions or fake balances.</p>
+            </div>
+            <div className="home-actions">
+              <button type="button" onClick={onAddEntry}><Plus size={18} /> Add income or expense</button>
+              <button type="button" onClick={onOpenCalendar}><ReceiptText size={18} /> Calendar map</button>
+            </div>
+          </section>
+
+          <section className="home-metric-strip" aria-label="Financial summary">
+            {metricCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <motion.button
+                  className={`home-metric-card ${card.tone}`}
+                  key={card.label}
+                  type="button"
+                  onClick={card.label === "Expenses" ? onOpenLedger : card.label === "Savings" ? onOpenWalletTools : onOpenStats}
+                  whileHover={{ y: -3 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={spring}
+                >
+                  <span>{card.label}</span>
+                  <Icon size={22} />
+                  <strong>{card.value}</strong>
+                  <small>{card.detail}</small>
+                </motion.button>
+              );
+            })}
+          </section>
+
+          <section className="home-analytics-grid">
+            <button className="animated-chart-card balance-trend-panel" type="button" onClick={onOpenStats}>
+              <div className="chart-title">
+                <div>
+                  <span>Balance trend</span>
+                  <strong>Six-month money flow</strong>
                 </div>
-                <b>{item.label}</b>
-              </motion.div>
-            ))}
-          </div>
-          <div className="chart-legend">
-            <span><i className="income-dot" /> Income</span>
-            <span><i className="expense-dot" /> Expense</span>
-            <span><i className="saving-dot" /> Saving</span>
-          </div>
-        </button>
+                <small>{entries.length ? "Live from your entries" : "Waiting for entries"}</small>
+              </div>
+              <div className="flow-chart" aria-label="Animated income expense and savings chart">
+                {chartData.map((item, index) => (
+                  <motion.div
+                    className="flow-chart-month"
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ ...spring, delay: index * 0.04 }}
+                    key={item.label}
+                  >
+                    <div className="flow-bars">
+                      <motion.i
+                        className="income-bar"
+                        initial={{ height: 8 }}
+                        animate={{ height: `${Math.max(8, (item.income / maxChartValue) * 100)}%` }}
+                        transition={{ ...spring, delay: index * 0.05 }}
+                      />
+                      <motion.i
+                        className="expense-bar"
+                        initial={{ height: 8 }}
+                        animate={{ height: `${Math.max(8, (item.expenses / maxChartValue) * 100)}%` }}
+                        transition={{ ...spring, delay: 0.08 + index * 0.05 }}
+                      />
+                      <motion.i
+                        className="saving-bar"
+                        initial={{ height: 8 }}
+                        animate={{ height: `${Math.max(8, (Math.max(item.savings, 0) / maxChartValue) * 100)}%` }}
+                        transition={{ ...spring, delay: 0.16 + index * 0.05 }}
+                      />
+                    </div>
+                    <b>{item.label}</b>
+                  </motion.div>
+                ))}
+              </div>
+              <div className="chart-legend">
+                <span><i className="income-dot" /> Income</span>
+                <span><i className="expense-dot" /> Expense</span>
+                <span><i className="saving-dot" /> Saving</span>
+              </div>
+            </button>
 
-        <div className="savings-target-card">
-          <div>
-            <span>Monthly saving target</span>
-            <strong>{money(savingsTarget)}</strong>
-            <p>{targetGap > 0 ? `${money(targetGap)} left to reach this month’s target.` : "Target reached. Very MoneyFollows behaviour."}</p>
-          </div>
-          <div className="target-ring" style={{ "--target-progress": `${savingsProgress}%` } as CSSProperties}>
-            <b>{savingsProgress}%</b>
-            <small>saved</small>
-          </div>
-          <label>
-            Set target
-            <input
-              min="1000"
-              max="500000"
-              step="500"
-              type="range"
-              value={savingsTarget}
-              onChange={(event) => onSavingsTargetChange(Number(event.target.value))}
-            />
-          </label>
-          <div className="target-scale">
-            <span>{money(1000)}</span>
-            <span>{money(500000)}</span>
-          </div>
+            <section className="home-cashflow-panel">
+              <div className="chart-title">
+                <div>
+                  <span>Cash flow</span>
+                  <strong>This month</strong>
+                </div>
+              </div>
+              <button type="button" onClick={onOpenLedger}>
+                <strong>{money(totals.income)}</strong>
+                <span>Income</span>
+              </button>
+              <button type="button" onClick={onOpenLedger}>
+                <strong>{money(totals.expenses)}</strong>
+                <span>Expenses</span>
+              </button>
+              <button type="button" onClick={onOpenWalletTools}>
+                <strong>{money(realSavings)}</strong>
+                <span>Savings</span>
+              </button>
+            </section>
+
+            <section className="home-growth-panel">
+              <div className="chart-title">
+                <div>
+                  <span>Financial growth</span>
+                  <strong>Target progress</strong>
+                </div>
+                <small>{money(realSavings)} / {money(savingsTarget)}</small>
+              </div>
+              <div className="growth-track">
+                <span style={{ width: `${savingsProgress}%` }} />
+                <b>{savingsProgress}%</b>
+              </div>
+              <label>
+                Monthly target
+                <input
+                  min="1000"
+                  max="500000"
+                  step="500"
+                  type="range"
+                  value={savingsTarget}
+                  onChange={(event) => onSavingsTargetChange(Number(event.target.value))}
+                />
+              </label>
+              <p>{targetGap > 0 ? `${money(targetGap)} left to reach this month’s target.` : "Target reached from your logged money."}</p>
+            </section>
+          </section>
+
+          <section className="home-lower-grid">
+            <section className="home-history-panel">
+              <div className="panel-heading-row">
+                <div>
+                  <span>Transaction history</span>
+                  <strong>Recent activity</strong>
+                </div>
+                <button type="button" onClick={onOpenLedger}>View all</button>
+              </div>
+              {recentEntries.length ? (
+                <div className="home-transaction-list">
+                  {recentEntries.map((entry) => (
+                    <button type="button" key={entry.id} onClick={onOpenLedger}>
+                      {entry.imageUrl ? (
+                        <img className="home-transaction-image" alt={`${entryTitle(entry)} attachment`} src={entry.imageUrl} />
+                      ) : (
+                        <i className="home-transaction-icon" style={{ "--tone": categoryTone(entry.category) } as CSSProperties}>{categoryEmoji(entry.category, entry.kind)}</i>
+                      )}
+                      <span>
+                        <strong>{entryTitle(entry)}</strong>
+                        <small>{entryMeta(entry)}</small>
+                      </span>
+                      <b className={entry.kind === "income" ? "income-text" : entry.kind === "expense" ? "expense-text" : ""}>
+                        {entry.kind === "income" ? "+" : entry.kind === "expense" ? "-" : ""}{money(entry.amount)}
+                      </b>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="home-empty-panel">
+                  <ReceiptText size={28} />
+                  <strong>No real transactions yet</strong>
+                  <p>Add your first income or expense to fill this area.</p>
+                  <button type="button" onClick={onAddEntry}>Add entry</button>
+                </div>
+              )}
+            </section>
+
+            <section className="home-category-panel">
+              <div className="panel-heading-row">
+                <div>
+                  <span>Spending breakdown</span>
+                  <strong>Category movement</strong>
+                </div>
+                <button type="button" onClick={onOpenStats}>Insights</button>
+              </div>
+              {categoryBreakdown.length ? (
+                <div className="category-movement-list">
+                  {categoryBreakdown.map((category) => (
+                    <button type="button" key={category.name} onClick={onOpenStats}>
+                      <i style={{ "--tone": categoryTone(category.name) } as CSSProperties}>{categoryEmoji(category.name, "expense")}</i>
+                      <span>
+                        <b>{category.name}</b>
+                        <small style={{ width: `${Math.max(8, (category.amount / maxCategoryAmount) * 100)}%` }} />
+                      </span>
+                      <strong>{money(category.amount)}</strong>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="home-empty-panel compact">
+                  <BarChart3 size={24} />
+                  <strong>No spending categories yet</strong>
+                  <p>Category charts appear after you add expenses.</p>
+                </div>
+              )}
+            </section>
+          </section>
         </div>
+
+        <aside className="home-side-column" aria-label="MoneyFollows side dashboard">
+          <section className="wallet-card-preview">
+            <div className="wallet-card-art">
+              <span>MoneyFollows</span>
+              <strong>{money(totalBalance)}</strong>
+              <small>Total balance</small>
+            </div>
+            <div className="wallet-card-mini-grid">
+              <button type="button" onClick={onOpenWalletTools}>
+                <span>Budget</span>
+                <strong>{activeBudget ? money(budgetLeft) : "Not set"}</strong>
+              </button>
+              <button type="button" onClick={onOpenWalletTools}>
+                <span>Goal</span>
+                <strong>{goals[0] ? `${goalProgress}%` : "None"}</strong>
+              </button>
+            </div>
+            <button type="button" className="wallet-manage-button" onClick={onOpenWallets}>Manage wallets</button>
+          </section>
+
+          <section className="health-score-card">
+            <button type="button" onClick={onOpenStats}>
+              <div>
+                <span>Finance score</span>
+                <strong>{entries.length ? `${healthScore}/100` : "No score yet"}</strong>
+                <p>{entries.length ? "Calculated from logged income, expenses, target progress, and consistency." : "Record transactions to generate your score."}</p>
+              </div>
+              <i style={{ "--score": `${entries.length ? healthScore : 0}%` } as CSSProperties}><b>{entries.length ? healthScore : 0}</b></i>
+            </button>
+          </section>
+
+          <section className="home-shortcut-grid">
+            {shortcutCards.map((item) => {
+              const Icon = item.icon;
+              return (
+                <motion.button key={item.label} type="button" onClick={item.action} whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} transition={spring}>
+                  <Icon size={18} />
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                  <small>{item.meta}</small>
+                </motion.button>
+              );
+            })}
+          </section>
+
+          <section className="home-debt-panel">
+            <div>
+              <span>You will get</span>
+              <strong className="income-text">{money(receivableTotal)}</strong>
+            </div>
+            <div>
+              <span>You will give</span>
+              <strong className="expense-text">{money(payableTotal)}</strong>
+            </div>
+          </section>
+        </aside>
       </section>
 
       <section className="about-section">
         <div>
-          <span>About</span>
-          <h2>Built for daily money decisions, not spreadsheet guilt.</h2>
-          <p>Use it on desktop, laptop, tablet, Android, iOS, or any modern browser. Start in guest mode, then sign in when you want account backup.</p>
+          <span>About MoneyFollows</span>
+          <h2>Built for daily money decisions, not sample dashboards.</h2>
+          <p>Every number on this home screen comes from your own setup, transactions, targets, budgets, goals, and wallet tools.</p>
         </div>
         <div className="about-grid">
-          {features.map((feature) => (
-            <motion.button key={feature.label} type="button" onClick={feature.action} whileHover={{ y: -4 }} whileTap={{ scale: 0.98 }} transition={spring}>
-              <span>{feature.emoji}</span>
-              <strong>{feature.label}</strong>
-              <p>{feature.text}</p>
-            </motion.button>
-          ))}
+          {features.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <motion.button key={feature.label} type="button" onClick={feature.action} whileHover={{ y: -4 }} whileTap={{ scale: 0.98 }} transition={spring}>
+                <Icon size={20} />
+                <strong>{feature.label}</strong>
+                <p>{feature.text}</p>
+              </motion.button>
+            );
+          })}
         </div>
       </section>
 
       <section className="platform-section">
-        <span>Works everywhere</span>
+        <span>Responsive app</span>
         <div>
-          <b>💻 Windows</b>
-          <b>🍎 macOS</b>
-          <b>🤖 Android</b>
-          <b>📱 iOS</b>
-          <b>🌐 Browser</b>
+          <b>Windows</b>
+          <b>macOS</b>
+          <b>Android</b>
+          <b>iOS</b>
+          <b>Every modern browser</b>
         </div>
       </section>
     </div>
