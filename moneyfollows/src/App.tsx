@@ -1577,13 +1577,13 @@ function App() {
             </nav>
             <div className="filter-list">
               {filterTab === "income" && (
-                <Checklist items={incomeCategories.map((item) => item.name)} selected={selectedIncome} onToggle={(item) => toggleFilter(item, selectedIncome, setSelectedIncome)} />
+                <Checklist items={incomeCategories.map((item) => item.name)} selected={selectedIncome} onSelectAll={setSelectedIncome} onToggle={(item) => toggleFilter(item, selectedIncome, setSelectedIncome)} />
               )}
               {filterTab === "expenses" && (
-                <Checklist items={expenseCategories.map((item) => item.name)} selected={selectedExpenses} onToggle={(item) => toggleFilter(item, selectedExpenses, setSelectedExpenses)} />
+                <Checklist items={expenseCategories.map((item) => item.name)} selected={selectedExpenses} onSelectAll={setSelectedExpenses} onToggle={(item) => toggleFilter(item, selectedExpenses, setSelectedExpenses)} />
               )}
               {filterTab === "account" && (
-                <Checklist items={accounts} selected={selectedAccounts} onToggle={(item) => toggleFilter(item, selectedAccounts, setSelectedAccounts)} />
+                <Checklist items={accounts} selected={selectedAccounts} onSelectAll={setSelectedAccounts} onToggle={(item) => toggleFilter(item, selectedAccounts, setSelectedAccounts)} />
               )}
             </div>
           </motion.div>
@@ -3183,11 +3183,12 @@ function Ring({ label, amount, color, percent }: { label: string; amount: number
   );
 }
 
-function Checklist({ items, selected, onToggle }: { items: string[]; selected: string[]; onToggle: (item: string) => void }) {
+function Checklist({ items, selected, onSelectAll, onToggle }: { items: string[]; selected: string[]; onSelectAll: (items: string[]) => void; onToggle: (item: string) => void }) {
+  const allSelected = items.length > 0 && selected.length === items.length;
   return (
     <>
-      <button className="check-row" type="button" onClick={() => items.forEach((item) => !selected.includes(item) && onToggle(item))}>
-        <span className={selected.length === items.length ? "box checked" : "box"} /> All <small>This month</small>
+      <button className="check-row" type="button" onClick={() => onSelectAll(allSelected ? [] : items)}>
+        <span className={allSelected ? "box checked" : "box"} /> All <small>{allSelected ? "Clear all" : "Select all"}</small>
       </button>
       {items.map((item) => (
         <button className="check-row" key={item} type="button" onClick={() => onToggle(item)}>
