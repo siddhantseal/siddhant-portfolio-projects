@@ -61,13 +61,14 @@ Optional server variable for the AI coach:
 
 ```text
 GEMINI_API_KEY
-GEMINI_MODEL
+GEMINI_FLASH36_MODEL
+GEMINI_FLASH38_MODEL
 GEMINI_LITE_MODEL
-GEMINI_SMART_MODEL
-GEMINI_DEEP_MODEL
+GEMINI_LATEST_MODEL
+GEMINI_ARGON_MODEL
 ```
 
-Only `GEMINI_API_KEY` is required for live AI replies. The model variables are optional overrides for the Lite, Flash, and Deep chat options.
+Only `GEMINI_API_KEY` is required for live AI replies. The model variables are optional overrides for the 3.5 Flash-Lite, 3.6 Flash, 3.8 Flash, Flash Latest, and 4 Argon chat options.
 
 ## Checks
 

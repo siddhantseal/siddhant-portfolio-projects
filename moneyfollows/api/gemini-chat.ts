@@ -4,17 +4,21 @@ type GeminiRequest = {
   context?: Record<string, unknown>;
   history?: Array<{ role?: "assistant" | "user"; text?: string }>;
   mode?: "fast" | "balanced" | "deep";
-  model?: "deep" | "lite" | "smart";
+  model?: "argon" | "deep" | "flash36" | "flash38" | "latest" | "lite" | "smart";
   question?: string;
 };
 
 const modelChoices = {
-  deep: process.env.GEMINI_DEEP_MODEL || "gemini-4-argon",
+  argon: process.env.GEMINI_ARGON_MODEL || process.env.GEMINI_DEEP_MODEL || "gemini-4-argon",
+  deep: process.env.GEMINI_ARGON_MODEL || process.env.GEMINI_DEEP_MODEL || "gemini-4-argon",
+  flash36: process.env.GEMINI_FLASH36_MODEL || "gemini-3.6-flash",
+  flash38: process.env.GEMINI_FLASH38_MODEL || process.env.GEMINI_MODEL || process.env.GEMINI_SMART_MODEL || "gemini-3.8-flash",
+  latest: process.env.GEMINI_LATEST_MODEL || "gemini-flash-latest",
   lite: process.env.GEMINI_LITE_MODEL || "gemini-3.5-flash-lite",
-  smart: process.env.GEMINI_MODEL || process.env.GEMINI_SMART_MODEL || "gemini-3.8-flash"
+  smart: process.env.GEMINI_FLASH38_MODEL || process.env.GEMINI_MODEL || process.env.GEMINI_SMART_MODEL || "gemini-3.8-flash"
 } as const;
 
-const fallbackModel = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+const fallbackModel = modelChoices.flash38;
 
 function toGeminiHistory(history: GeminiRequest["history"], question: string) {
   const priorMessages = (history || [])
@@ -59,7 +63,7 @@ export default async function handler(req: any, res: any) {
       ? "Answer in 3 short bullets."
       : "Give a balanced practical answer in 4-6 bullets.";
 
-  const selectedModel = modelChoices[body.model || "smart"];
+  const selectedModel = modelChoices[body.model || "flash38"];
   const systemPrompt = [
     "You are MoneyFollows AI, a practical personal finance coach inside a money management app.",
     "Use the user's app data below. Do not invent transactions. Do not give investment, legal, or tax guarantees.",
@@ -101,5 +105,5 @@ export default async function handler(req: any, res: any) {
 
   const data = await response.json();
   const text = data?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("").trim();
-  res.status(200).json({ text: text || "I could not produce a useful answer for that. Try asking in a simpler way." });
+  res.status(200).json({ model: selectedModel, text: text || "I could not produce a useful answer for that. Try asking in a simpler way." });
 }

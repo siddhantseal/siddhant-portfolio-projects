@@ -121,7 +121,7 @@ type DebtItem = {
 };
 
 type CoachMode = "fast" | "balanced" | "deep";
-type CoachModel = "deep" | "lite" | "smart";
+type CoachModel = "argon" | "flash36" | "flash38" | "latest" | "lite";
 type CoachAction =
   | { label: string; payload: Omit<GoalItem, "createdAt" | "id">; type: "goal" }
   | { label: string; payload: Omit<BudgetItem, "createdAt" | "id">; type: "budget" }
@@ -284,6 +284,13 @@ const bottomTabs: Array<{ key: BottomTab; label: string; icon: typeof ReceiptTex
   { key: "trans", label: "Ledger", icon: ReceiptText },
   { key: "stats", label: "Insight", icon: BarChart3 },
   { key: "accounts", label: "Wallets", icon: WalletCards }
+];
+const coachModelOptions: Array<{ key: CoachModel; label: string; text: string }> = [
+  { key: "lite", label: "3.5 Lite", text: "Fastest, low cost" },
+  { key: "flash36", label: "3.6 Flash", text: "Balanced daily chat" },
+  { key: "flash38", label: "3.8 Flash", text: "Smart finance coach" },
+  { key: "latest", label: "Flash Latest", text: "Google latest alias" },
+  { key: "argon", label: "4 Argon", text: "Deep planning" }
 ];
 
 const spring = { type: "spring", stiffness: 420, damping: 34 } as const;
@@ -2866,7 +2873,7 @@ function CoachPanel({
     };
   });
   const [mode, setMode] = useState<CoachMode>("balanced");
-  const [chatModel, setChatModel] = useState<CoachModel>("smart");
+  const [chatModel, setChatModel] = useState<CoachModel>("flash38");
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<CoachMessage[]>(loadCoachMessages);
@@ -2953,30 +2960,6 @@ function CoachPanel({
     return actions.slice(0, 2);
   };
 
-  const localReply = (question: string) => {
-    const normalized = question.toLowerCase();
-    const savingRate = totals.income > 0 ? Math.round((totals.total / totals.income) * 100) : 0;
-    const tone = mode === "fast" ? "Short plan:" : mode === "deep" ? "Detailed plan:" : "Balanced plan:";
-
-    if (entries.length === 0) {
-      return `${tone} start by logging income and 5-10 real expenses. Then set one monthly saving target. Without entries, the safest first setup is: income source, food budget, bills reminder, and one emergency fund goal.`;
-    }
-
-    if (normalized.includes("goal") || normalized.includes("save") || normalized.includes("target")) {
-      return `${tone} your current net is ${money(totals.total)} against a target of ${money(savingsTarget)}. Save first on payday, then cap the biggest flexible category${topExpense ? `, currently ${topExpense.name} at ${money(topExpense.amount)}` : ""}. I can create a goal from this chat.`;
-    }
-
-    if (normalized.includes("budget") || normalized.includes("expense") || normalized.includes("cut") || normalized.includes("reduce")) {
-      return `${tone} income is ${money(totals.income)}, expenses are ${money(totals.expenses)}, and saving rate is ${savingRate}%. Start with ${topExpense ? `${topExpense.name} (${money(topExpense.amount)})` : "your largest repeat expense"}, reduce it by 10-15%, then review after 7 days.`;
-    }
-
-    if (normalized.includes("reminder") || normalized.includes("recurring") || normalized.includes("rent") || normalized.includes("salary")) {
-      return `${tone} recurring money should be automated as reminders: salary/income first, then rent, EMI, subscriptions, and bills. Keep auto-add off until you trust the amount.`;
-    }
-
-    return `${tone} based on your MoneyFollows data: income ${money(totals.income)}, expenses ${money(totals.expenses)}, net ${money(totals.total)}. Ask me to create a goal, budget, or reminder and I will give you a one-tap action.`;
-  };
-
   const askCoach = async (promptText = input) => {
     const question = promptText.trim();
     if (!question || busy) {
@@ -2991,7 +2974,8 @@ function CoachPanel({
     setInput("");
     setBusy(true);
 
-    let text = localReply(question);
+    let text = "";
+    let shouldAttachActions = false;
     try {
       const response = await fetch("/api/gemini-chat", {
         body: JSON.stringify({ context: contextSummary(), history, mode, model: chatModel, question }),
@@ -2999,18 +2983,20 @@ function CoachPanel({
         method: "POST"
       });
       if (response.ok) {
-        const data = await response.json() as { text?: string };
-        text = data.text || text;
+        const data = await response.json() as { model?: string; text?: string };
+        text = data.text || `The selected Gemini model (${data.model || chatModel}) did not return text. Try again or choose another model.`;
+        shouldAttachActions = Boolean(data.text);
       } else {
         const data = await response.json().catch(() => null) as { error?: string; detail?: string } | null;
-        const reason = data?.error || "Gemini did not answer.";
-        text = `${text}\n\nAI model note: ${reason} I used the built-in MoneyFollows coach for now.`;
+        text = data?.error === "Gemini is not configured."
+          ? "Real Gemini AI is not connected yet. Add `GEMINI_API_KEY` in Vercel Environment Variables for the MoneyFollows project, then redeploy. I will not fake an AI answer."
+          : `Gemini did not answer from the selected model. ${data?.error || "Try another model or check the API key."}`;
       }
     } catch {
-      text = `${text}\n\nAI model note: Gemini could not be reached. I used the built-in MoneyFollows coach for now.`;
+      text = "Gemini could not be reached from this browser session. Check the Vercel function, API key, and network, then try again.";
     }
 
-    setMessages((current) => [...current, { actions: buildActions(question), id: ++messageId.current, role: "assistant", text }]);
+    setMessages((current) => [...current, { actions: shouldAttachActions ? buildActions(question) : undefined, id: ++messageId.current, role: "assistant", text }]);
     setBusy(false);
   };
 
@@ -3046,11 +3032,7 @@ function CoachPanel({
           </div>
         </header>
         <div className="coach-models" aria-label="AI chat model">
-          {([
-            { key: "lite", label: "Lite", text: "Fast replies" },
-            { key: "smart", label: "Flash", text: "Best daily coach" },
-            { key: "deep", label: "Deep", text: "Harder planning" }
-          ] as Array<{ key: CoachModel; label: string; text: string }>).map((item) => (
+          {coachModelOptions.map((item) => (
             <button className={chatModel === item.key ? "active" : ""} key={item.key} type="button" onClick={() => setChatModel(item.key)}>
               <strong>{item.label}</strong>
               <small>{item.text}</small>
