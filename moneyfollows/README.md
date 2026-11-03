@@ -1,6 +1,6 @@
 # MoneyFollows
 
-MoneyFollows is a responsive personal finance app for tracking real income, expenses, transfers, wallets, notes, reminders, and monthly spending patterns.
+MoneyFollows is a responsive personal finance app for tracking real income, expenses, transfers, wallets, reminders, and monthly spending patterns.
 
 ## Features
 
@@ -9,7 +9,7 @@ MoneyFollows is a responsive personal finance app for tracking real income, expe
 - Income, expense, and transfer logging
 - Food and grocery merchant details
 - Product or bill image attachment
-- Search, filters, reminders, notes, wallets, stats, and CSV export
+- Search, filters, reminders, wallets, stats, and CSV export
 - Worldwide currency selection
 - Dark mode and light mode
 - Responsive layout for desktop, laptop, tablet, Android, iOS, and modern browsers

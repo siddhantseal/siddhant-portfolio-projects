@@ -47,8 +47,8 @@ import "./App.css";
 import { auth, authProviders, isFirebaseConfigured } from "./firebase";
 
 type EntryKind = "income" | "expense" | "transfer";
-type ViewTab = "daily" | "calendar" | "monthly" | "total" | "note";
-type BottomTab = "home" | "trans" | "stats" | "accounts" | "notes" | "more";
+type ViewTab = "daily" | "calendar" | "monthly" | "total";
+type BottomTab = "home" | "trans" | "stats" | "accounts" | "more";
 type FilterTab = "income" | "expenses" | "account";
 type CurrencyCode = string;
 type CurrencyOption = { code: CurrencyCode; label: string; symbol: string };
@@ -73,15 +73,9 @@ type LedgerEntry = {
   foodPlace?: string;
   foodSource?: string;
   imageUrl?: string;
+  splitPaidBy?: string;
+  splitPeople?: string[];
   tags: string[];
-  date: string;
-  createdAt: string;
-};
-
-type MoneyNote = {
-  id: number;
-  title: string;
-  body: string;
   date: string;
   createdAt: string;
 };
@@ -99,6 +93,33 @@ type Reminder = {
   createdAt: string;
 };
 
+type BudgetItem = {
+  id: number;
+  name: string;
+  amount: number;
+  category: string;
+  period: "Weekly" | "Monthly" | "Yearly";
+  createdAt: string;
+};
+
+type GoalItem = {
+  id: number;
+  name: string;
+  amount: number;
+  targetDate: string;
+  createdAt: string;
+};
+
+type DebtItem = {
+  id: number;
+  kind: "receivable" | "payable";
+  name: string;
+  amount: number;
+  description: string;
+  dueDate: string;
+  createdAt: string;
+};
+
 type Category = {
   emoji: string;
   name: string;
@@ -106,13 +127,17 @@ type Category = {
 };
 
 const STORAGE_KEY = "moneyfollows-user-transactions";
-const NOTES_STORAGE_KEY = "moneyfollows-user-notes";
 const CURRENCY_STORAGE_KEY = "moneyfollows-currency";
 const BALANCE_STORAGE_KEY = "moneyfollows-opening-balance";
 const SAVINGS_TARGET_STORAGE_KEY = "moneyfollows-monthly-savings-target";
 const REMINDERS_STORAGE_KEY = "moneyfollows-reminders";
+const BUDGETS_STORAGE_KEY = "moneyfollows-budgets";
+const GOALS_STORAGE_KEY = "moneyfollows-goals";
+const DEBTS_STORAGE_KEY = "moneyfollows-debts";
 const THEME_KEY = "moneyfollows-theme";
 const LAST_AUTHED_PROFILE_KEY = "moneyfollows-last-authed-profile";
+const SETUP_STORAGE_KEY = "moneyfollows-setup-complete";
+const LOCAL_PROFILE_KEY = "moneyfollows-local-profile";
 
 const incomeCategories: Category[] = [
   { emoji: "💸", name: "Allowance", tone: "#48c78e" },
@@ -208,6 +233,24 @@ const loadLastAuthedProfile = (): UserProfile | null => {
     return null;
   }
 };
+
+const loadLocalProfile = (): UserProfile | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(LOCAL_PROFILE_KEY) || "null") as Partial<UserProfile> | null;
+    return parsed?.name ? {
+      email: typeof parsed.email === "string" ? parsed.email : undefined,
+      name: parsed.name,
+      photoURL: typeof parsed.photoURL === "string" ? parsed.photoURL : undefined,
+      provider: "Local"
+    } : null;
+  } catch {
+    return null;
+  }
+};
 const currencyOptions: CurrencyOption[] = [...new Set(["INR", "USD", "EUR", ...supportedCurrencyCodes, ...fallbackCurrencyCodes])]
   .map((code) => ({
     code,
@@ -219,8 +262,7 @@ const viewTabs: Array<{ key: ViewTab; label: string }> = [
   { key: "daily", label: "Today" },
   { key: "calendar", label: "Map" },
   { key: "monthly", label: "Flow" },
-  { key: "total", label: "Vault" },
-  { key: "note", label: "Notes" }
+  { key: "total", label: "Vault" }
 ];
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const memeLines = [
@@ -233,7 +275,6 @@ const bottomTabs: Array<{ key: BottomTab; label: string; icon: typeof ReceiptTex
   { key: "trans", label: "Ledger", icon: ReceiptText },
   { key: "stats", label: "Insight", icon: BarChart3 },
   { key: "accounts", label: "Wallets", icon: WalletCards },
-  { key: "notes", label: "Notes", icon: ClipboardList },
   { key: "more", label: "Studio", icon: MoreHorizontal }
 ];
 
@@ -300,30 +341,10 @@ const normalizeEntry = (raw: unknown): LedgerEntry | null => {
     imageUrl: typeof item.imageUrl === "string" ? item.imageUrl : undefined,
     kind,
     note: typeof item.note === "string" ? item.note : item.title ?? "",
+    splitPaidBy: typeof item.splitPaidBy === "string" ? item.splitPaidBy : undefined,
+    splitPeople: Array.isArray(item.splitPeople) ? item.splitPeople.filter((person): person is string => typeof person === "string" && person.trim().length > 0) : undefined,
     tags: Array.isArray(item.tags) ? item.tags.filter((tag): tag is string => typeof tag === "string") : [],
     toAccount: typeof item.toAccount === "string" ? item.toAccount : undefined
-  };
-};
-
-const normalizeNote = (raw: unknown): MoneyNote | null => {
-  if (!raw || typeof raw !== "object") {
-    return null;
-  }
-
-  const item = raw as Partial<MoneyNote>;
-  const body = typeof item.body === "string" ? item.body.trim() : "";
-  const title = typeof item.title === "string" ? item.title.trim() : "";
-
-  if (!body && !title) {
-    return null;
-  }
-
-  return {
-    body,
-    createdAt: typeof item.createdAt === "string" ? item.createdAt : new Date().toISOString(),
-    date: typeof item.date === "string" ? item.date : toDateKey(new Date()),
-    id: typeof item.id === "number" ? item.id : Date.now(),
-    title: title || "Money note"
   };
 };
 
@@ -351,6 +372,75 @@ const normalizeReminder = (raw: unknown): Reminder | null => {
     id: typeof item.id === "number" ? item.id : Date.now(),
     kind,
     name: item.name
+  };
+};
+
+const normalizeBudget = (raw: unknown): BudgetItem | null => {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const item = raw as Partial<BudgetItem>;
+  const amount = Number(item.amount);
+  const name = typeof item.name === "string" ? item.name.trim() : "";
+
+  if (!name || !Number.isFinite(amount) || amount <= 0) {
+    return null;
+  }
+
+  return {
+    amount,
+    category: typeof item.category === "string" ? item.category : "Food",
+    createdAt: typeof item.createdAt === "string" ? item.createdAt : new Date().toISOString(),
+    id: typeof item.id === "number" ? item.id : Date.now(),
+    name,
+    period: item.period === "Weekly" || item.period === "Yearly" ? item.period : "Monthly"
+  };
+};
+
+const normalizeGoal = (raw: unknown): GoalItem | null => {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const item = raw as Partial<GoalItem>;
+  const amount = Number(item.amount);
+  const name = typeof item.name === "string" ? item.name.trim() : "";
+
+  if (!name || !Number.isFinite(amount) || amount <= 0) {
+    return null;
+  }
+
+  return {
+    amount,
+    createdAt: typeof item.createdAt === "string" ? item.createdAt : new Date().toISOString(),
+    id: typeof item.id === "number" ? item.id : Date.now(),
+    name,
+    targetDate: typeof item.targetDate === "string" ? item.targetDate : toDateKey(new Date())
+  };
+};
+
+const normalizeDebt = (raw: unknown): DebtItem | null => {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const item = raw as Partial<DebtItem>;
+  const amount = Number(item.amount);
+  const name = typeof item.name === "string" ? item.name.trim() : "";
+
+  if (!name || !Number.isFinite(amount) || amount <= 0) {
+    return null;
+  }
+
+  return {
+    amount,
+    createdAt: typeof item.createdAt === "string" ? item.createdAt : new Date().toISOString(),
+    description: typeof item.description === "string" ? item.description : "",
+    dueDate: typeof item.dueDate === "string" ? item.dueDate : toDateKey(new Date()),
+    id: typeof item.id === "number" ? item.id : Date.now(),
+    kind: item.kind === "payable" ? "payable" : "receivable",
+    name
   };
 };
 
@@ -477,13 +567,15 @@ const buildMonthlyChart = (entries: LedgerEntry[]) => {
 function App() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [entries, setEntries] = useState<LedgerEntry[]>(() => loadArray(STORAGE_KEY, normalizeEntry));
-  const [notes, setNotes] = useState<MoneyNote[]>(() => loadArray(NOTES_STORAGE_KEY, normalizeNote));
   const [reminders, setReminders] = useState<Reminder[]>(() => loadArray(REMINDERS_STORAGE_KEY, normalizeReminder));
+  const [budgets, setBudgets] = useState<BudgetItem[]>(() => loadArray(BUDGETS_STORAGE_KEY, normalizeBudget));
+  const [goals, setGoals] = useState<GoalItem[]>(() => loadArray(GOALS_STORAGE_KEY, normalizeGoal));
+  const [debts, setDebts] = useState<DebtItem[]>(() => loadArray(DEBTS_STORAGE_KEY, normalizeDebt));
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(Boolean(auth));
   const [authError, setAuthError] = useState("");
-  const [fallbackProfile, setFallbackProfile] = useState<UserProfile | null>(null);
-  const [showAuth, setShowAuth] = useState(false);
+  const [fallbackProfile, setFallbackProfile] = useState<UserProfile | null>(loadLocalProfile);
+  const [showAuth, setShowAuth] = useState(() => typeof window !== "undefined" && window.localStorage.getItem(SETUP_STORAGE_KEY) !== "done");
   const [showAccount, setShowAccount] = useState(false);
   const [currencyCode, setCurrencyCode] = useState<CurrencyCode>(loadCurrency);
   const [openingBalance, setOpeningBalance] = useState(loadOpeningBalance);
@@ -513,8 +605,10 @@ function App() {
   const [imageUrl, setImageUrl] = useState("");
   const [tagText, setTagText] = useState("");
   const [formError, setFormError] = useState("");
-  const [noteTitle, setNoteTitle] = useState("");
-  const [noteBody, setNoteBody] = useState("");
+  const [categorySearch, setCategorySearch] = useState("");
+  const [splitEnabled, setSplitEnabled] = useState(false);
+  const [splitPeople, setSplitPeople] = useState("");
+  const [splitPaidBy, setSplitPaidBy] = useState("");
 
   const money = useMemo(() => (amount: number) => formatMoneyAmount(amount, currencyCode), [currencyCode]);
 
@@ -523,12 +617,20 @@ function App() {
   }, [entries]);
 
   useEffect(() => {
-    window.localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
-  }, [notes]);
-
-  useEffect(() => {
     window.localStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify(reminders));
   }, [reminders]);
+
+  useEffect(() => {
+    window.localStorage.setItem(BUDGETS_STORAGE_KEY, JSON.stringify(budgets));
+  }, [budgets]);
+
+  useEffect(() => {
+    window.localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goals));
+  }, [goals]);
+
+  useEffect(() => {
+    window.localStorage.setItem(DEBTS_STORAGE_KEY, JSON.stringify(debts));
+  }, [debts]);
 
   useEffect(() => {
     window.localStorage.setItem(CURRENCY_STORAGE_KEY, currencyCode);
@@ -645,6 +747,7 @@ function App() {
   const calendarDays = buildCalendar(selectedDate);
   const weeks = getWeeks(selectedDate);
   const currentCategories = kind === "income" ? incomeCategories : expenseCategories;
+  const visibleCategories = currentCategories.filter((item) => item.name.toLowerCase().includes(categorySearch.trim().toLowerCase()));
   const hasMerchantDetails = kind === "expense" && (category === "Food" || category === "Groceries");
   const merchantSourceOptions = category === "Groceries" ? grocerySources : foodSources;
   const dailySpend = dayEntries.filter((entry) => entry.kind === "expense").reduce((sum, entry) => sum + entry.amount, 0);
@@ -656,6 +759,8 @@ function App() {
     setCategory(nextKind === "income" ? "Salary" : nextKind === "expense" ? "Food" : "Transfer");
     setFoodPlace("");
     setFoodSource("Dine-in");
+    setCategorySearch("");
+    setSplitEnabled(false);
     setFormError("");
   };
 
@@ -682,6 +787,10 @@ function App() {
     setFoodSource("Dine-in");
     setImageUrl("");
     setTagText("");
+    setCategorySearch("");
+    setSplitEnabled(false);
+    setSplitPeople("");
+    setSplitPaidBy("");
     setFormError("");
   };
 
@@ -731,6 +840,8 @@ function App() {
       imageUrl: imageUrl.trim() || undefined,
       kind,
       note: note.trim() || `${kind === "transfer" ? "Transfer" : category} ${kind}`,
+      splitPaidBy: kind === "expense" && splitEnabled ? splitPaidBy.trim() || account : undefined,
+      splitPeople: kind === "expense" && splitEnabled ? splitPeople.split(",").map((person) => person.trim()).filter(Boolean) : undefined,
       tags: tagText.split(",").map((tag) => tag.trim()).filter(Boolean),
       toAccount: kind === "transfer" ? toAccount : undefined
     };
@@ -743,29 +854,76 @@ function App() {
     }
   };
 
-  const saveNote = () => {
-    const title = noteTitle.trim();
-    const body = noteBody.trim();
+  const saveReminder = (reminder: Omit<Reminder, "createdAt" | "id">) => {
+    setReminders((current) => [{ ...reminder, createdAt: new Date().toISOString(), id: Date.now() }, ...current]);
+  };
 
-    if (!title && !body) {
+  const saveBudget = (budget: Omit<BudgetItem, "createdAt" | "id">) => {
+    setBudgets((current) => [{ ...budget, createdAt: new Date().toISOString(), id: Date.now() }, ...current]);
+  };
+
+  const saveGoal = (goal: Omit<GoalItem, "createdAt" | "id">) => {
+    setGoals((current) => [{ ...goal, createdAt: new Date().toISOString(), id: Date.now() }, ...current]);
+  };
+
+  const saveDebt = (debt: Omit<DebtItem, "createdAt" | "id">) => {
+    setDebts((current) => [{ ...debt, createdAt: new Date().toISOString(), id: Date.now() }, ...current]);
+  };
+
+  const exportBackup = () => {
+    const backup = {
+      budgets,
+      currencyCode,
+      debts,
+      entries,
+      exportedAt: new Date().toISOString(),
+      goals,
+      monthlySavingsTarget,
+      openingBalance,
+      reminders,
+      version: 1
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `moneyfollows-backup-${toDateKey(new Date())}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importBackup = (file: File | undefined) => {
+    if (!file) {
       return;
     }
 
-    const nextNote: MoneyNote = {
-      body,
-      createdAt: new Date().toISOString(),
-      date: toDateKey(selectedDate),
-      id: Date.now(),
-      title: title || "Money note"
-    };
-
-    setNotes((current) => [nextNote, ...current]);
-    setNoteTitle("");
-    setNoteBody("");
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      try {
+        const data = JSON.parse(String(reader.result || "{}")) as Record<string, unknown>;
+        if (Array.isArray(data.entries)) setEntries(data.entries.map(normalizeEntry).filter((item): item is LedgerEntry => Boolean(item)));
+        if (Array.isArray(data.reminders)) setReminders(data.reminders.map(normalizeReminder).filter((item): item is Reminder => Boolean(item)));
+        if (Array.isArray(data.budgets)) setBudgets(data.budgets.map(normalizeBudget).filter((item): item is BudgetItem => Boolean(item)));
+        if (Array.isArray(data.goals)) setGoals(data.goals.map(normalizeGoal).filter((item): item is GoalItem => Boolean(item)));
+        if (Array.isArray(data.debts)) setDebts(data.debts.map(normalizeDebt).filter((item): item is DebtItem => Boolean(item)));
+        if (typeof data.currencyCode === "string" && currencyOptions.some((option) => option.code === data.currencyCode)) setCurrencyCode(data.currencyCode);
+        if (typeof data.openingBalance === "number") setOpeningBalance(data.openingBalance);
+        if (typeof data.monthlySavingsTarget === "number") setMonthlySavingsTarget(data.monthlySavingsTarget);
+      } catch {
+        setFormError("That backup file could not be imported.");
+      }
+    });
+    reader.readAsText(file);
   };
 
-  const saveReminder = (reminder: Omit<Reminder, "createdAt" | "id">) => {
-    setReminders((current) => [{ ...reminder, createdAt: new Date().toISOString(), id: Date.now() }, ...current]);
+  const completeSetup = (name: string, currency: CurrencyCode, balance: number) => {
+    const localProfile: UserProfile = { name: name.trim() || "MoneyFollows user", provider: "Local" };
+    setFallbackProfile(localProfile);
+    setCurrencyCode(currency);
+    setOpeningBalance(Number.isFinite(balance) ? balance : 0);
+    window.localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(localProfile));
+    window.localStorage.setItem(SETUP_STORAGE_KEY, "done");
+    setShowAuth(false);
   };
 
   const changeMonth = (direction: number) => {
@@ -826,6 +984,7 @@ function App() {
         await updateProfile(credential.user, { displayName: name.trim() });
       }
       saveLastAuthedProfile(credential.user);
+      window.localStorage.setItem(SETUP_STORAGE_KEY, "done");
       setFallbackProfile(null);
       setAuthUser(credential.user);
       setShowAuth(false);
@@ -848,6 +1007,7 @@ function App() {
         await updateProfile(credential.user, { displayName: name.trim() });
       }
       saveLastAuthedProfile(credential.user);
+      window.localStorage.setItem(SETUP_STORAGE_KEY, "done");
       setFallbackProfile(null);
       setAuthUser(credential.user);
       setShowAuth(false);
@@ -897,7 +1057,9 @@ function App() {
       return;
     }
 
-    setFallbackProfile({ email: effectiveProfile.email, name: cleanName, photoURL: cleanPhoto || undefined, provider: "Local" });
+    const localProfile: UserProfile = { email: effectiveProfile.email, name: cleanName, photoURL: cleanPhoto || undefined, provider: "Local" };
+    setFallbackProfile(localProfile);
+    window.localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(localProfile));
   };
 
   const handleDeleteAccount = async () => {
@@ -909,13 +1071,18 @@ function App() {
     setAuthUser(null);
     setFallbackProfile(null);
     setEntries([]);
-    setNotes([]);
     setReminders([]);
+    setBudgets([]);
+    setGoals([]);
+    setDebts([]);
     setOpeningBalance(0);
     window.localStorage.removeItem(LAST_AUTHED_PROFILE_KEY);
+    window.localStorage.removeItem(LOCAL_PROFILE_KEY);
     window.localStorage.removeItem(STORAGE_KEY);
-    window.localStorage.removeItem(NOTES_STORAGE_KEY);
     window.localStorage.removeItem(REMINDERS_STORAGE_KEY);
+    window.localStorage.removeItem(BUDGETS_STORAGE_KEY);
+    window.localStorage.removeItem(GOALS_STORAGE_KEY);
+    window.localStorage.removeItem(DEBTS_STORAGE_KEY);
     window.localStorage.removeItem(BALANCE_STORAGE_KEY);
     window.localStorage.removeItem(SAVINGS_TARGET_STORAGE_KEY);
     setShowAccount(false);
@@ -978,7 +1145,7 @@ function App() {
 
           <div className="search-row">
             <Search size={16} />
-            <input ref={searchInputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search entries, notes, accounts" />
+            <input ref={searchInputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search entries, accounts, stores" />
             <button type="button" aria-label="Open filters" onClick={() => setShowFilter(true)}><Settings2 size={16} /></button>
           </div>
 
@@ -1035,9 +1202,12 @@ function App() {
               <HomeView
                 onAddEntry={() => setShowComposer(true)}
                 onOpenAccount={() => setShowAccount(true)}
-                onOpenNotes={() => setBottomTab("notes")}
                 onSavingsTargetChange={setMonthlySavingsTarget}
                 entries={entries}
+                budgets={budgets}
+                debts={debts}
+                goals={goals}
+                reminders={reminders}
                 savingsTarget={monthlySavingsTarget}
                 profile={effectiveProfile}
                 totals={totals}
@@ -1055,41 +1225,28 @@ function App() {
             {bottomTab === "trans" && activeView === "total" && (
               <TotalView date={selectedDate} entries={filteredEntries} totals={totals} onBudgetSetting={() => setShowFilter(true)} onExport={exportCsv} />
             )}
-            {bottomTab === "trans" && activeView === "note" && (
-              <NoteView
-                body={noteBody}
-                notes={notes}
-                onBodyChange={setNoteBody}
-                onDelete={(id) => setNotes((current) => current.filter((note) => note.id !== id))}
-                onSave={saveNote}
-                onTitleChange={setNoteTitle}
-                query={query}
-                title={noteTitle}
-              />
-            )}
-            {bottomTab === "notes" && (
-              <NoteView
-                body={noteBody}
-                notes={notes}
-                onBodyChange={setNoteBody}
-                onDelete={(id) => setNotes((current) => current.filter((note) => note.id !== id))}
-                onSave={saveNote}
-                onTitleChange={setNoteTitle}
-                query={query}
-                title={noteTitle}
-              />
-            )}
             {bottomTab === "stats" && <StatsView entries={filteredEntries} totals={totals} />}
-            {bottomTab === "accounts" && <AccountsView entries={filteredEntries} />}
+            {bottomTab === "accounts" && <AccountsView budgets={budgets} debts={debts} entries={filteredEntries} goals={goals} />}
             {bottomTab === "more" && (
               <MoreView
+                budgets={budgets}
                 currencyCode={currencyCode}
+                debts={debts}
+                goals={goals}
                 openingBalance={openingBalance}
                 isDark={isDark}
+                onAddBudget={saveBudget}
+                onAddDebt={saveDebt}
+                onAddGoal={saveGoal}
                 onAddReminder={saveReminder}
+                onBackup={exportBackup}
                 onClear={() => setEntries([])}
                 onCurrencyChange={setCurrencyCode}
+                onDeleteBudget={(id) => setBudgets((current) => current.filter((budget) => budget.id !== id))}
+                onDeleteDebt={(id) => setDebts((current) => current.filter((debt) => debt.id !== id))}
+                onDeleteGoal={(id) => setGoals((current) => current.filter((goal) => goal.id !== id))}
                 onDeleteReminder={(id) => setReminders((current) => current.filter((reminder) => reminder.id !== id))}
+                onImport={importBackup}
                 onOpeningBalanceChange={setOpeningBalance}
                 onOpenAccount={() => setShowAccount(true)}
                 onSignIn={() => setShowAuth(true)}
@@ -1119,10 +1276,16 @@ function App() {
           <WelcomeGate
             authError={authError}
             authLoading={authLoading}
+            currencyCode={currencyCode}
             isConfigured={isFirebaseConfigured}
-            onClose={() => setShowAuth(false)}
+            openingBalance={openingBalance}
+            onClose={() => {
+              window.localStorage.setItem(SETUP_STORAGE_KEY, "done");
+              setShowAuth(false);
+            }}
             onEmailAuth={handleEmailAuth}
             onProviderAuth={handleProviderAuth}
+            onSetupComplete={completeSetup}
           />
         )}
         {showAccount && (
@@ -1184,8 +1347,14 @@ function App() {
                 {kind !== "transfer" ? (
                   <label className="wide">
                     Category
+                    <input
+                      className="category-search"
+                      value={categorySearch}
+                      onChange={(event) => setCategorySearch(event.target.value)}
+                      placeholder="Search category"
+                    />
                     <select value={category} onChange={(event) => updateCategory(event.target.value)}>
-                      {currentCategories.map((item) => <option key={item.name} value={item.name}>{item.emoji} {item.name}</option>)}
+                      {(visibleCategories.length ? visibleCategories : currentCategories).map((item) => <option key={item.name} value={item.name}>{item.emoji} {item.name}</option>)}
                     </select>
                   </label>
                 ) : (
@@ -1228,6 +1397,27 @@ function App() {
                       </select>
                     </label>
                   </>
+                )}
+
+                {kind === "expense" && (
+                  <section className="wide split-box">
+                    <label className="toggle-row">
+                      <input checked={splitEnabled} type="checkbox" onChange={(event) => setSplitEnabled(event.target.checked)} />
+                      Split this expense
+                    </label>
+                    {splitEnabled && (
+                      <div>
+                        <label>
+                          Paid by
+                          <input value={splitPaidBy} onChange={(event) => setSplitPaidBy(event.target.value)} placeholder={account} />
+                        </label>
+                        <label>
+                          People
+                          <input value={splitPeople} onChange={(event) => setSplitPeople(event.target.value)} placeholder="Siddhant, Ravi, Aman" />
+                        </label>
+                      </div>
+                    )}
+                  </section>
                 )}
 
                 <label className="wide">
@@ -1333,27 +1523,58 @@ function App() {
 function WelcomeGate({
   authError,
   authLoading,
+  currencyCode,
   isConfigured,
+  openingBalance,
   onClose,
   onEmailAuth,
-  onProviderAuth
+  onProviderAuth,
+  onSetupComplete
 }: {
   authError: string;
   authLoading: boolean;
+  currencyCode: CurrencyCode;
   isConfigured: boolean;
+  openingBalance: number;
   onClose: () => void;
   onEmailAuth: (mode: "login" | "signup", name: string, email: string, password: string) => Promise<void>;
   onProviderAuth: (provider: Exclude<AuthProvider, "Email" | "Local">, name: string) => Promise<void>;
+  onSetupComplete: (name: string, currency: CurrencyCode, openingBalance: number) => void;
 }) {
   const [name, setName] = useState("");
+  const [step, setStep] = useState<0 | 1 | 2>(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"login" | "signup">("signup");
   const [busyProvider, setBusyProvider] = useState<AuthProvider | "form" | null>(null);
   const [error, setError] = useState("");
+  const [setupCurrency, setSetupCurrency] = useState<CurrencyCode>(currencyCode);
+  const [setupBalance, setSetupBalance] = useState(openingBalance ? String(openingBalance) : "");
+  const cleanName = name.trim();
+  const parsedBalance = parseAmount(setupBalance || "0") || 0;
+
+  const continueSetup = () => {
+    if (!cleanName) {
+      setError("Add your name first so MoneyFollows can personalize the app.");
+      return;
+    }
+
+    setError("");
+    setStep((current) => current === 0 ? 1 : current === 1 ? 2 : current);
+  };
+
+  const enterDashboard = () => {
+    if (!cleanName) {
+      setStep(0);
+      setError("Add your name first so MoneyFollows can personalize the app.");
+      return;
+    }
+
+    setError("");
+    onSetupComplete(cleanName, setupCurrency, parsedBalance);
+  };
 
   const runEmailAuth = async () => {
-    const cleanName = name.trim();
     const cleanEmail = email.trim();
 
     if (!cleanName && mode === "signup") {
@@ -1397,7 +1618,7 @@ function WelcomeGate({
         <div className="welcome-copy">
           <span><Sparkles size={16} /> MoneyFollows</span>
           <h1>Build a clearer relationship with your money.</h1>
-          <p>Set up your profile once. Track income, expenses, notes, reminders, wallets, and monthly patterns from a dashboard made for daily use.</p>
+          <p>Answer a few setup questions first. Then track income, expenses, reminders, wallets, and monthly patterns from a dashboard made for daily use.</p>
           <div className="welcome-metrics" aria-label="MoneyFollows setup highlights">
             <span><b>160+</b> currencies</span>
             <span><b>0</b> fake entries</span>
@@ -1413,15 +1634,79 @@ function WelcomeGate({
           </div>
         </motion.div>
 
-        <form className="welcome-form" onSubmit={(event) => {
+        <form className="welcome-form setup-flow" onSubmit={(event) => {
           event.preventDefault();
           void runEmailAuth();
         }}>
           <div className="auth-heading">
-            <span>Secure access</span>
-            <strong>{mode === "signup" ? "Create your account" : "Log in to MoneyFollows"}</strong>
-            <p>{mode === "signup" ? "Sign up with email or Google." : "Use your email or continue with Google."}</p>
+            <span>Step {step + 1} of 3</span>
+            <strong>{step === 0 ? "What should we call you?" : step === 1 ? "Set your money basics" : mode === "signup" ? "Save your dashboard" : "Log in to MoneyFollows"}</strong>
+            <p>{step === 0 ? "Your name appears in the dashboard and account page." : step === 1 ? "Choose your default currency and optional opening balance." : "Create an account, log in, or continue locally for now."}</p>
           </div>
+          <div className="setup-progress" aria-label="Setup progress">
+            {[0, 1, 2].map((item) => <span className={item <= step ? "active" : ""} key={item} />)}
+          </div>
+          {step === 0 && (
+            <div className="setup-step">
+              <label>
+                Your name
+                <span>
+                  <UserRound size={18} />
+                  <input
+                    autoFocus
+                    maxLength={32}
+                    onChange={(event) => {
+                      setName(event.target.value);
+                      setError("");
+                    }}
+                    placeholder="Type your name"
+                    value={name}
+                  />
+                </span>
+              </label>
+              <div className="welcome-actions">
+                <motion.button type="button" onClick={continueSetup} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+                  Continue
+                </motion.button>
+              </div>
+            </div>
+          )}
+          {step === 1 && (
+            <div className="setup-step">
+              <label>
+                Default currency
+                <span>
+                  <WalletCards size={18} />
+                  <select value={setupCurrency} onChange={(event) => setSetupCurrency(event.target.value as CurrencyCode)}>
+                    {currencyOptions.map((option) => (
+                      <option key={option.code} value={option.code}>{option.symbol} {option.label} ({option.code})</option>
+                    ))}
+                  </select>
+                </span>
+              </label>
+              <label>
+                Opening balance
+                <span>
+                  <Landmark size={18} />
+                  <input
+                    inputMode="decimal"
+                    onChange={(event) => setSetupBalance(event.target.value)}
+                    placeholder="0"
+                    value={setupBalance}
+                  />
+                </span>
+              </label>
+              <p className="setup-hint">This can be zero. You can edit currency and balance later in Studio.</p>
+              <div className="welcome-actions">
+                <motion.button type="button" onClick={continueSetup} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+                  Next
+                </motion.button>
+                <button type="button" onClick={() => setStep(0)}>Back</button>
+              </div>
+            </div>
+          )}
+          {step === 2 && (
+            <>
           <div className="auth-mode">
             <button className={mode === "signup" ? "active" : ""} type="button" onClick={() => {
               setMode("signup");
@@ -1432,22 +1717,6 @@ function WelcomeGate({
               setError("");
             }}>Log in</button>
           </div>
-          <label>
-            Your name
-            <span>
-              <UserRound size={18} />
-              <input
-                autoFocus
-                maxLength={32}
-                onChange={(event) => {
-                  setName(event.target.value);
-                  setError("");
-                }}
-                placeholder="Type your name"
-                value={name}
-              />
-            </span>
-          </label>
           <label>
             Email
             <span>
@@ -1512,7 +1781,12 @@ function WelcomeGate({
               <ShieldCheck size={18} />
               {busyProvider === "form" ? "Checking..." : mode === "signup" ? "Create account" : "Log in"}
             </motion.button>
+            <button type="button" onClick={enterDashboard}>Continue locally</button>
+            <button type="button" onClick={() => setStep(1)}>Back</button>
           </div>
+            </>
+          )}
+          {step !== 2 && (error || authError) && <p className="form-error">{error || authError}</p>}
         </form>
       </motion.section>
     </main>
@@ -1531,21 +1805,27 @@ function Summary({ totals }: { totals: { income: number; expenses: number; total
 }
 
 function HomeView({
+  budgets,
+  debts,
   entries,
+  goals,
   onAddEntry,
   onOpenAccount,
-  onOpenNotes,
   onSavingsTargetChange,
   profile,
+  reminders,
   savingsTarget,
   totals
 }: {
+  budgets: BudgetItem[];
+  debts: DebtItem[];
   entries: LedgerEntry[];
+  goals: GoalItem[];
   onAddEntry: () => void;
   onOpenAccount: () => void;
-  onOpenNotes: () => void;
   onSavingsTargetChange: (value: number) => void;
   profile: UserProfile;
+  reminders: Reminder[];
   savingsTarget: number;
   totals: { income: number; expenses: number; total: number };
 }) {
@@ -1556,9 +1836,26 @@ function HomeView({
   const targetGap = Math.max(0, savingsTarget - totals.total);
   const features = [
     { emoji: "💸", label: "Log real income and expenses", text: "No fake entries. Every number appears only when you add it." },
-    { emoji: "🍜", label: "Food and grocery context", text: "Track restaurants, delivery apps, grocery platforms, product photos, and notes." },
-    { emoji: "📝", label: "Separate notes workspace", text: "Keep reminders, wishlists, money thoughts, and payment notes away from transactions." },
+    { emoji: "🍜", label: "Food and grocery context", text: "Track restaurants, delivery apps, grocery platforms, product photos, and memos." },
+    { emoji: "⏰", label: "Reminders", text: "Create recurring reminders for payments, salaries, EMIs, and borrowed money." },
     { emoji: "🔐", label: "Account control", text: "View profile info, update your avatar, sign out, or delete your Firebase account." }
+  ];
+  const healthScore = Math.max(0, Math.min(100, Math.round(50 + (totals.income > 0 ? (totals.total / totals.income) * 35 : 0) - (totals.expenses > totals.income && totals.income > 0 ? 18 : 0))));
+  const dailyActions = [
+    { action: onAddEntry, label: "Record today", meta: "Income, expense or transfer", value: entries.length ? `${entries.length} entries` : "No entries yet" },
+    { action: onOpenAccount, label: "Account", meta: "Profile and security", value: profile.provider }
+  ];
+  const receivableTotal = debts.filter((debt) => debt.kind === "receivable").reduce((sum, debt) => sum + debt.amount, 0);
+  const payableTotal = debts.filter((debt) => debt.kind === "payable").reduce((sum, debt) => sum + debt.amount, 0);
+  const activeBudget = budgets[0];
+  const activeBudgetSpent = activeBudget
+    ? entries.filter((entry) => entry.kind === "expense" && entry.category === activeBudget.category).reduce((sum, entry) => sum + entry.amount, 0)
+    : 0;
+  const widgetCards = [
+    { emoji: "🎯", label: "Goals", value: goals.length ? `${goals.length} active` : "No goals", meta: goals[0] ? `${goals[0].name} · ${money(goals[0].amount)}` : "Add a target in Studio" },
+    { emoji: "📊", label: "Budget", value: activeBudget ? money(Math.max(0, activeBudget.amount - activeBudgetSpent)) : "Not set", meta: activeBudget ? `${activeBudget.category} left this ${activeBudget.period.toLowerCase()}` : "Control spending by category" },
+    { emoji: "🔁", label: "Recurring", value: reminders.length ? `${reminders.length} active` : "No reminders", meta: reminders[0] ? `${reminders[0].name} · ${reminders[0].frequency}` : "Set rent, salary, EMIs" },
+    { emoji: "🤝", label: "Give / get", value: money(receivableTotal - payableTotal), meta: `${money(receivableTotal)} to get · ${money(payableTotal)} to give` }
   ];
 
   return (
@@ -1567,10 +1864,9 @@ function HomeView({
         <div>
           <span>Welcome to MoneyFollows</span>
           <h1>{profile.name === "Guest" ? "A cleaner home for your money." : `${profile.name}, your money dashboard is ready.`}</h1>
-          <p>MoneyFollows combines a daily ledger, visual spending insights, notes, reminders, wallets, and account settings in one responsive app.</p>
+          <p>MoneyFollows combines a daily ledger, visual spending insights, reminders, wallets, and account settings in one responsive app.</p>
           <div className="home-actions">
             <button type="button" onClick={onAddEntry}><Plus size={18} /> Log money</button>
-            <button type="button" onClick={onOpenNotes}><ClipboardList size={18} /> Open notes</button>
             <button type="button" onClick={onOpenAccount}><UserRound size={18} /> Account</button>
           </div>
         </div>
@@ -1584,6 +1880,39 @@ function HomeView({
         <span>Current month</span>
         <strong>{money(totals.total)}</strong>
         <p>{money(totals.income)} income · {money(totals.expenses)} expenses</p>
+      </section>
+
+      <section className="home-brief-grid" aria-label="Daily money overview">
+        <article className="health-score-card">
+          <div>
+            <span>Financial health</span>
+            <strong>{entries.length ? `${healthScore}/100` : "No score yet"}</strong>
+            <p>{entries.length ? "Based on logged income, expenses, and monthly savings." : "Record transactions to generate your score."}</p>
+          </div>
+          <i style={{ "--score": `${entries.length ? healthScore : 0}%` } as CSSProperties}><b>{entries.length ? healthScore : 0}</b></i>
+        </article>
+        <div className="daily-action-list">
+          {dailyActions.map((item) => (
+            <button key={item.label} type="button" onClick={item.action}>
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+              <small>{item.meta}</small>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="widget-grid" aria-label="Real-use money widgets">
+        {widgetCards.map((item) => (
+          <motion.article key={item.label} whileHover={{ y: -3 }} transition={spring}>
+            <span>{item.emoji}</span>
+            <div>
+              <small>{item.label}</small>
+              <strong>{item.value}</strong>
+              <p>{item.meta}</p>
+            </div>
+          </motion.article>
+        ))}
       </section>
 
       <section className="home-money-lab">
@@ -1887,6 +2216,7 @@ function EntryRow({ entry, onDelete }: { entry: LedgerEntry; onDelete?: (id: num
         <span>
           {entry.category} · {entry.account}{entry.toAccount ? ` -> ${entry.toAccount}` : ""}
           {(entry.category === "Food" || entry.category === "Groceries") && (entry.foodPlace || entry.foodSource) ? ` · ${[entry.foodPlace, entry.foodSource].filter(Boolean).join(" via ")}` : ""}
+          {entry.splitPeople?.length ? ` · Split with ${entry.splitPeople.join(", ")}` : ""}
         </span>
       </div>
       <b className={entry.kind === "income" ? "income-text" : entry.kind === "expense" ? "expense-text" : ""}>
@@ -2042,65 +2372,6 @@ function TotalView({
   );
 }
 
-function NoteView({
-  body,
-  notes,
-  onBodyChange,
-  onDelete,
-  onSave,
-  onTitleChange,
-  query,
-  title
-}: {
-  body: string;
-  notes: MoneyNote[];
-  onBodyChange: (value: string) => void;
-  onDelete: (id: number) => void;
-  onSave: () => void;
-  onTitleChange: (value: string) => void;
-  query: string;
-  title: string;
-}) {
-  const normalizedQuery = query.trim().toLowerCase();
-  const visibleNotes = notes.filter((note) => {
-    if (!normalizedQuery) {
-      return true;
-    }
-
-    return `${note.title} ${note.body}`.toLowerCase().includes(normalizedQuery);
-  });
-
-  return (
-    <div className="view-stack notes-view">
-      <section className="notes-composer">
-        <div>
-          <span className="note-emoji">📝</span>
-          <strong>Money notes</strong>
-        </div>
-        <input value={title} onChange={(event) => onTitleChange(event.target.value)} placeholder="Title, idea, reminder" />
-        <textarea value={body} onChange={(event) => onBodyChange(event.target.value)} placeholder="Write anything: payday plan, EMI reminder, wishlist, cash owed, shopping thought..." />
-        <button type="button" onClick={onSave}><Plus size={18} /> Save note</button>
-      </section>
-      {visibleNotes.length === 0 ? (
-        <EmptyState label={notes.length === 0 ? "Write your first note above." : "No notes match your search."} />
-      ) : (
-        <AnimatePresence initial={false}>
-          {visibleNotes.map((note) => (
-            <motion.article className="note-card" key={note.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -16 }} transition={spring}>
-              <div>
-                <span>{new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(fromDateKey(note.date))}</span>
-                <strong>💡 {note.title}</strong>
-                {note.body && <p>{note.body}</p>}
-              </div>
-              <button type="button" aria-label="Delete note" onClick={() => onDelete(note.id)}><Trash2 size={16} /></button>
-            </motion.article>
-          ))}
-        </AnimatePresence>
-      )}
-    </div>
-  );
-}
-
 function StatsView({ entries, totals }: { entries: LedgerEntry[]; totals: { income: number; expenses: number; total: number } }) {
   const money = useMoney();
   const expenseByCategory = expenseCategories.map((category) => ({
@@ -2126,8 +2397,10 @@ function StatsView({ entries, totals }: { entries: LedgerEntry[]; totals: { inco
   );
 }
 
-function AccountsView({ entries }: { entries: LedgerEntry[] }) {
+function AccountsView({ budgets, debts, entries, goals }: { budgets: BudgetItem[]; debts: DebtItem[]; entries: LedgerEntry[]; goals: GoalItem[] }) {
   const money = useMoney();
+  const receivableTotal = debts.filter((debt) => debt.kind === "receivable").reduce((sum, debt) => sum + debt.amount, 0);
+  const payableTotal = debts.filter((debt) => debt.kind === "payable").reduce((sum, debt) => sum + debt.amount, 0);
   return (
     <div className="view-stack">
       {accounts.map((item) => {
@@ -2143,17 +2416,58 @@ function AccountsView({ entries }: { entries: LedgerEntry[] }) {
           </section>
         );
       })}
+      <section className="finance-lists">
+        <header>
+          <div>
+            <span>Planning</span>
+            <strong>Budgets, goals and borrowed money</strong>
+          </div>
+        </header>
+        <div className="planning-grid">
+          <article>
+            <span>Budgets</span>
+            <strong>{budgets.length}</strong>
+            <p>{budgets[0] ? `${budgets[0].name} · ${money(budgets[0].amount)}` : "No budget added yet."}</p>
+          </article>
+          <article>
+            <span>Goals</span>
+            <strong>{goals.length}</strong>
+            <p>{goals[0] ? `${goals[0].name} · ${money(goals[0].amount)}` : "No goal added yet."}</p>
+          </article>
+          <article>
+            <span>You will get</span>
+            <strong>{money(receivableTotal)}</strong>
+            <p>Receivables from people.</p>
+          </article>
+          <article>
+            <span>You will give</span>
+            <strong>{money(payableTotal)}</strong>
+            <p>Payables you owe.</p>
+          </article>
+        </div>
+      </section>
     </div>
   );
 }
 
 function MoreView({
+  budgets,
   currencyCode,
+  debts,
+  goals,
   isDark,
+  onAddBudget,
+  onAddDebt,
+  onAddGoal,
   onAddReminder,
+  onBackup,
   onClear,
   onCurrencyChange,
+  onDeleteBudget,
+  onDeleteDebt,
+  onDeleteGoal,
   onDeleteReminder,
+  onImport,
   onOpeningBalanceChange,
   onOpenAccount,
   onSignIn,
@@ -2162,12 +2476,23 @@ function MoreView({
   reminders,
   userProfile
 }: {
+  budgets: BudgetItem[];
   currencyCode: CurrencyCode;
+  debts: DebtItem[];
+  goals: GoalItem[];
   isDark: boolean;
+  onAddBudget: (budget: Omit<BudgetItem, "createdAt" | "id">) => void;
+  onAddDebt: (debt: Omit<DebtItem, "createdAt" | "id">) => void;
+  onAddGoal: (goal: Omit<GoalItem, "createdAt" | "id">) => void;
   onAddReminder: (reminder: Omit<Reminder, "createdAt" | "id">) => void;
+  onBackup: () => void;
   onClear: () => void;
   onCurrencyChange: (currency: CurrencyCode) => void;
+  onDeleteBudget: (id: number) => void;
+  onDeleteDebt: (id: number) => void;
+  onDeleteGoal: (id: number) => void;
   onDeleteReminder: (id: number) => void;
+  onImport: (file: File | undefined) => void;
   onOpeningBalanceChange: (amount: number) => void;
   onOpenAccount: () => void;
   onSignIn: () => void;
@@ -2186,6 +2511,18 @@ function MoreView({
   const [reminderCategory, setReminderCategory] = useState("Food");
   const [autoAdd, setAutoAdd] = useState(false);
   const [reminderError, setReminderError] = useState("");
+  const [budgetName, setBudgetName] = useState("");
+  const [budgetAmount, setBudgetAmount] = useState("");
+  const [budgetCategory, setBudgetCategory] = useState("Food");
+  const [budgetPeriod, setBudgetPeriod] = useState<BudgetItem["period"]>("Monthly");
+  const [goalName, setGoalName] = useState("");
+  const [goalAmount, setGoalAmount] = useState("");
+  const [goalDate, setGoalDate] = useState(() => toDateKey(new Date(new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate())));
+  const [debtKind, setDebtKind] = useState<DebtItem["kind"]>("receivable");
+  const [debtName, setDebtName] = useState("");
+  const [debtAmount, setDebtAmount] = useState("");
+  const [debtDescription, setDebtDescription] = useState("");
+  const [toolError, setToolError] = useState("");
   const reminderCategories = reminderKind === "income" ? incomeCategories : expenseCategories;
 
   const createReminder = () => {
@@ -2209,6 +2546,52 @@ function MoreView({
     setReminderName("");
     setReminderAmount("");
     setReminderError("");
+  };
+
+  const createBudget = () => {
+    const parsedAmount = parseAmount(budgetAmount);
+    if (!budgetName.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setToolError("Add a budget name and amount.");
+      return;
+    }
+
+    onAddBudget({ amount: parsedAmount, category: budgetCategory, name: budgetName.trim(), period: budgetPeriod });
+    setBudgetName("");
+    setBudgetAmount("");
+    setToolError("");
+  };
+
+  const createGoal = () => {
+    const parsedAmount = parseAmount(goalAmount);
+    if (!goalName.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setToolError("Add a goal name and amount.");
+      return;
+    }
+
+    onAddGoal({ amount: parsedAmount, name: goalName.trim(), targetDate: goalDate });
+    setGoalName("");
+    setGoalAmount("");
+    setToolError("");
+  };
+
+  const createDebt = () => {
+    const parsedAmount = parseAmount(debtAmount);
+    if (!debtName.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setToolError("Add a person name and amount.");
+      return;
+    }
+
+    onAddDebt({
+      amount: parsedAmount,
+      description: debtDescription.trim(),
+      dueDate: toDateKey(new Date()),
+      kind: debtKind,
+      name: debtName.trim()
+    });
+    setDebtName("");
+    setDebtAmount("");
+    setDebtDescription("");
+    setToolError("");
   };
 
   return (
@@ -2244,6 +2627,63 @@ function MoreView({
           Opening balance
           <input inputMode="decimal" value={String(openingBalance || "")} onChange={(event) => onOpeningBalanceChange(parseAmount(event.target.value) || 0)} placeholder="Enter main account balance" />
         </label>
+      </section>
+
+      <section className="planning-tools">
+        <div className="tool-card">
+          <div className="reminder-title">
+            <span>📊</span>
+            <div><small>Spending limits</small><strong>Add budget</strong></div>
+          </div>
+          <div className="reminder-grid">
+            <input value={budgetName} onChange={(event) => setBudgetName(event.target.value)} placeholder="Budget name" />
+            <input inputMode="decimal" value={budgetAmount} onChange={(event) => setBudgetAmount(event.target.value)} placeholder="Amount" />
+            <select value={budgetCategory} onChange={(event) => setBudgetCategory(event.target.value)}>
+              {expenseCategories.map((item) => <option key={item.name} value={item.name}>{item.emoji} {item.name}</option>)}
+            </select>
+            <select value={budgetPeriod} onChange={(event) => setBudgetPeriod(event.target.value as BudgetItem["period"])}>
+              <option>Weekly</option>
+              <option>Monthly</option>
+              <option>Yearly</option>
+            </select>
+          </div>
+          <button className="create-reminder" type="button" onClick={createBudget}>Save budget</button>
+          <CompactList items={budgets.map((item) => ({ id: item.id, label: `${item.name} · ${item.category}`, value: money(item.amount) }))} onDelete={onDeleteBudget} />
+        </div>
+
+        <div className="tool-card">
+          <div className="reminder-title">
+            <span>🎯</span>
+            <div><small>Saving targets</small><strong>Add goal</strong></div>
+          </div>
+          <div className="reminder-grid">
+            <input value={goalName} onChange={(event) => setGoalName(event.target.value)} placeholder="Goal name" />
+            <input inputMode="decimal" value={goalAmount} onChange={(event) => setGoalAmount(event.target.value)} placeholder="Amount" />
+            <input type="date" value={goalDate} onChange={(event) => setGoalDate(event.target.value)} />
+          </div>
+          <button className="create-reminder" type="button" onClick={createGoal}>Save goal</button>
+          <CompactList items={goals.map((item) => ({ id: item.id, label: `${item.name} · ${item.targetDate}`, value: money(item.amount) }))} onDelete={onDeleteGoal} />
+        </div>
+
+        <div className="tool-card">
+          <div className="reminder-title">
+            <span>🤝</span>
+            <div><small>Borrowed money</small><strong>Payable / receivable</strong></div>
+          </div>
+          <div className="reminder-kind">
+            {(["receivable", "payable"] as const).map((item) => (
+              <button className={debtKind === item ? "active" : ""} key={item} type="button" onClick={() => setDebtKind(item)}>{item}</button>
+            ))}
+          </div>
+          <div className="reminder-grid">
+            <input value={debtName} onChange={(event) => setDebtName(event.target.value)} placeholder="Person name" />
+            <input inputMode="decimal" value={debtAmount} onChange={(event) => setDebtAmount(event.target.value)} placeholder="Amount" />
+            <input value={debtDescription} onChange={(event) => setDebtDescription(event.target.value)} placeholder="What was it for?" />
+          </div>
+          <button className="create-reminder" type="button" onClick={createDebt}>Save record</button>
+          <CompactList items={debts.map((item) => ({ id: item.id, label: `${item.kind === "receivable" ? "Get from" : "Give to"} ${item.name}`, value: money(item.amount) }))} onDelete={onDeleteDebt} />
+        </div>
+        {toolError && <p className="form-error">{toolError}</p>}
       </section>
 
       <section className="reminder-card">
@@ -2319,6 +2759,18 @@ function MoreView({
           <img alt="Using MoneyFollows and saving money meme" src="/moneyfollows-saving-meme.png" />
         </div>
       </section>
+      <section className="settings-card backup-card">
+        <span>Backup and restore</span>
+        <strong>Move your MoneyFollows data safely</strong>
+        <p>Export a JSON backup for another browser or device, then import it when needed.</p>
+        <div>
+          <button type="button" onClick={onBackup}><Download size={18} /> Export backup</button>
+          <label>
+            Import backup
+            <input accept="application/json" type="file" onChange={(event) => onImport(event.target.files?.[0])} />
+          </label>
+        </div>
+      </section>
       <section className="settings-card">
         <strong>MoneyFollows</strong>
         <span>Professional money management without fake sample spending.</span>
@@ -2337,6 +2789,24 @@ function MemeStrip({ compact = false }: { compact?: boolean }) {
           <b>{index + 1}</b>
           {line}
         </motion.span>
+      ))}
+    </div>
+  );
+}
+
+function CompactList({ items, onDelete }: { items: Array<{ id: number; label: string; value: string }>; onDelete: (id: number) => void }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="compact-list">
+      {items.slice(0, 3).map((item) => (
+        <article key={item.id}>
+          <span>{item.label}</span>
+          <strong>{item.value}</strong>
+          <button type="button" aria-label={`Delete ${item.label}`} onClick={() => onDelete(item.id)}><Trash2 size={14} /></button>
+        </article>
       ))}
     </div>
   );
